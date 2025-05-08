@@ -3,10 +3,10 @@
     <ion-row class="h-full ion-justify-content-center ion-align-items-center">
       <ion-col size-md="6" size-lg="4" size="12" class="ion-text-center">
         <ion-text color="primary">
-          <h1 class="ion-text-center !font-bold !text-4xl">Ingresar</h1>
+          <h1 class="ion-text-center !font-[600] !text-5xl">Ingresar</h1>
         </ion-text>
         <ion-text color="dark" class="ion-margin-bottom font-bold">
-          <h2>Bienvenido!</h2>
+          <h2 class="!text-lg">Bienvenido!</h2>
         </ion-text>
 
         <form (ngSubmit)="onLogin()" #loginForm="ngForm">
@@ -40,7 +40,8 @@
         <ion-row class="ion-padding-top ion-text-center">
           <ion-col class="flex items-center justify-center gap-4">
             <ion-text color="dark" class="ion-no-padding">No tienes una cuenta?</ion-text>
-            <ion-button fill="clear" class="ion-no-padding font-bold text-[16px] " size="small" routerLink="/auth/registro">Registrate.</ion-button>
+            <ion-button fill="clear" class="ion-no-padding font-bold text-[16px] " size="small"
+              routerLink="/auth/registro">Registrate.</ion-button>
           </ion-col>
         </ion-row>
       </ion-col>

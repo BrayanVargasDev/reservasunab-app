@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonRouterOutlet, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
 import { RouterModule } from '@angular/router';
-import { authRoutes } from './auth.routes';
 
 @Component({
   selector: 'app-auth',
@@ -12,20 +11,14 @@ import { authRoutes } from './auth.routes';
   standalone: true,
   imports: [
     IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
     CommonModule,
     FormsModule,
     RouterModule,
-    IonRouterOutlet
-  ]
+    IonRouterOutlet,
+  ],
 })
 export class AuthPage implements OnInit {
+  constructor() {}
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  ngOnInit() {}
 }
