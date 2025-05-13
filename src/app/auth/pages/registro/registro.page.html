@@ -1,0 +1,185 @@
+<ion-content [fullscreen]="true">
+  <ion-grid class="auth-grid ion-no-padding">
+    <ion-row
+      class="ion-justify-content-center ion-align-items-center full-height">
+      <ion-col
+        size="12"
+        size-sm="10"
+        size-md="8"
+        size-lg="6"
+        size-xl="4"
+        class="ion-padding">
+        <!-- Título -->
+        <ion-row class="ion-justify-content-center ion-align-items-center">
+          <ion-col class="ion-text-center">
+            <ion-text color="secondary">
+              <h1 class="auth-title ion-padding-bottom">Crear Cuenta</h1>
+            </ion-text>
+          </ion-col>
+        </ion-row>
+
+        <!-- Formulario -->
+        <form
+          [formGroup]="registroForm"
+          (ngSubmit)="onRegistro()">
+          <!-- Campo de nombre -->
+          <ion-item
+            lines="none"
+            class="auth-item ion-margin-bottom"
+            [ngClass]="getFieldClass('nombre')">
+            <ion-icon
+              slot="start"
+              [color]="getIconColor('nombre')"
+              name="person-outline"
+              class="auth-icon"></ion-icon>
+            <ion-input
+              label="Nombre completo"
+              labelPlacement="stacked"
+              type="text"
+              formControlName="nombre"
+              placeholder="Ej: Juan Pérez"
+              required></ion-input>
+          </ion-item>
+          <div
+            *ngIf="isFieldInvalid('nombre')"
+            class="validation-message">
+            <div *ngFor="let error of getErrorMessage('nombre')">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Campo de teléfono -->
+          <ion-item
+            lines="none"
+            class="auth-item ion-margin-bottom"
+            [ngClass]="getFieldClass('telefono')">
+            <ion-icon
+              slot="start"
+              [color]="getIconColor('telefono')"
+              name="phone-portrait-outline"
+              class="auth-icon"></ion-icon>
+            <ion-input
+              label="Teléfono"
+              labelPlacement="stacked"
+              type="tel"
+              formControlName="telefono"
+              placeholder="Ej: +56912345678"
+              required></ion-input>
+          </ion-item>
+          <div
+            *ngIf="isFieldInvalid('telefono')"
+            class="validation-message">
+            <div *ngFor="let error of getErrorMessage('telefono')">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Campo de email -->
+          <ion-item
+            lines="none"
+            class="auth-item ion-margin-bottom"
+            [ngClass]="getFieldClass('email')">
+            <ion-icon
+              slot="start"
+              [color]="getIconColor('email')"
+              name="mail-outline"
+              class="auth-icon"></ion-icon>
+            <ion-input
+              label="Correo electrónico"
+              labelPlacement="stacked"
+              type="email"
+              formControlName="email"
+              placeholder="Ej: correo@ejemplo.com"
+              required></ion-input>
+          </ion-item>
+          <div
+            *ngIf="isFieldInvalid('email')"
+            class="validation-message">
+            <div *ngFor="let error of getErrorMessage('email')">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Campo de contraseña -->
+          <ion-item
+            lines="none"
+            class="auth-item ion-margin-bottom"
+            [ngClass]="getFieldClass('password')">
+            <ion-icon
+              slot="start"
+              [color]="getIconColor('password')"
+              name="key-outline"
+              class="auth-icon"></ion-icon>
+            <ion-input
+              label="Contraseña"
+              labelPlacement="stacked"
+              type="password"
+              formControlName="password"
+              placeholder="Ingresa tu contraseña"
+              required></ion-input>
+          </ion-item>
+          <div
+            *ngIf="isFieldInvalid('password')"
+            class="validation-message">
+            <div *ngFor="let error of getErrorMessage('password')">
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Campo de confirmación de contraseña -->
+          <ion-item
+            lines="none"
+            class="auth-item ion-margin-bottom"
+            [ngClass]="getConfirmPasswordClass()">
+            <ion-icon
+              slot="start"
+              [color]="getConfirmPasswordIconColor()"
+              name="key-outline"
+              class="auth-icon"></ion-icon>
+            <ion-input
+              label="Confirmar contraseña"
+              labelPlacement="stacked"
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="Repite tu contraseña"
+              required></ion-input>
+          </ion-item>
+          <div
+            *ngIf="isConfirmPasswordInvalid()"
+            class="validation-message">
+            <div *ngFor="let error of getErrorMessage('confirmPassword')">
+              {{ error }}
+            </div>
+          </div>
+
+          <div class="ion-padding-top ion-padding-bottom">
+            <app-action-button
+              [texto]="'Registrarse'"
+              [tipo]="'submit'"
+              [color]="'secondary'"
+              [tamaño]="'large'"
+              [classList]="'w-100'">
+            </app-action-button>
+          </div>
+        </form>
+
+        <!-- Enlaces -->
+        <ion-row class="ion-text-center ion-padding-top">
+          <ion-col class="auth-link-container">
+            <div
+              class="ion-align-items-center ion-justify-content-center responsive-link">
+              <ion-text color="dark">¿Ya tienes cuenta?</ion-text>
+              <ion-button
+                color="secondary"
+                fill="clear"
+                routerLink="/auth/login"
+                class="auth-text-button">
+                Inicia sesión
+              </ion-button>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

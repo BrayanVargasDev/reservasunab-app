@@ -3,6 +3,13 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    "paths": {
+      "@auth/*": ["src/app/auth/*"],
+      "@dashboard/*": ["src/app/dashboard/*"],
+      "@home/*": ["src/app/home/*"],
+      "@shared/*": ["src/app/shared/*"],
+      "@usuarios/*": ["src/app/usuarios/*"]
+    },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,

@@ -1,0 +1,89 @@
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+.auth-full-height {
+  height: 100%;
+}
+
+.auth-content-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.auth-title {
+  font-weight: 600;
+  font-size: 2.25rem;
+  text-align: center;
+}
+
+.auth-subtitle {
+  font-weight: bold;
+  font-size: 1.125rem;
+}
+
+.auth-text {
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+
+// Iconos
+.auth-icon {
+  margin-right: 0.75rem;
+  margin-top: 0.125rem;
+  margin-bottom: 0;
+}
+
+// Elementos de formulario
+ion-item.auth-item {
+  --background: var(--ion-color-medium-variant);
+  --highlight-color-focused: var(--ion-color-dark);
+  --highlight-color-error: var(--ion-color-danger);
+  border-radius: 24px;
+
+  &--invalid {
+    border: 1px solid var(--ion-color-danger);
+  }
+
+  &--valid {
+    border: 1px solid var(--ion-color-success);
+  }
+}
+
+// Estilos para los labels
+ion-item.auth-item ion-input {
+  --label-color: var(--ion-color-dark);
+}
+
+// Estilo para label cuando esté enfocado
+ion-item.auth-item.item-has-focus ion-input {
+  --label-color: var(--ion-color-dark);
+  border: 1px solid var(--ion-color-primary);
+}
+
+// Botones y enlaces
+.auth-link-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.auth-text-button {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.btn-login {
+  height: 50px;
+}
+
+// Tarjetas
+ion-card.auth-card {
+  --background: var(--ion-color-white);
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --border-radius: 10px;
+}

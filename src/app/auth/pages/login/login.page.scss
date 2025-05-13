@@ -1,0 +1,184 @@
+@import '../../auth.page.scss';
+
+// Estructura responsive
+.auth-grid {
+  height: 100%;
+}
+
+.full-height {
+  min-height: 100%;
+}
+
+// Estilos específicos de la página de login
+.login-icon {
+  margin-top: 0.125rem;
+  margin-left: 0.75rem;
+  margin-bottom: 0;
+}
+
+.eye-icon:hover {
+  cursor: pointer;
+}
+
+.error-container {
+  min-height: 18px;
+}
+
+.error-text {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+  margin: -8px 0px 12px 12px;
+  margin-bottom: 30px !important;
+  padding-left: 32px;
+  transition: all 0.5s cubic-bezier(1, 0, 0, 1);
+}
+
+// Estilos del contenedor
+.login-container {
+  background-color: var(--ion-color-light-tint);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+// Ajustes para inputs
+.auth-item {
+  --border-radius: 24px;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+
+  @media (max-width: 576px) {
+    --padding-start: 8px;
+    --inner-padding-end: 8px;
+  }
+
+  .auth-input {
+    width: 100%;
+  }
+}
+
+// Texto de bienvenida
+.welcome-text {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+// Asegurar que el botón ocupe todo el ancho
+.w-100 {
+  width: 100%;
+}
+
+// Estilos para validación de formularios
+.input-valid {
+  --background: rgba(var(--ion-color-success-rgb), 0.1);
+  --border-color: var(--ion-color-success);
+  box-shadow: 0 0 0 1px var(--ion-color-success);
+}
+
+.input-invalid {
+  --background: rgba(var(--ion-color-danger-rgb), 0.1);
+  --border-color: var(--ion-color-danger);
+  box-shadow: 0 0 0 1px var(--ion-color-danger);
+}
+
+.validation-message {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+  margin: -8px 0 12px 12px;
+  padding-left: 32px;
+}
+
+// Mejorar la visualización del enlace a registro en móviles
+.responsive-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 340px) {
+    flex-direction: column;
+    gap: 0;
+
+    ion-button.auth-text-button {
+      margin-top: -12px;
+    }
+  }
+}
+
+// Media queries para diferentes tamaños de pantalla
+@media (max-width: 576px) {
+  .auth-title {
+    font-size: 1.75rem;
+    margin-top: 1rem;
+  }
+
+  .auth-subtitle h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+
+  ion-item.auth-item {
+    margin-bottom: 12px;
+  }
+
+  .auth-icon {
+    font-size: 18px;
+  }
+
+  .validation-message {
+    margin-bottom: 8px;
+    font-size: 0.7rem;
+  }
+
+  .login-container {
+    padding: 1rem !important;
+  }
+}
+
+// Tablets
+@media (min-width: 577px) and (max-width: 991px) {
+  .auth-title {
+    font-size: 2rem;
+  }
+
+  .login-container {
+    max-width: 95%;
+    margin: 0 auto;
+  }
+}
+
+// Desktop
+@media (min-width: 992px) {
+  .login-container {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+}
+
+// Ajustes para modo landscape en móviles
+@media (max-height: 480px) and (orientation: landscape) {
+  .auth-title {
+    font-size: 1.5rem;
+    margin-top: 0;
+    padding-bottom: 8px !important;
+  }
+
+  .welcome-text {
+    font-size: 1rem !important;
+    margin-top: -8px;
+    margin-bottom: 8px !important;
+  }
+
+  ion-item.auth-item {
+    margin-bottom: 8px;
+  }
+
+  .validation-message {
+    margin-bottom: 4px;
+  }
+
+  .ion-padding-top,
+  .ion-padding-bottom {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+}

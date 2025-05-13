@@ -1,0 +1,24 @@
+<ion-button
+  [type]="tipo"
+  [color]="color"
+  [expand]="expand"
+  [disabled]="disabled"
+  [size]="sizeValue"
+  [fill]="fill"
+  [class]="classList"
+  (click)="onClick($event)">
+
+  <ng-container *ngIf="icono && iconoSlot === 'start'">
+    <ion-icon [name]="icono" slot="start" class="action-button-icon"></ion-icon>
+  </ng-container>
+
+  <ion-text [class]="textoClase">{{ texto }}</ion-text>
+
+  <ng-container *ngIf="icono && iconoSlot === 'end'">
+    <ion-icon [name]="icono" slot="end" class="action-button-icon"></ion-icon>
+  </ng-container>
+
+  <ng-container *ngIf="!icono && tipo === 'submit'">
+    <ion-icon name="arrow-forward-outline" slot="end" class="action-button-icon"></ion-icon>
+  </ng-container>
+</ion-button>

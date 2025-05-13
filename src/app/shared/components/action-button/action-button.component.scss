@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+ion-button {
+  --border-radius: 24px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 0.3s ease;
+  margin: 0.5rem 0;
+
+  &.action-button-large {
+    height: 52px;
+    font-size: 1.1rem;
+  }
+
+  &.action-button-small {
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  &::part(native) {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover::part(native) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &[fill="clear"],
+  &[fill="outline"] {
+    &::part(native) {
+      box-shadow: none;
+    }
+
+    &:hover::part(native) {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+.action-button-icon {
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 1.2em;
+  vertical-align: middle;
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  ion-button {
+    font-size: 0.95rem;
+
+    &.action-button-large {
+      height: 48px;
+      font-size: 1rem;
+    }
+  }
+
+  .action-button-icon {
+    font-size: 1.1em;
+  }
+}
