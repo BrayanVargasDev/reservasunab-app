@@ -6,6 +6,9 @@
     "paths": {
       "@auth/*": ["src/app/auth/*"],
       "@dashboard/*": ["src/app/dashboard/*"],
+      "@perfil/*": ["src/app/perfil/*"],
+      "@pagos/*": ["src/app/pagos/*"],
+      "@permisos/*": ["src/app/permisos/*"],
       "@home/*": ["src/app/home/*"],
       "@shared/*": ["src/app/shared/*"],
       "@usuarios/*": ["src/app/usuarios/*"]

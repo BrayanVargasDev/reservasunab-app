@@ -102,3 +102,9 @@ ion-label {
   --opacity: 0.9;
   --font-size: 14px;
 }
+
+ion-content {
+  --background: var(--ion-color-medium-variant);
+  --padding-bottom: 0;
+  --padding-top: 0;
+}
