@@ -1,7 +1,14 @@
 {
   "name": "frontend",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {
+      "appId": "com.example.app",
+      "appName": "unab-app",
+      "webDir": "www",
+      "server": {
+        "androidScheme": "https"
+      }
+    }
   },
   "type": "angular-standalone"
 }
