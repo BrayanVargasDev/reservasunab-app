@@ -1,3 +1,45 @@
 :host {
   display: block;
 }
+.wrapper-principal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.menu-wrapper {
+  background-color: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-content {
+  display: flex;
+  height: 100%;
+  padding: 12px;
+}
+
+// Estilos responsive para el layout
+@media (max-width: 767px) {
+  .menu-wrapper {
+    display: none; // El menú se maneja como overlay en móvil
+  }
+
+  #main-content-col {
+    padding: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .menu-wrapper {
+    width: var(--sidebar-width, 260px);
+    flex: 0 0 auto;
+  }
+
+  #main-content-col {
+    padding: 0 16px;
+  }
+}
