@@ -116,13 +116,20 @@ export class RegistroPage implements OnInit {
   // Método específico para confirmar contraseña
   isConfirmPasswordInvalid(): boolean {
     const confirmControl = this.registroForm.get('confirmPassword');
-    return (confirmControl?.touched && confirmControl?.invalid) ||
-           (confirmControl?.touched && this.registroForm.hasError('passwordMismatch'));
+    return (
+      !!!(confirmControl?.touched && confirmControl?.invalid) ||
+      (confirmControl?.touched &&
+        this.registroForm.hasError('passwordMismatch'))
+    );
   }
 
   isConfirmPasswordValid(): boolean {
     const confirmControl = this.registroForm.get('confirmPassword');
-    return confirmControl?.touched && confirmControl?.valid && !this.registroForm.hasError('passwordMismatch');
+    return (
+      !!!confirmControl?.touched &&
+      !!!confirmControl?.valid &&
+      !this.registroForm.hasError('passwordMismatch')
+    );
   }
 
   getConfirmPasswordClass(): { [key: string]: boolean } {
@@ -147,7 +154,9 @@ export class RegistroPage implements OnInit {
       const customErrors: { [key: string]: string } = {
         required: `El ${this.getFieldLabel(fieldName)} es obligatorio`,
         email: 'El formato del correo no es válido',
-        minlength: `La ${this.getFieldLabel(fieldName)} debe tener al menos ${control.errors['minlength']?.requiredLength} caracteres`,
+        minlength: `La ${this.getFieldLabel(fieldName)} debe tener al menos ${
+          control.errors['minlength']?.requiredLength
+        } caracteres`,
       };
 
       for (const key of Object.keys(control.errors)) {
@@ -157,7 +166,10 @@ export class RegistroPage implements OnInit {
       }
     }
 
-    if (fieldName === 'confirmPassword' && this.registroForm.hasError('passwordMismatch')) {
+    if (
+      fieldName === 'confirmPassword' &&
+      this.registroForm.hasError('passwordMismatch')
+    ) {
       messages.push('Las contraseñas no coinciden');
     }
 

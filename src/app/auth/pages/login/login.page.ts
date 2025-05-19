@@ -30,7 +30,7 @@ import {
   eyeOutline,
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
-import { LoginService } from '@auth/services/login.service';
+import { FormUtils } from '@shared/utils/form.utils';
 
 @Component({
   selector: 'app-login',
@@ -56,9 +56,9 @@ import { LoginService } from '@auth/services/login.service';
   ],
 })
 export class LoginPage {
-  private loginService: LoginService = inject(LoginService);
   private formBuilder = inject(FormBuilder);
 
+  formUtils = FormUtils;
   loginForm: FormGroup = this.formBuilder.group({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [
@@ -85,37 +85,10 @@ export class LoginPage {
     this.showPassword = !this.showPassword;
   }
 
-  esCampoValido(campo: string): boolean | null {
-    return (
-      this.loginForm.controls[campo].errors &&
-      this.loginForm.controls[campo].touched
-    );
-  }
-
   obtenerColorIcono(campo: string): string {
-    return this.esCampoValido(campo) ? 'danger' : 'dark';
-  }
-
-  obtenerErrorDelCampo(campo: string): string | null {
-    if (!this.loginForm.controls[campo].errors) {
-      return null;
-    }
-
-    const errors = this.loginForm.controls[campo].errors || {};
-
-    const customErrors: { [key: string]: string } = {
-      required: 'Este campo es requerido',
-      email: 'El formato del correo no es válido',
-      minlength: `El campo debe tener al menos ${errors['minlength']?.requiredLength} caracteres`,
-    };
-
-    for (const key of Object.keys(errors)) {
-      if (key in customErrors) {
-        return customErrors[key];
-      }
-    }
-
-    return null;
+    return this.formUtils.esCampoValido(this.loginForm, campo)
+      ? 'danger'
+      : 'dark';
   }
 
   onLogin() {

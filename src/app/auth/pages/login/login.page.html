@@ -31,7 +31,7 @@
               lines="none"
               [ngClass]="{
                 'auth-item': true,
-                'auth-item--invalid': esCampoValido('email'),
+                'auth-item--invalid': formUtils.esCampoValido(loginForm, 'email'),
                 }">
               <ion-icon
                 name="mail-outline"
@@ -53,9 +53,9 @@
             <div class="error-container">
               <ion-text
                 class="error-text"
-                [class.visible]="esCampoValido('email')">
-                {{ esCampoValido('email') ? obtenerErrorDelCampo('email') : ' '
-                }}
+                [class.visible]="formUtils.esCampoValido(loginForm, 'email')">
+                {{ formUtils.esCampoValido(loginForm, 'email') ?
+                formUtils.obtenerErrorDelCampo(loginForm, 'email') : ' ' }}
               </ion-text>
             </div>
           </ion-col>
@@ -64,7 +64,7 @@
             lines="none"
             [ngClass]="{
               'auth-item': true,
-              'auth-item--invalid': esCampoValido('password'),
+              'auth-item--invalid': formUtils.esCampoValido(loginForm, 'password'),
             }">
             <ion-icon
               name="key-outline"
@@ -90,9 +90,9 @@
           <div class="error-container">
             <ion-text
               class="error-text"
-              [class.visible]="esCampoValido('password')">
-              {{ esCampoValido('password') ? obtenerErrorDelCampo('password') :
-              ' ' }}
+              [class.visible]="formUtils.esCampoValido(loginForm, 'password')">
+              {{ formUtils.esCampoValido(loginForm, 'password') ?
+              formUtils.obtenerErrorDelCampo(loginForm, 'password') : ' ' }}
             </ion-text>
           </div>
 
