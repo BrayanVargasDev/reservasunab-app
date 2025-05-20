@@ -1,0 +1,14 @@
+<div class="avatar-container">
+  @if (avatar()) {
+  <ion-img
+    [src]="avatar()"
+    alt="Avatar"
+    class="avatar"></ion-img>
+  } @else {
+  <ion-icon
+    slot="icon-only"
+    [size]="size()"
+    name="person-circle">
+  </ion-icon>
+  }
+</div>

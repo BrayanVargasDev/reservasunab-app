@@ -1,0 +1,136 @@
+<ion-content [fullscreen]="true">
+  <ng-template
+    #ionChip
+    let-context>
+    <ion-chip
+      [color]="context.getValue() === 'Activo' ? 'success' : 'danger'"
+      outline
+      class="usuario-estado">
+      <ion-label>{{ context.getValue() }}</ion-label>
+    </ion-chip>
+  </ng-template>
+
+  <div class="usuarios-container">
+    <div class="header-actions">
+      <ion-searchbar
+        placeholder="Buscar por nombre, email o rol..."
+        animated
+        class="searchbar"
+        (ionInput)="limpiarFiltro()"
+        (ionClear)="limpiarFiltro()"
+        (ionChange)="aplicarFiltro()"
+        debounce="500">
+      </ion-searchbar>
+
+      <ion-button
+        (click)="agregarUsuario()"
+        class="add-button">
+        <ion-icon
+          name="add-outline"
+          slot="start"></ion-icon>
+        Nuevo Usuario
+      </ion-button>
+    </div>
+
+    <!-- Tabla Tanstack -->
+    <ion-card>
+      <div class="tanstack-table">
+        <!-- Encabezado de la tabla -->
+        <table
+          responsiveTable
+          #responsive="responsiveTable"
+          [table]="table()"
+          class="usuarios-table">
+          <thead>
+            @for (headerGroup of headerGroups(); track headerGroup.id) {
+            <tr class="header-row">
+              @for (header of headerGroup.headers; track header.id) {
+              <th
+                [class]="header.column.columnDef.meta?.className || ''"
+                [style.width]="header.getSize()">
+                <ng-container
+                  *flexRender="
+                    header.column.columnDef.header;
+                    props: header.getContext();
+                    let header
+                  ">
+                  <div [innerHTML]="header"></div>
+                </ng-container>
+              </th>
+              }
+            </tr>
+            }
+          </thead>
+
+          <tbody>
+            @if (rows().length) { @for (row of rows(); track row.id) {
+            <!-- Fila principal -->
+            <tr
+              class="usuario-item"
+              [class.expanded]="isRowExpanded(+row.id)">
+              @for (cell of row.getVisibleCells(); track cell.id) {
+              <td [class]="cell.column.columnDef.meta?.className || ''">
+                <ng-container
+                  *flexRender="
+                      cell.column.columnDef.cell;
+                      props: cell.getContext();
+                      let cell
+                    ">
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </td>
+              }
+            </tr>
+
+            <!-- Fila de detalles expandible -->
+            @if (isRowExpanded(+row.id)) {
+            <tr class="usuario-detalles">
+              <td [attr.colspan]="row.getVisibleCells().length">
+                <div class="detalles-container">
+                  <ion-row>
+                    <ion-col
+                      size="12"
+                      size-lg="6">
+                      <ion-list lines="none">
+                        @for (col of table.getAllLeafColumns(); track $index) {
+                        @if (responsive.hiddenColumnIds().has(col.id)) {
+                        <ion-item>
+                          <ion-label class="ion-no-margin">
+                            <span class="detalles-label">
+                              {{ col.columnDef.header }}:
+                            </span>
+                            <span class="detalles-valor">
+                              <ng-container
+                                *flexRender="
+                                  responsive.getCell(col, row).column.columnDef.cell;
+                                  props: responsive.getCell(col, row).getContext();
+                                  let cell
+                                ">
+                                <div [innerHTML]="cell"></div>
+                              </ng-container>
+                            </span>
+                          </ion-label>
+                        </ion-item>
+                        } }
+                      </ion-list>
+                    </ion-col>
+                  </ion-row>
+                </div>
+              </td>
+            </tr>
+            } } } @else {
+            <tr class="no-results">
+              <td [attr.colspan]="columnas().length">
+                <ion-label>
+                  <h2>No se encontraron resultados</h2>
+                  <p>Intenta con otro filtro</p>
+                </ion-label>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </ion-card>
+  </div>
+</ion-content>
