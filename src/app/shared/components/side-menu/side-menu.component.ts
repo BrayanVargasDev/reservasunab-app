@@ -16,18 +16,27 @@ import {
   personOutline,
   speedometerOutline,
 } from 'ionicons/icons';
+import { AppService } from 'src/app/app.service';
+import { WebIconComponent } from '../web-icon/web-icon.component';
 
 @Component({
   selector: 'app-side-menu',
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, RouterLink, RouterLinkActive],
+  imports: [
+    CommonModule,
+    IonicModule,
+    RouterLink,
+    RouterLinkActive,
+    WebIconComponent,
+  ],
 })
 export class SideMenuComponent implements OnInit, OnDestroy {
   private menuServicio = inject(MenuService);
   private authServicio = inject(AuthService);
 
+  appService = inject(AppService);
   menuItems$: Observable<MenuItem[]> = of([]);
   isMenuOpen = signal(false);
   usuarioActual = this.authServicio.usuario();

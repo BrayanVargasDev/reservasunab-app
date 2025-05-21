@@ -13,10 +13,19 @@
 @import '@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-@import '@ionic/angular/css/normalize.css';
-@import '@ionic/angular/css/structure.css';
-@import '@ionic/angular/css/typography.css';
-@import '@ionic/angular/css/display.css';
+/* Estos estilos se cargarán solo en plataformas móviles usando clases condicionales */
+:root {
+  --ionic-styles-loaded: 0; /* Variable para controlar la carga de estilos */
+}
+
+body.ionic-device-mobile {
+  --ionic-styles-loaded: 1;
+  /* Importamos los estilos básicos solo cuando se detecta un dispositivo móvil */
+  @import '@ionic/angular/css/normalize.css';
+  @import '@ionic/angular/css/structure.css';
+  @import '@ionic/angular/css/typography.css';
+  @import '@ionic/angular/css/display.css';
+}
 
 /* Optional CSS utils that can be commented out */
 @import '@ionic/angular/css/padding.css';

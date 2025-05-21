@@ -1,5 +1,7 @@
 <!-- Menú móvil (aparece como side menu) -->
-<ion-menu
+
+<!-- Menú desktop (siempre visible como sidebar) -->
+@if (appService.esMovil()) {<ion-menu
   contentId="main-content"
   type="overlay"
   *ngIf="false"
@@ -45,20 +47,23 @@
     </ion-list>
   </ion-content>
 </ion-menu>
+} @else {
 
-<!-- Menú desktop (siempre visible como sidebar) -->
-<div class="desktop-sidebar">
-  <ion-list class="desktop-menu">
-    @for (item of menuItems$ | async; track item.id) {
-    <ion-row [routerLink]="[item.url]">
-      <ion-col
-        size="12"
-        class="menu-item"
-        routerLinkActive="menu-item-active">
-        <ion-icon [name]="item.icon"> </ion-icon>
-        <ion-label>{{ item.title }}</ion-label>
-      </ion-col>
-    </ion-row>
-    }
-  </ion-list>
-</div>
+<ul class="menu bg-base-100 rounded-box shadow-md">
+  @for (item of menuItems$ | async; track item.id) {
+  <li>
+    <a
+      class="font-[500] menu-vertical"
+      [routerLink]="[item.url]"
+      routerLinkActive="menu-active">
+      <app-web-icon
+        estilos="w-6 h-6"
+        [nombreIcono]="item.icon">
+      </app-web-icon>
+      {{ item.title }}
+    </a>
+  </li>
+  }
+</ul>
+
+}

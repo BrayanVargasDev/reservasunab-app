@@ -1,13 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { SideMenuComponent } from "../components/side-menu/side-menu.component";
-import { HeaderComponent } from "../components/header/header.component";
+import { SideMenuComponent } from '../components/side-menu/side-menu.component';
+import { HeaderComponent } from '../components/header/header.component';
+import { inject } from '@angular/core';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-main-layout',
   imports: [IonicModule, CommonModule, SideMenuComponent, HeaderComponent],
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  appService = inject(AppService);
+}

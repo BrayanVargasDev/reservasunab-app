@@ -1,4 +1,11 @@
-import { Component, inject, Input, signal, OnInit, HostListener } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  signal,
+  OnInit,
+  HostListener,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IonicModule, Platform } from '@ionic/angular';
@@ -13,6 +20,7 @@ import {
 } from 'ionicons/icons';
 
 import { AuthService } from '@auth/services/auth.service';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-header',
@@ -22,7 +30,9 @@ import { AuthService } from '@auth/services/auth.service';
   imports: [IonicModule, RouterLink, CommonModule],
 })
 export class HeaderComponent implements OnInit {
-  @Input() title: string = 'App UNAB';
+  title = signal('App UNAB');
+
+  appService = inject(AppService);
 
   private authServicio = inject(AuthService);
   private plataforma = inject(Platform);
@@ -54,15 +64,20 @@ export class HeaderComponent implements OnInit {
   }
 
   chequearPlataforma() {
-    if (this.plataforma.is('mobile') || this.plataforma.is('mobileweb') || window.innerWidth <= 768) {
+    if (
+      this.plataforma.is('mobile') ||
+      this.plataforma.is('mobileweb') ||
+      window.innerWidth <= 768
+    ) {
       this.isMobile.set(true);
     }
   }
 
   actualizarIsMobile() {
-    const esMobile = this.plataforma.is('mobile') ||
-                    this.plataforma.is('mobileweb') ||
-                    window.innerWidth <= 768;
+    const esMobile =
+      this.plataforma.is('mobile') ||
+      this.plataforma.is('mobileweb') ||
+      window.innerWidth <= 768;
     this.isMobile.set(esMobile);
   }
 

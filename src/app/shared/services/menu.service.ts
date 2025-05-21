@@ -36,7 +36,7 @@ export class MenuService {
         id: 1,
         title: 'Home',
         url: '/dashboard',
-        icon: 'speedometer-outline',
+        icon: 'bar-chart-outline',
       },
       {
         id: 2,
