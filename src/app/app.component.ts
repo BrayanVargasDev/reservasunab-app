@@ -1,16 +1,19 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { AppService } from './app.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, RouterOutlet],
 })
 export class AppComponent implements OnInit {
+  appService = inject(AppService);
+
   showMenu = signal(false);
 
   constructor(private router: Router) {}

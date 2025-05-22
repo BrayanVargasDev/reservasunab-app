@@ -4,6 +4,7 @@ import {
   OnInit,
   TemplateRef,
   computed,
+  inject,
   signal,
   viewChild,
 } from '@angular/core';
@@ -39,6 +40,8 @@ import {
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { TableAvatarComponent } from '@shared/components/table-avatar/table-avatar.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
+import { AppService } from 'src/app/app.service';
+import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -49,22 +52,28 @@ import { ResponsiveTableDirective } from '@shared/directives/responsive-table.di
   imports: [
     IonicModule,
     CommonModule,
+    FormsModule, // Agregado para habilitar ngModel
     FlexRenderDirective,
     ResponsiveTableDirective,
     TableExpansorComponent,
     TableAvatarComponent,
+    WebIconComponent,
   ],
 })
 export class UsuariosMainPage implements OnInit {
-  // Datos de usuarios
-  usuariosData = signal<Usuario[]>([]);
-  filtroTexto: string = '';
+  appService = inject(AppService);
 
   ionChip =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'ionChip',
     );
 
+  chipWeb =
+    viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
+      'chipWeb',
+    );
+
+  usuariosData = signal<Usuario[]>([]);
   columnas = signal<ColumnDef<Usuario>[]>([
     {
       id: 'avatar',
@@ -131,7 +140,7 @@ export class UsuariosMainPage implements OnInit {
       id: 'estado',
       header: 'Estado',
       accessorKey: 'estado',
-      cell: () => this.ionChip(),
+      cell: () => (this.appService.esMovil() ? this.ionChip() : this.chipWeb()),
       meta: {
         responsive: true,
         className: 'estado-column',
@@ -160,8 +169,7 @@ export class UsuariosMainPage implements OnInit {
       },
     },
   ]);
-
-  // Estado de la tabla
+  filtroTexto: string = '';
   tableState = signal({
     pagination: {
       pageIndex: 0,
@@ -170,7 +178,6 @@ export class UsuariosMainPage implements OnInit {
     expanded: {} as ExpandedState,
   });
 
-  // Crear función de tabla
   table = createAngularTable(() => ({
     data: this.usuariosData(),
     columns: this.columnas(),
@@ -210,12 +217,12 @@ export class UsuariosMainPage implements OnInit {
     debugAll: false,
   }));
 
-  // Computed signals para acceder fácilmente a datos de la tabla
   rows = computed(() => this.table.getRowModel().rows);
   columns = computed(() => this.table.getAllColumns());
   headerGroups = computed(() => this.table.getHeaderGroups());
 
-  constructor() {
+  ngOnInit() {
+    this.cargarUsuarios();
     addIcons({
       trashOutline,
       createOutline,
@@ -227,12 +234,7 @@ export class UsuariosMainPage implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.cargarUsuarios();
-  }
-
   cargarUsuarios() {
-    // Función auxiliar para generar fechas aleatorias en el último año
     const generarFechaAleatoria = (): string => {
       const hoy = new Date();
       const fechaAnterior = new Date(hoy);
@@ -243,7 +245,6 @@ export class UsuariosMainPage implements OnInit {
           Math.random() * (hoy.getTime() - fechaAnterior.getTime()),
       );
 
-      // Formatear fecha como "DD/MM/YYYY HH:MM AM/PM"
       const dia = fechaAleatoria.getDate().toString().padStart(2, '0');
       const mes = (fechaAleatoria.getMonth() + 1).toString().padStart(2, '0');
       const anio = fechaAleatoria.getFullYear() - 2000;
@@ -268,6 +269,9 @@ export class UsuariosMainPage implements OnInit {
         fechaCreacion: generarFechaAleatoria(),
         avatar: '',
         viendoDetalles: false,
+        telefono: '987654321',
+        direccion: 'Calle Falsa 123',
+        fechaNacimiento: '01/01/1990',
       },
       {
         id: 2,
@@ -282,6 +286,9 @@ export class UsuariosMainPage implements OnInit {
         fechaCreacion: generarFechaAleatoria(),
         avatar: '',
         viendoDetalles: false,
+        telefono: '123456789',
+        direccion: 'Calle Falsa 123',
+        fechaNacimiento: '01/01/1990',
       },
       {
         id: 3,
@@ -296,6 +303,9 @@ export class UsuariosMainPage implements OnInit {
         fechaCreacion: generarFechaAleatoria(),
         avatar: '',
         viendoDetalles: false,
+        telefono: '987654321',
+        direccion: 'Calle Falsa 123',
+        fechaNacimiento: '01/01/1990',
       },
       {
         id: 4,
@@ -310,6 +320,9 @@ export class UsuariosMainPage implements OnInit {
         fechaCreacion: generarFechaAleatoria(),
         avatar: '',
         viendoDetalles: false,
+        telefono: '987654321',
+        direccion: 'Calle Falsa 123',
+        fechaNacimiento: '01/01/1990',
       },
       {
         id: 5,
@@ -324,6 +337,9 @@ export class UsuariosMainPage implements OnInit {
         fechaCreacion: generarFechaAleatoria(),
         avatar: '',
         viendoDetalles: false,
+        telefono: '123456789',
+        direccion: 'Calle Falsa 123',
+        fechaNacimiento: '01/01/1990',
       },
     ];
 

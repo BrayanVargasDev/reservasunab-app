@@ -1,3 +1,4 @@
+@if (appService.esMovil()) {
 <ion-content [fullscreen]="true">
   <ng-template
     #ionChip
@@ -134,3 +135,171 @@
     </ion-card>
   </div>
 </ion-content>
+
+} @else {
+<div class="flex flex-col gap-2 md:gap-4 w-full h-full sm:pl-3">
+  <ng-template
+    #chipWeb
+    let-context>
+    <div
+      [ngClass]="{
+        'badge badge-outline': true,
+        'badge-success': context.getValue() === 'Activo',
+        'badge-error': context.getValue() === 'Inactivo'
+    }">
+      {{ context.getValue() }}
+    </div>
+  </ng-template>
+
+  <div
+    class="flex flex-col md:flex-row w-full gap-2 items-stretch justify-center md:justify-between">
+    <div class="flex items-center">
+      <h2 class="font-bold text-4xl">Usuarios</h2>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+      <input
+        type="text"
+        placeholder="Buscar por nombre, email o rol..."
+        class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm"
+        [(ngModel)]="filtroTexto"
+        (input)="aplicarFiltro()" />
+      <button
+        class="btn btn-primary h-11 rounded-box"
+        (click)="agregarUsuario()">
+        <app-web-icon
+          estilos="h-6 w-6"
+          nombreIcono="add-outline"></app-web-icon>
+        Nuevo Usuario
+      </button>
+    </div>
+  </div>
+
+  <table
+    responsiveTable
+    #responsiveWeb="responsiveTable"
+    [table]="table()"
+    class="table table-sm sm:table-md rounded-box bg-base-100 w-full">
+    <thead>
+      @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
+      <tr>
+        @for (header of headerGroup.headers; track header.id) { @if
+        (!header.isPlaceholder) {
+        <th
+          [class]="header.column.columnDef.meta?.className || ''"
+          [style.width]="header.getSize()">
+          <ng-container
+            *flexRender="
+                    header.column.columnDef.header;
+                    props: header.getContext();
+                    let header
+                  ">
+            <div [innerHTML]="header"></div>
+          </ng-container>
+        </th>
+        } }
+      </tr>
+      }
+    </thead>
+    <tbody>
+      @if (!rows().length) {
+      <tr>
+        <td
+          [attr.colspan]="columnas().length"
+          class="text-center">
+          No se encontraron resultados. Intenta con otro filtro.
+        </td>
+      </tr>
+      } @else { @for (row of rows(); track row.id) {
+      <tr
+        [class]="{ 'hover:bg-base-200 rounded-box': true}"
+        [class.expanded]="isRowExpanded(+row.id)">
+        <td *ngFor="let cell of row.getVisibleCells()">
+          <ng-container
+            *flexRender="
+              cell.column.columnDef.cell;
+              props: cell.getContext();
+              let cell
+            ">
+            <div [innerHTML]="cell"></div>
+          </ng-container>
+        </td>
+      </tr>
+
+      @if (isRowExpanded(+row.id)) {
+      <tr class="bg-base-300 border-none">
+        <td [attr.colspan]="row.getVisibleCells().length">
+          @if (responsiveWeb.hiddenColumnIds().size !== 0) {
+          <ul class="bg-base-100 rounded-box px-2 py-1 shadow-sm">
+            @for (col of table.getAllLeafColumns(); track $index) { @if
+            (responsiveWeb.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span class="font-bold text-base-content">
+                {{ col.columnDef.header }}:
+              </span>
+              <span>
+                <ng-container
+                  *flexRender="
+                        responsiveWeb.getCell(col, row).column.columnDef.cell;
+                        props: responsiveWeb.getCell(col, row).getContext();
+                        let cell
+                      ">
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </span>
+            </li>
+            } }
+          </ul>
+
+          <!-- Divider -->
+          <div class="divider"></div>
+          }
+
+          <div class="w-full bg-base rounded-box">
+            <div class="card bg-base-100 w-full max-w-sm shadow-sm">
+              <div class="card-body">
+                <div
+                  class="card-title flex-col items-start gap-0 justify-start">
+                  <h2 class="">Información de contacto</h2>
+                  <p class="text-xs text-accent">
+                    Último acceso: {{ row.original.ultimoAcceso }}
+                  </p>
+                </div>
+                @if (false) {
+                <form
+                  class="card-body"
+                  action=""></form>
+                } @else {
+                <ul class="card-body py-2 list-disc">
+                  <li class="text-base-content font-[500]">
+                    {{ row.original.documento }}
+                  </li>
+                  <li class="text-base-content font-[500]">{{ row.original.telefono }}</li>
+                  <li class="text-base-content font-[500]">
+                    {{ row.original.direccion }}
+                  </li>
+                  <li class="text-base-content font-[500]">
+                    {{ row.original.fechaNacimiento }}
+                  </li>
+                </ul>
+                }
+                <div
+                  class="card-actions flex-col md:flex-row flex-nowrap justify-center items-center">
+                  <button
+                    class="btn btn-secondary btn-sm rounded-box font-[500] btn-soft w-full md:w-1/2">
+                    Editar
+                  </button>
+                  <button
+                    class="btn btn-primary btn-sm rounded-box font-[500] w-full md:w-1/2">
+                    Ver
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      } } }
+    </tbody>
+  </table>
+</div>
+}

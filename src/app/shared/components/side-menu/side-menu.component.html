@@ -49,7 +49,7 @@
 </ion-menu>
 } @else {
 
-<ul class="menu bg-base-100 rounded-box shadow-md">
+<ul class="menu menu-xs md:menu-md !w-full bg-base-100 rounded-box shadow-md">
   @for (item of menuItems$ | async; track item.id) {
   <li>
     <a

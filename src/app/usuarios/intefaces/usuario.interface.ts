@@ -3,6 +3,7 @@ export interface Usuario {
   avatar: string;
   email: string;
   tipoUsuario: string;
+  telefono: string;
   rol: string;
   documento: string;
   nombre: string;
@@ -11,4 +12,6 @@ export interface Usuario {
   estado: string;
   fechaCreacion: string;
   viendoDetalles?: boolean;
+  direccion: string;
+  fechaNacimiento: string;
 }
