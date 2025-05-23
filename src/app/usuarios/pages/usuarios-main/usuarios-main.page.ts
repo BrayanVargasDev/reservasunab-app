@@ -73,6 +73,16 @@ export class UsuariosMainPage implements OnInit {
       'chipWeb',
     );
 
+  celdaNombre =
+    viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
+      'celdaNombre',
+    );
+
+  celdaRol =
+    viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
+      'celdaRol',
+    );
+
   usuariosData = signal<Usuario[]>([]);
   columnas = signal<ColumnDef<Usuario>[]>([
     {
@@ -97,7 +107,7 @@ export class UsuariosMainPage implements OnInit {
       accessorKey: 'nombreCompleto',
       header: 'Nombre',
       accessorFn: (row) => `${row.nombre} ${row.apellido}`,
-      cell: (info) => info.getValue(),
+      cell: () => this.celdaNombre(),
       meta: {
         className: 'nombre-column',
         priority: Infinity,
@@ -117,7 +127,7 @@ export class UsuariosMainPage implements OnInit {
       id: 'rol',
       header: 'Rol',
       accessorKey: 'rol',
-      cell: (info) => info.getValue(),
+      cell: () => this.celdaRol(),
       meta: {
         className: 'rol-column',
         priority: 3,
@@ -142,32 +152,31 @@ export class UsuariosMainPage implements OnInit {
       accessorKey: 'estado',
       cell: () => (this.appService.esMovil() ? this.ionChip() : this.chipWeb()),
       meta: {
-        responsive: true,
         className: 'estado-column',
         priority: 2,
       },
     },
-    {
-      id: 'acciones',
-      header: () => '',
-      cell: (context) => {
-        return flexRenderComponent(TableExpansorComponent, {
-          inputs: {
-            isExpanded: context.row.getIsExpanded(),
-          },
-          outputs: {
-            toggleExpand: () => {
-              context.row.toggleExpanded();
-            },
-          },
-        });
-      },
-      meta: {
-        responsive: false,
-        className: 'acciones-column',
-        priority: Infinity,
-      },
-    },
+    // {
+    //   id: 'acciones',
+    //   header: () => '',
+    //   cell: (context) => {
+    //     return flexRenderComponent(TableExpansorComponent, {
+    //       inputs: {
+    //         isExpanded: context.row.getIsExpanded(),
+    //       },
+    //       outputs: {
+    //         toggleExpand: () => {
+    //           context.row.toggleExpanded();
+    //         },
+    //       },
+    //     });
+    //   },
+    //   meta: {
+    //     responsive: false,
+    //     className: 'acciones-column',
+    //     priority: Infinity,
+    //   },
+    // },
   ]);
   filtroTexto: string = '';
   tableState = signal({

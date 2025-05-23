@@ -44,3 +44,15 @@ body.ionic-device-mobile {
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 @import '@ionic/angular/css/palettes/dark.class.css';
 // @import '@ionic/angular/css/palettes/dark.system.css';
+
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+* {
+  // border: 1px solid red;
+  scrollbar-width: thin;
+}

@@ -137,22 +137,75 @@
 </ion-content>
 
 } @else {
-<div class="flex flex-col gap-2 md:gap-4 w-full h-full sm:pl-3">
+<div class="flex flex-col grow w-full sm:pl-3 relative">
   <ng-template
     #chipWeb
     let-context>
     <div
+      [attr.data-tip]="context.getValue() === 'Activo' ? 'Desactivar' : 'Activar'"
       [ngClass]="{
-        'badge badge-outline': true,
+        'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
         'badge-success': context.getValue() === 'Activo',
-        'badge-error': context.getValue() === 'Inactivo'
+        'badge-error': context.getValue() === 'Inactivo',
     }">
       {{ context.getValue() }}
     </div>
   </ng-template>
 
+  <ng-template
+    #celdaNombre
+    let-context>
+    <div class="flex w-full h-full items-center justify-between">
+      <span>{{ context.getValue() }}</span>
+      <button
+        class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
+        data-tip="Editar usuario">
+        <app-web-icon
+          estilos="h-4 w-4"
+          nombreIcono="open-outline"></app-web-icon>
+      </button>
+    </div>
+  </ng-template>
+
+  <ng-template
+    #celdaRol
+    let-context>
+    <div class="flex w-full h-full items-center justify-between">
+      <span>{{ context.getValue() }}</span>
+      <div class="dropdown dropdown-left">
+        <button
+          role="button"
+          tabindex="0"
+          class="btn btn-soft btn-secondary w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
+          data-tip="Cambiar rol">
+          <app-web-icon
+            estilos="h-4 w-4"
+            nombreIcono="caret-down-outline"></app-web-icon>
+        </button>
+        <ul
+          tabindex="0"
+          class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+          style="position-anchor: --anchor-1">
+          <li>
+            <button>Item 1</button>
+          </li>
+          <li><a>Item 2</a></li>
+          <li class="flex justify-between items-center w-rull">
+            <button
+              class="btn btn-soft btn-accent w-full h-8 btn-sm flex justify-center items-center">
+              <span>Crear un rol</span>
+              <app-web-icon
+                estilos="h-4 w-4"
+                nombreIcono="open-outline"></app-web-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </ng-template>
+
   <div
-    class="flex flex-col md:flex-row w-full gap-2 items-stretch justify-center md:justify-between">
+    class="flex flex-col md:flex-row w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300">
     <div class="flex items-center">
       <h2 class="font-bold text-4xl">Usuarios</h2>
     </div>
@@ -178,11 +231,13 @@
     responsiveTable
     #responsiveWeb="responsiveTable"
     [table]="table()"
-    class="table table-sm sm:table-md rounded-box bg-base-100 w-full">
+    class="table table-sm sm:table-md rounded-box bg-base-100 w-full overflow-y-auto">
     <thead>
       @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
       <tr>
-        @for (header of headerGroup.headers; track header.id) { @if
+        @if (responsiveWeb.hiddenColumnIds().size !== 0) {
+        <th></th>
+        } @for (header of headerGroup.headers; track header.id) { @if
         (!header.isPlaceholder) {
         <th
           [class]="header.column.columnDef.meta?.className || ''"
@@ -211,8 +266,15 @@
       </tr>
       } @else { @for (row of rows(); track row.id) {
       <tr
-        [class]="{ 'hover:bg-base-200 rounded-box': true}"
+        [ngClass]="{ 'hover:bg-base-200': true, 'bg-base-200': isRowExpanded(+row.id) }"
         [class.expanded]="isRowExpanded(+row.id)">
+        @if (responsiveWeb.hiddenColumnIds().size !== 0) {
+        <td class="!pe-0">
+          <app-table-expansor
+            [isExpanded]="isRowExpanded(+row.id)"
+            (toggleExpand)="row.toggleExpanded()"></app-table-expansor>
+        </td>
+        }
         <td *ngFor="let cell of row.getVisibleCells()">
           <ng-container
             *flexRender="
@@ -225,11 +287,12 @@
         </td>
       </tr>
 
-      @if (isRowExpanded(+row.id)) {
+      @if (isRowExpanded(+row.id) && responsiveWeb.hiddenColumnIds().size !== 0)
+      {
       <tr class="bg-base-300 border-none">
-        <td [attr.colspan]="row.getVisibleCells().length">
+        <td [attr.colspan]="row.getVisibleCells().length + 1">
           @if (responsiveWeb.hiddenColumnIds().size !== 0) {
-          <ul class="bg-base-100 rounded-box px-2 py-1 shadow-sm">
+          <ul class="bg-base-100 rounded-box px-4 py-1 shadow-sm">
             @for (col of table.getAllLeafColumns(); track $index) { @if
             (responsiveWeb.hiddenColumnIds().has(col.id)) {
             <li class="flex my-2 flex-row gap-2 items-center">
@@ -249,53 +312,7 @@
             </li>
             } }
           </ul>
-
-          <!-- Divider -->
-          <div class="divider"></div>
           }
-
-          <div class="w-full bg-base rounded-box">
-            <div class="card bg-base-100 w-full max-w-sm shadow-sm">
-              <div class="card-body">
-                <div
-                  class="card-title flex-col items-start gap-0 justify-start">
-                  <h2 class="">Información de contacto</h2>
-                  <p class="text-xs text-accent">
-                    Último acceso: {{ row.original.ultimoAcceso }}
-                  </p>
-                </div>
-                @if (false) {
-                <form
-                  class="card-body"
-                  action=""></form>
-                } @else {
-                <ul class="card-body py-2 list-disc">
-                  <li class="text-base-content font-[500]">
-                    {{ row.original.documento }}
-                  </li>
-                  <li class="text-base-content font-[500]">{{ row.original.telefono }}</li>
-                  <li class="text-base-content font-[500]">
-                    {{ row.original.direccion }}
-                  </li>
-                  <li class="text-base-content font-[500]">
-                    {{ row.original.fechaNacimiento }}
-                  </li>
-                </ul>
-                }
-                <div
-                  class="card-actions flex-col md:flex-row flex-nowrap justify-center items-center">
-                  <button
-                    class="btn btn-secondary btn-sm rounded-box font-[500] btn-soft w-full md:w-1/2">
-                    Editar
-                  </button>
-                  <button
-                    class="btn btn-primary btn-sm rounded-box font-[500] w-full md:w-1/2">
-                    Ver
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </td>
       </tr>
       } } }

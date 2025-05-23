@@ -17,9 +17,11 @@ import {
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { authInterceptorProvider } from './app/auth/interceptors/auth.interceptor';
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideExperimentalZonelessChangeDetection(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),

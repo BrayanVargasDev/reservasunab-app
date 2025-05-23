@@ -53,7 +53,7 @@ export class ResponsiveTableDirective<T extends RowData> {
         .map((column) => ({
           column,
           priority: column.columnDef.meta?.priority ?? 0,
-          size: column.getSize() || 100,
+          size: column.getSize() || 200,
         }))
         .sort((a, b) => b.priority - a.priority);
 
