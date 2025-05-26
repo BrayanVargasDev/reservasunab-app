@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnInit,
   TemplateRef,
   computed,
@@ -59,32 +60,38 @@ import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.c
     TableAvatarComponent,
     WebIconComponent,
   ],
+  host: {
+    class: 'flex flex-col grow w-full sm:pl-3 relative',
+  },
 })
 export class UsuariosMainPage implements OnInit {
-  appService = inject(AppService);
+  public appService = inject(AppService);
 
-  ionChip =
+  public ionChip =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'ionChip',
     );
 
-  chipWeb =
+  public chipWeb =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'chipWeb',
     );
 
-  celdaNombre =
+  public celdaNombre =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'celdaNombre',
     );
 
-  celdaRol =
+  public celdaRol =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'celdaRol',
     );
 
-  usuariosData = signal<Usuario[]>([]);
-  columnas = signal<ColumnDef<Usuario>[]>([
+  public usuariosModal =
+    viewChild<ElementRef<HTMLDialogElement>>('usuariosModal');
+
+  public usuariosData = signal<Usuario[]>([]);
+  public columnas = signal<ColumnDef<Usuario>[]>([
     {
       id: 'avatar',
       accessorKey: 'avatar',
@@ -178,8 +185,13 @@ export class UsuariosMainPage implements OnInit {
     //   },
     // },
   ]);
-  filtroTexto: string = '';
-  tableState = signal({
+
+  public filtroTexto: string = '';
+
+  public tituloModal = signal<string>('Agregar Usuario');
+  public colorModal = signal<string>('secondary');
+
+  public tableState = signal({
     pagination: {
       pageIndex: 0,
       pageSize: 10,
@@ -385,12 +397,33 @@ export class UsuariosMainPage implements OnInit {
     this.usuariosData.set(usuariosActualizados);
   }
 
-  editarUsuario(id: number) {
-    // Implementar lógica para editar usuario
+  async cerrarModal() {
+    if (this.usuariosModal()) {
+      this.usuariosModal()!.nativeElement.close();
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    this.tituloModal.set('Agregar Usuario');
+    this.colorModal.set('secondary');
   }
 
   agregarUsuario() {
-    // Implementar lógica para agregar usuario
+    this.tituloModal.set('Agregar Usuario');
+    this.colorModal.set('secondary');
+
+    if (this.usuariosModal()) {
+      this.usuariosModal()!.nativeElement.showModal();
+    }
+  }
+
+  editarUsuario(usuario: Usuario) {
+    this.tituloModal.set('Editar Usuario');
+    this.colorModal.set('accent');
+
+    // Aquí podrías cargar los datos del usuario en un formulario para editar
+    if (this.usuariosModal()) {
+      this.usuariosModal()!.nativeElement.showModal();
+    }
   }
 
   verDetalles(id: number, expanded: boolean) {

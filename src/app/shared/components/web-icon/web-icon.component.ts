@@ -1,4 +1,10 @@
-import { Component, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { icons } from '@shared/constants/icons';
 
@@ -7,6 +13,8 @@ import { icons } from '@shared/constants/icons';
   imports: [],
   templateUrl: './web-icon.component.html',
   styleUrl: './web-icon.component.scss',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WebIconComponent {
   nombreIcono = input.required<string>();
