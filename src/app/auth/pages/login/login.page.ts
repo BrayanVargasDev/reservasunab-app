@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -31,6 +31,8 @@ import {
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
+import { AppService } from 'src/app/app.service';
+import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.component";
 
 @Component({
   selector: 'app-login',
@@ -53,10 +55,12 @@ import { FormUtils } from '@shared/utils/form.utils';
     IonButton,
     ActionButtonComponent,
     ReactiveFormsModule,
-  ],
+    WebIconComponent
+],
 })
 export class LoginPage {
   private formBuilder = inject(FormBuilder);
+  appService = inject(AppService);
 
   formUtils = FormUtils;
   loginForm: FormGroup = this.formBuilder.group({
@@ -68,7 +72,7 @@ export class LoginPage {
     remember: [false],
   });
 
-  showPassword = false;
+  showPassword = signal(false);
 
   constructor() {
     addIcons({
@@ -82,7 +86,9 @@ export class LoginPage {
   }
 
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+    console.log('Current showPassword value:', this.showPassword());
+    this.showPassword.set(!this.showPassword());
+    console.log('Updated showPassword value:', this.showPassword());
   }
 
   obtenerColorIcono(campo: string): string {

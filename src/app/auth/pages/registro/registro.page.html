@@ -1,3 +1,4 @@
+@if (appService.esMovil()) {
 <ion-content [fullscreen]="true">
   <ion-grid class="auth-grid ion-no-padding">
     <ion-row
@@ -183,3 +184,186 @@
     </ion-row>
   </ion-grid>
 </ion-content>
+} @else {
+
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary to-purple-100 p-4">
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-base-content mb-2">Crear Cuenta</h1>
+      <p class="text-base-content">Únete a nuestra plataforma</p>
+    </div>
+
+    <form
+      [formGroup]="registroForm"
+      (ngSubmit)="onRegistro()"
+      class="space-y-6">
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700"
+          >Nombre completo</label
+        >
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <app-web-icon
+              nombreIcono="person-outline"
+              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+          </div>
+          <input
+            type="text"
+            formControlName="nombre"
+            placeholder="Juan Pérez"
+            [ngClass]="{
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error': isFieldInvalid('nombre'),
+              'border-gray-300 focus:ring-secondary focus:border-sering-secondary': !isFieldInvalid('nombre')
+            }" />
+        </div>
+        <div
+          *ngIf="isFieldInvalid('nombre')"
+          class="text-sm text-error">
+          <div *ngFor="let error of getErrorMessage('nombre')">{{ error }}</div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <app-web-icon
+              nombreIcono="call-outline"
+              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+          </div>
+          <input
+            type="tel"
+            formControlName="telefono"
+            placeholder="+56912345678"
+            [ngClass]="{
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error': isFieldInvalid('telefono'),
+              'border-gray-300 focus:ring-secondary focus:border-sering-secondary': !isFieldInvalid('telefono')
+            }" />
+        </div>
+        <div
+          *ngIf="isFieldInvalid('telefono')"
+          class="text-sm text-error">
+          <div *ngFor="let error of getErrorMessage('telefono')">
+            {{ error }}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700"
+          >Correo electrónico</label
+        >
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <app-web-icon
+              nombreIcono="at-outline"
+              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+          </div>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="correo@ejemplo.com"
+            [ngClass]="{
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error': isFieldInvalid('email'),
+              'border-gray-300 focus:ring-secondary focus:border-sering-secondary': !isFieldInvalid('email')
+            }" />
+        </div>
+        <div
+          *ngIf="isFieldInvalid('email')"
+          class="text-sm text-error">
+          <div *ngFor="let error of getErrorMessage('email')">{{ error }}</div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700"
+          >Contraseña</label
+        >
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <app-web-icon
+              nombreIcono="lock-closed-outline"
+              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+          </div>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            [ngClass]="{
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error': isFieldInvalid('password'),
+              'border-gray-300 focus:ring-secondary focus:border-sering-secondary': !isFieldInvalid('password')
+            }" />
+        </div>
+        <div
+          *ngIf="isFieldInvalid('password')"
+          class="text-sm text-error">
+          <div *ngFor="let error of getErrorMessage('password')">
+            {{ error }}
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700"
+          >Confirmar contraseña</label
+        >
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <app-web-icon
+              nombreIcono="lock-closed-outline"
+              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+          </div>
+          <input
+            type="password"
+            formControlName="confirmPassword"
+            placeholder="••••••••"
+            [ngClass]="{
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error': isConfirmPasswordInvalid(),
+              'border-gray-300 focus:ring-secondary focus:border-sering-secondary': !isConfirmPasswordInvalid()
+            }" />
+        </div>
+        <div
+          *ngIf="isConfirmPasswordInvalid()"
+          class="text-sm text-error">
+          <div *ngFor="let error of getErrorMessage('confirmPassword')">
+            {{ error }}
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="registroForm.invalid"
+        [ngClass]="{
+          'w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2': true,
+          'disabled:btn disabled:btn-soft disabled:btn-outline': registroForm.invalid,
+          'btn btn-secondary btn-soft': !registroForm.invalid
+        }">
+        Crear Cuenta
+      </button>
+    </form>
+
+    <div class="mt-8 text-center">
+      <p class="text-sm text-base-content">
+        ¿Ya tienes cuenta?
+        <a
+          routerLink="/auth/login"
+          class="text-secondary hover:text-sering-secondary font-medium transition-colors">
+          Inicia sesión aquí
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -28,6 +28,8 @@ import {
   phonePortraitOutline,
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
+import { AppService } from 'src/app/app.service';
+import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.component";
 
 @Component({
   selector: 'app-registro',
@@ -48,10 +50,13 @@ import { ActionButtonComponent } from '@shared/components/action-button/action-b
     IonRow,
     IonCol,
     ActionButtonComponent,
-  ],
+    WebIconComponent
+],
 })
 export class RegistroPage implements OnInit {
   registroForm!: FormGroup;
+
+  appService = inject(AppService);
 
   constructor(private fb: FormBuilder) {
     addIcons({

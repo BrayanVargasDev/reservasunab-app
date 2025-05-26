@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -23,6 +23,7 @@ import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { mailOutline, checkmarkCircle } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-reset-password',
@@ -47,6 +48,8 @@ import { ActionButtonComponent } from '@shared/components/action-button/action-b
 export class ResetPasswordPage implements OnInit {
   resetForm!: FormGroup;
   emailEnviado = false;
+
+  appService = inject(AppService);
 
   constructor(private fb: FormBuilder) {
     addIcons({mailOutline, checkmarkCircle});
