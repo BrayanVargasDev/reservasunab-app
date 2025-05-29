@@ -1,0 +1,83 @@
+.permisos-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.roles-card,
+.permisos-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 100%;
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  ion-card-subtitle {
+    margin-top: 8px;
+  }
+}
+
+ion-list ion-item {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+
+  &.selected {
+    --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    --border-color: var(--ion-color-primary);
+
+    h2 {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+  }
+
+  h2 {
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 13px;
+  }
+}
+
+.categoria-permisos {
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ion-color-dark);
+    border-bottom: 1px solid var(--ion-color-light);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+
+  ion-item {
+    --min-height: 44px;
+  }
+}
+
+.actions-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.no-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 300px;
+
+  h2 {
+    text-align: center;
+  }
+}

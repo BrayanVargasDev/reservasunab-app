@@ -30,6 +30,7 @@
     "@capacitor/status-bar": "7.0.1",
     "@ionic/angular": "^8.0.0",
     "@tailwindcss/postcss": "^4.1.7",
+    "@tanstack/angular-query-experimental": "^5.77.2",
     "@tanstack/angular-table": "^8.21.3",
     "daisyui": "^5.0.35",
     "ionicons": "^7.0.0",

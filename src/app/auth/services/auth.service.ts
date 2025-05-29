@@ -21,6 +21,7 @@ export class AuthService {
   private _estadoAutenticacion = signal<EstadoAutenticacion>('chequeando');
   private _usuario = signal<User | null>(null);
   private _token = signal<string | null>(null);
+  private _isLoading = signal<boolean>(false);
   private apiUrl = environment.apiUrl;
 
   private http = inject(HttpClient);
@@ -38,6 +39,14 @@ export class AuthService {
   usuario = computed<User | null>(() => this._usuario());
   token = computed(() => this._token());
 
+  setLoading(loading: boolean): void {
+    this._isLoading.set(loading);
+  }
+
+  get isLoading(): boolean {
+    return this._isLoading();
+  }
+
   login(email: string, password: string) {
     return this.http.post(`${this.apiUrl}/auth/login`, {
       email: email,
@@ -47,19 +56,6 @@ export class AuthService {
 
   logout(): void {}
 
-  // hasPermission(permission: string): boolean {
-  //   const user = this.currentUserValue;
-  //   if (!user) return false;
-
-  //   if (user.rol === 'admin') return true;
-
-  //   return user.permisos.includes(permission);
-  // }
-
-  /**
-   * Verificar si el usuario está autenticado
-   * @returns boolean indicando si está autenticado
-   */
   isAuthenticated(): boolean {
     // const currentUser = this.currentUserValue;
     // const token = localStorage.getItem('token');
@@ -67,10 +63,6 @@ export class AuthService {
     return true;
   }
 
-  /**
-   * Obtener el token JWT actual
-   * @returns string con el token o null
-   */
   getToken(): string | null {
     return localStorage.getItem('token');
   }

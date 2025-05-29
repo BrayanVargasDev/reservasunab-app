@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -32,7 +37,8 @@ import {
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from 'src/app/app.service';
-import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.component";
+import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -55,12 +61,13 @@ import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.c
     IonButton,
     ActionButtonComponent,
     ReactiveFormsModule,
-    WebIconComponent
-],
+    WebIconComponent,
+  ],
 })
 export class LoginPage {
   private formBuilder = inject(FormBuilder);
-  appService = inject(AppService);
+  public appService = inject(AppService);
+  public authService = inject(AuthService);
 
   formUtils = FormUtils;
   loginForm: FormGroup = this.formBuilder.group({
@@ -86,9 +93,7 @@ export class LoginPage {
   }
 
   togglePasswordVisibility(): void {
-    console.log('Current showPassword value:', this.showPassword());
     this.showPassword.set(!this.showPassword());
-    console.log('Updated showPassword value:', this.showPassword());
   }
 
   obtenerColorIcono(campo: string): string {
@@ -97,12 +102,23 @@ export class LoginPage {
       : 'dark';
   }
 
+  loginSaml() {
+    this.disableForm();
+    this.authService.setLoading(true);
+    const samlUrl = `${this.appService.samlUrl}/saml/${this.appService.tenantId}/login`;
+    console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
+    window.location.href = samlUrl;
+  }
+
+  disableForm() {
+    this.loginForm.disable();
+  }
+
   onLogin() {
-    // if (this.loginForm.valid) {
-    //   console.log('Intentando iniciar sesión con:', this.loginForm.value);
-    //   // Aquí iría la lógica para autenticar al usuario
-    // } else {
-    //   this.loginForm.form.markAllAsTouched();
-    // }
+    if (this.loginForm.valid) {
+      console.log('Intentando iniciar sesión con:', this.loginForm.value);
+    } else {
+      this.loginForm.markAllAsTouched();
+    }
   }
 }

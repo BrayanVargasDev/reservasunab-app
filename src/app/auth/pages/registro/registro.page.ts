@@ -28,6 +28,7 @@ import {
   phonePortraitOutline,
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
+import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from 'src/app/app.service';
 import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.component";
 
@@ -55,6 +56,7 @@ import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.c
 })
 export class RegistroPage implements OnInit {
   registroForm!: FormGroup;
+  formUtils = FormUtils;
 
   appService = inject(AppService);
 
@@ -77,27 +79,14 @@ export class RegistroPage implements OnInit {
         confirmPassword: ['', [Validators.required]],
       },
       {
-        validators: this.passwordMatchValidator,
+        validators: [FormUtils.sonCamposIguales('password', 'confirmPassword')],
       },
     );
   }
 
-  // Validador personalizado para verificar que las contraseñas coinciden
-  passwordMatchValidator(form: FormGroup): ValidationErrors | null {
-    const password = form.get('password')?.value;
-    const confirmPassword = form.get('confirmPassword')?.value;
-
-    if (password === confirmPassword) {
-      return null;
-    } else {
-      return { passwordMismatch: true };
-    }
-  }
-
-  // Métodos para controlar las validaciones
+  // Métodos para controlar las validaciones usando FormUtils
   isFieldInvalid(fieldName: string): boolean {
-    const control = this.registroForm.get(fieldName);
-    return control !== null && control.invalid && control.touched;
+    return !!this.formUtils.esCampoValido(this.registroForm, fieldName);
   }
 
   isFieldValid(fieldName: string): boolean {
@@ -120,21 +109,14 @@ export class RegistroPage implements OnInit {
 
   // Método específico para confirmar contraseña
   isConfirmPasswordInvalid(): boolean {
-    const confirmControl = this.registroForm.get('confirmPassword');
-    return (
-      !!!(confirmControl?.touched && confirmControl?.invalid) ||
-      (confirmControl?.touched &&
-        this.registroForm.hasError('passwordMismatch'))
-    );
+    return this.isFieldInvalid('confirmPassword') ||
+           this.registroForm.hasError('camposNoIguales');
   }
 
   isConfirmPasswordValid(): boolean {
-    const confirmControl = this.registroForm.get('confirmPassword');
-    return (
-      !!!confirmControl?.touched &&
-      !!!confirmControl?.valid &&
-      !this.registroForm.hasError('passwordMismatch')
-    );
+    const control = this.registroForm.get('confirmPassword');
+    return control !== null && control.valid && control.touched &&
+           !this.registroForm.hasError('camposNoIguales');
   }
 
   getConfirmPasswordClass(): { [key: string]: boolean } {
@@ -150,46 +132,22 @@ export class RegistroPage implements OnInit {
     return 'dark';
   }
 
-  // Obtener mensajes de error
+  // Obtener mensajes de error usando FormUtils
   getErrorMessage(fieldName: string): string[] {
     const messages: string[] = [];
-    const control = this.registroForm.get(fieldName);
 
-    if (control?.errors) {
-      const customErrors: { [key: string]: string } = {
-        required: `El ${this.getFieldLabel(fieldName)} es obligatorio`,
-        email: 'El formato del correo no es válido',
-        minlength: `La ${this.getFieldLabel(fieldName)} debe tener al menos ${
-          control.errors['minlength']?.requiredLength
-        } caracteres`,
-      };
-
-      for (const key of Object.keys(control.errors)) {
-        if (key in customErrors) {
-          messages.push(customErrors[key]);
-        }
-      }
+    // Usar FormUtils para obtener el mensaje de error principal
+    const errorMessage = this.formUtils.obtenerErrorDelCampo(this.registroForm, fieldName);
+    if (errorMessage) {
+      messages.push(errorMessage);
     }
 
-    if (
-      fieldName === 'confirmPassword' &&
-      this.registroForm.hasError('passwordMismatch')
-    ) {
+    // Manejar el caso especial de confirmPassword
+    if (fieldName === 'confirmPassword' && this.registroForm.hasError('camposNoIguales')) {
       messages.push('Las contraseñas no coinciden');
     }
 
     return messages;
-  }
-
-  private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      nombre: 'nombre',
-      telefono: 'teléfono',
-      email: 'correo',
-      password: 'contraseña',
-      confirmPassword: 'confirmación de contraseña',
-    };
-    return labels[fieldName] || fieldName;
   }
 
   onRegistro() {

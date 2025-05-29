@@ -1,3 +1,4 @@
+import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   RouteReuseStrategy,
@@ -14,13 +15,22 @@ import {
   withInterceptorsFromDi,
 } from '@angular/common/http';
 
+import {
+  provideTanStackQuery,
+  QueryClient,
+  withDevtools,
+} from '@tanstack/angular-query-experimental';
+
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { authInterceptorProvider } from './app/auth/interceptors/auth.interceptor';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideTanStackQuery(
+      new QueryClient(),
+      withDevtools(() => ({ loadDevtools: 'auto' })),
+    ),
     provideExperimentalZonelessChangeDetection(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),

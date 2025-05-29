@@ -23,7 +23,9 @@ import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { mailOutline, checkmarkCircle } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
+import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from 'src/app/app.service';
+import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'app-reset-password',
@@ -43,19 +45,19 @@ import { AppService } from 'src/app/app.service';
     IonCol,
     IonText,
     ActionButtonComponent,
+    WebIconComponent,
   ],
 })
 export class ResetPasswordPage implements OnInit {
   resetForm!: FormGroup;
   emailEnviado = false;
+  formUtils = FormUtils;
 
   appService = inject(AppService);
-
-  constructor(private fb: FormBuilder) {
-    addIcons({mailOutline, checkmarkCircle});
-  }
+  fb = inject(FormBuilder);
 
   ngOnInit() {
+    addIcons({ mailOutline, checkmarkCircle });
     this.resetForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
@@ -63,44 +65,40 @@ export class ResetPasswordPage implements OnInit {
 
   // Métodos para controlar las validaciones
   isFieldInvalid(fieldName: string): boolean {
-    const control = this.resetForm.get(fieldName);
-    return control !== null && control.invalid && control.touched;
+    return this.formUtils.esCampoValido(this.resetForm, fieldName) ?? true;
   }
 
   isFieldValid(fieldName: string): boolean {
-    const control = this.resetForm.get(fieldName);
-    return control !== null && control.valid && control.touched;
+    return this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false;
   }
 
   getFieldClass(fieldName: string): { [key: string]: boolean } {
     return {
-      'input-valid': this.isFieldValid(fieldName),
-      'input-invalid': this.isFieldInvalid(fieldName),
+      'input-valid':
+        this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false,
+      'input-invalid':
+        this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false,
     };
   }
 
   getIconColor(fieldName: string): string {
-    if (this.isFieldInvalid(fieldName)) return 'danger';
-    if (this.isFieldValid(fieldName)) return 'success';
+    if (this.formUtils.esCampoValido(this.resetForm, fieldName))
+      return 'danger';
+    if (this.formUtils.esCampoValido(this.resetForm, fieldName))
+      return 'success';
     return 'dark';
   }
 
-  // Obtener mensajes de error
+  // Obtener mensajes de error usando FormUtils
   getErrorMessage(fieldName: string): string[] {
     const messages: string[] = [];
-    const control = this.resetForm.get(fieldName);
 
-    if (control?.errors) {
-      const customErrors: { [key: string]: string } = {
-        required: 'El correo electrónico es obligatorio',
-        email: 'El formato del correo no es válido',
-      };
-
-      for (const key of Object.keys(control.errors)) {
-        if (key in customErrors) {
-          messages.push(customErrors[key]);
-        }
-      }
+    const errorMessage = this.formUtils.obtenerErrorDelCampo(
+      this.resetForm,
+      fieldName,
+    );
+    if (errorMessage) {
+      messages.push(errorMessage);
     }
 
     return messages;

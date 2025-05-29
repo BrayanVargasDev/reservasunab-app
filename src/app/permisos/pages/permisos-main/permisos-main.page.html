@@ -1,0 +1,136 @@
+@if (appService.esMovil()) {
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+  <div class="permisos-container">
+    <ion-grid>
+      <ion-row>
+        <!-- Panel izquierdo: Lista de roles -->
+        <ion-col
+          size="12"
+          size-lg="3">
+          <ion-card class="roles-card">
+            <ion-card-header>
+              <ion-card-title>Roles</ion-card-title>
+            </ion-card-header>
+            <ion-card-content class="ion-no-padding">
+              <ion-list lines="full">
+                @for (rol of roles; track rol.id) {
+                <ion-item
+                  button
+                  detail="false"
+                  [class.selected]="rolSeleccionado?.id === rol.id"
+                  (click)="seleccionarRol(rol)">
+                  <ion-icon
+                    slot="start"
+                    [name]="rol.nombre === 'Administrador' ? 'shield' : rol.nombre === 'Editor' ? 'create' : 'eye'"
+                    [color]="rol.nombre === 'Administrador' ? 'danger' : rol.nombre === 'Editor' ? 'warning' : 'success'">
+                  </ion-icon>
+                  <ion-label>
+                    <h2>{{ rol.nombre }}</h2>
+                    <p>{{ rol.descripcion }}</p>
+                  </ion-label>
+                </ion-item>
+                } @empty {
+                <ion-item>
+                  <ion-label class="ion-text-center"
+                    >No hay roles disponibles</ion-label
+                  >
+                </ion-item>
+                }
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <ion-button
+            expand="block"
+            class="ion-margin-top">
+            <ion-icon
+              slot="start"
+              name="add-outline"></ion-icon>
+            Crear Nuevo Rol
+          </ion-button>
+        </ion-col>
+
+        <!-- Panel derecho: Permisos del rol seleccionado -->
+        <ion-col
+          size="12"
+          size-lg="9">
+          @if (rolSeleccionado) {
+          <ion-card class="permisos-card">
+            <ion-card-header>
+              <ion-card-title
+                >Permisos para {{ rolSeleccionado.nombre }}</ion-card-title
+              >
+              <ion-card-subtitle
+                >Selecciona los permisos que deseas asignar a este
+                rol</ion-card-subtitle
+              >
+            </ion-card-header>
+            <ion-card-content>
+              @for (categoria of categorias(); track categoria) {
+              <div class="categoria-permisos">
+                <h3>{{ categoria }}</h3>
+                <ion-list>
+                  <ion-item
+                    lines="none"
+                    *ngFor="let permiso of permisosPorCategoria(categoria)">
+                    <ion-checkbox
+                      [checked]="tienePermiso(permiso.id)"
+                      (ionChange)="togglePermiso(permiso.id)"
+                      labelPlacement="end">
+                      {{ permiso.nombre }}
+                    </ion-checkbox>
+                  </ion-item>
+                </ion-list>
+              </div>
+              }
+
+              <div class="actions-footer">
+                <ion-button
+                  fill="outline"
+                  color="medium">
+                  Cancelar
+                </ion-button>
+                <ion-button (click)="guardarCambios()">
+                  Guardar Cambios
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+          } @else {
+          <div class="no-selection">
+            <ion-text color="medium">
+              <h2>Selecciona un rol para ver o editar sus permisos</h2>
+            </ion-text>
+          </div>
+          }
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>
+} @else {
+<div class="flex flex-col grow w-full sm:pl-3 relative">
+  <div
+    class="flex flex-col md:flex-row w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300">
+    <div class="flex items-center">
+      <h2 class="font-bold text-4xl">Roles y permisos</h2>
+    </div>
+    <div class="flex flex-col md:flex-row gap-2">
+      <input
+        type="text"
+        placeholder="Buscar por nombre, email o rol..."
+        class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm"
+        [(ngModel)]="filtroTexto" />
+      <button class="btn btn-primary h-11 rounded-box">
+        <app-web-icon
+          estilos="h-6 w-6"
+          nombreIcono="add-outline"></app-web-icon>
+        Nuevo Rol
+      </button>
+    </div>
+  </div>
+  <div class="w-full"></div>
+</div>
+}
