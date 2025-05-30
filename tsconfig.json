@@ -4,14 +4,30 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@auth/*": ["src/app/auth/*"],
-      "@dashboard/*": ["src/app/dashboard/*"],
-      "@perfil/*": ["src/app/perfil/*"],
-      "@pagos/*": ["src/app/pagos/*"],
-      "@permisos/*": ["src/app/permisos/*"],
-      "@home/*": ["src/app/home/*"],
-      "@shared/*": ["src/app/shared/*"],
-      "@usuarios/*": ["src/app/usuarios/*"]
+      "@auth/*": [
+        "src/app/auth/*"
+      ],
+      "@dashboard/*": [
+        "src/app/dashboard/*"
+      ],
+      "@perfil/*": [
+        "src/app/perfil/*"
+      ],
+      "@pagos/*": [
+        "src/app/pagos/*"
+      ],
+      "@permisos/*": [
+        "src/app/permisos/*"
+      ],
+      "@home/*": [
+        "src/app/home/*"
+      ],
+      "@shared/*": [
+        "src/app/shared/*"
+      ],
+      "@usuarios/*": [
+        "src/app/usuarios/*"
+      ]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
@@ -24,11 +40,14 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "es2022",
     "module": "es2020",
-    "lib": ["es2018", "dom"],
+    "lib": [
+      "es2018",
+      "dom"
+    ],
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
