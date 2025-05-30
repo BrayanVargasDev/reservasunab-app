@@ -1,0 +1,90 @@
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+  <div class="perfil-container">
+    <div class="perfil-header">
+      <ion-avatar class="perfil-avatar">
+        <img
+          src="https://ionicframework.com/docs/img/demos/avatar.svg"
+          alt="Foto de perfil" />
+      </ion-avatar>
+      <h2>Mi Perfil</h2>
+      <p>Administra tu información personal</p>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        <form
+          [formGroup]="perfilForm"
+          (ngSubmit)="guardarCambios()">
+          <ion-item
+            [class.ion-invalid]="esCampoInvalido('nombre')"
+            [class.ion-valid]="!esCampoInvalido('nombre') && perfilForm.get('nombre')?.touched">
+            <ion-label position="stacked">Nombre completo</ion-label>
+            <ion-input
+              formControlName="nombre"
+              placeholder="Ingresa tu nombre"></ion-input>
+            <ion-note
+              slot="error"
+              *ngIf="esCampoInvalido('nombre')">
+              El nombre es requerido
+            </ion-note>
+          </ion-item>
+
+          <ion-item
+            [class.ion-invalid]="esCampoInvalido('email')"
+            [class.ion-valid]="!esCampoInvalido('email') && perfilForm.get('email')?.touched">
+            <ion-label position="stacked">Correo electrónico</ion-label>
+            <ion-input
+              type="email"
+              formControlName="email"
+              placeholder="Ingresa tu correo"></ion-input>
+            <ion-note
+              slot="error"
+              *ngIf="esCampoInvalido('email')">
+              Ingresa un correo electrónico válido
+            </ion-note>
+          </ion-item>
+
+          <ion-item
+            [class.ion-invalid]="esCampoInvalido('telefono')"
+            [class.ion-valid]="!esCampoInvalido('telefono') && perfilForm.get('telefono')?.touched">
+            <ion-label position="stacked">Teléfono</ion-label>
+            <ion-input
+              type="tel"
+              formControlName="telefono"
+              placeholder="Ingresa tu teléfono"></ion-input>
+            <ion-note
+              slot="error"
+              *ngIf="esCampoInvalido('telefono')">
+              El teléfono es requerido
+            </ion-note>
+          </ion-item>
+
+          <ion-item
+            [class.ion-invalid]="esCampoInvalido('direccion')"
+            [class.ion-valid]="!esCampoInvalido('direccion') && perfilForm.get('direccion')?.touched">
+            <ion-label position="stacked">Dirección</ion-label>
+            <ion-input
+              formControlName="direccion"
+              placeholder="Ingresa tu dirección"></ion-input>
+            <ion-note
+              slot="error"
+              *ngIf="esCampoInvalido('direccion')">
+              La dirección es requerida
+            </ion-note>
+          </ion-item>
+
+          <div class="ion-padding-top">
+            <ion-button
+              type="submit"
+              expand="block"
+              [disabled]="perfilForm.invalid">
+              Guardar Cambios
+            </ion-button>
+          </div>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

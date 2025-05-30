@@ -1,0 +1,147 @@
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+  <div class="pagos-container">
+    <ion-grid>
+      <ion-row>
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="3">
+          <ion-card class="summary-card">
+            <ion-card-content>
+              <div
+                class="summary-icon"
+                style="
+                  background-color: rgba(var(--ion-color-success-rgb), 0.1);
+                ">
+                <ion-icon
+                  name="checkmark-circle"
+                  color="success"></ion-icon>
+              </div>
+              <div class="summary-data">
+                <h5>Pagos Completados</h5>
+                <h2>{{ formatMonto(150000) }}</h2>
+                <p>1 transacción</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="3">
+          <ion-card class="summary-card">
+            <ion-card-content>
+              <div
+                class="summary-icon"
+                style="
+                  background-color: rgba(var(--ion-color-warning-rgb), 0.1);
+                ">
+                <ion-icon
+                  name="time"
+                  color="warning"></ion-icon>
+              </div>
+              <div class="summary-data">
+                <h5>Pagos Pendientes</h5>
+                <h2>{{ formatMonto(460000) }}</h2>
+                <p>3 transacciones</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="3">
+          <ion-card class="summary-card">
+            <ion-card-content>
+              <div
+                class="summary-icon"
+                style="
+                  background-color: rgba(var(--ion-color-danger-rgb), 0.1);
+                ">
+                <ion-icon
+                  name="close-circle"
+                  color="danger"></ion-icon>
+              </div>
+              <div class="summary-data">
+                <h5>Pagos Rechazados</h5>
+                <h2>{{ formatMonto(220000) }}</h2>
+                <p>1 transacción</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="3">
+          <ion-card class="summary-card">
+            <ion-card-content>
+              <div
+                class="summary-icon"
+                style="
+                  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+                ">
+                <ion-icon
+                  name="wallet"
+                  color="primary"></ion-icon>
+              </div>
+              <div class="summary-data">
+                <h5>Total</h5>
+                <h2>{{ formatMonto(830000) }}</h2>
+                <p>5 transacciones</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-card class="pagos-list-card">
+      <ion-card-header>
+        <ion-card-title>Registro de Pagos</ion-card-title>
+      </ion-card-header>
+      <ion-card-content class="ion-no-padding">
+        <ion-list lines="full">
+          @for (pago of pagos; track pago.id) {
+          <ion-item>
+            <ion-label>
+              <h2>{{ pago.concepto }}</h2>
+              <p>Fecha: {{ pago.fecha }} | Método: {{ pago.metodoPago }}</p>
+            </ion-label>
+            <ion-badge
+              slot="end"
+              [color]="getColorEstado(pago.estado)"
+              >{{ pago.estado }}</ion-badge
+            >
+            <div
+              slot="end"
+              class="monto-acciones">
+              <strong>{{ formatMonto(pago.monto) }}</strong>
+              @if (pago.estado === 'Pendiente') {
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="procesarPago(pago.id)">
+                <ion-icon name="arrow-forward-circle-outline"></ion-icon>
+              </ion-button>
+              }
+            </div>
+          </ion-item>
+          } @empty {
+          <ion-item>
+            <ion-label class="ion-text-center"
+              >No hay pagos registrados</ion-label
+            >
+          </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

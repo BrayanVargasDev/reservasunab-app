@@ -1,0 +1,70 @@
+<ion-content
+  [fullscreen]="true"
+  class="ion-padding">
+  <div class="dashboard-container">
+    <ion-card class="welcome-card">
+      <ion-card-header>
+        <ion-card-title>Bienvenido al Dashboard</ion-card-title>
+        <ion-card-subtitle>Panel de control principal</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>Aquí podrás gestionar todas las funcionalidades de la aplicación.</p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-grid>
+      <ion-row>
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="4">
+          <ion-card class="dashboard-card">
+            <ion-card-header>
+              <ion-icon
+                name="people-outline"
+                color="primary"></ion-icon>
+              <ion-card-title>Usuarios</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Total de usuarios: 125</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="4">
+          <ion-card class="dashboard-card">
+            <ion-card-header>
+              <ion-icon
+                name="card-outline"
+                color="success"></ion-icon>
+              <ion-card-title>Pagos</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Pagos pendientes: 12</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <ion-col
+          size="12"
+          size-md="6"
+          size-lg="4">
+          <ion-card class="dashboard-card">
+            <ion-card-header>
+              <ion-icon
+                name="key-outline"
+                color="warning"></ion-icon>
+              <ion-card-title>Permisos</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <p>Solicitudes: 5</p>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>
