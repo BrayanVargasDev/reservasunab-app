@@ -36,9 +36,10 @@ import {
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '@app/app.service';
 import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
 import { AuthService } from '@auth/services/auth.service';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -66,6 +67,7 @@ import { AuthService } from '@auth/services/auth.service';
 })
 export class LoginPage {
   private formBuilder = inject(FormBuilder);
+  private environment = environment;
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
@@ -97,7 +99,7 @@ export class LoginPage {
   }
 
   obtenerColorIcono(campo: string): string {
-    return this.formUtils.esCampoValido(this.loginForm, campo)
+    return this.formUtils.esCampoInvalido(this.loginForm, campo)
       ? 'danger'
       : 'dark';
   }
@@ -105,7 +107,7 @@ export class LoginPage {
   loginSaml() {
     this.disableForm();
     this.authService.setLoading(true);
-    const samlUrl = `${this.appService.samlUrl}/saml/${this.appService.tenantId}/login`;
+    const samlUrl = `${this.environment.samlUrl}/saml/${this.environment.tenantId}/login`;
     console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
     window.location.href = samlUrl;
   }

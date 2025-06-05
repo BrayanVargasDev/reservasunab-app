@@ -65,26 +65,26 @@ export class ResetPasswordPage implements OnInit {
 
   // Métodos para controlar las validaciones
   isFieldInvalid(fieldName: string): boolean {
-    return this.formUtils.esCampoValido(this.resetForm, fieldName) ?? true;
+    return this.formUtils.esCampoInvalido(this.resetForm, fieldName) ?? true;
   }
 
   isFieldValid(fieldName: string): boolean {
-    return this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false;
+    return this.formUtils.esCampoInvalido(this.resetForm, fieldName) ?? false;
   }
 
   getFieldClass(fieldName: string): { [key: string]: boolean } {
     return {
       'input-valid':
-        this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false,
+        this.formUtils.esCampoInvalido(this.resetForm, fieldName) ?? false,
       'input-invalid':
-        this.formUtils.esCampoValido(this.resetForm, fieldName) ?? false,
+        this.formUtils.esCampoInvalido(this.resetForm, fieldName) ?? false,
     };
   }
 
   getIconColor(fieldName: string): string {
-    if (this.formUtils.esCampoValido(this.resetForm, fieldName))
+    if (this.formUtils.esCampoInvalido(this.resetForm, fieldName))
       return 'danger';
-    if (this.formUtils.esCampoValido(this.resetForm, fieldName))
+    if (this.formUtils.esCampoInvalido(this.resetForm, fieldName))
       return 'success';
     return 'dark';
   }

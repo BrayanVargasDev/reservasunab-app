@@ -1,4 +1,4 @@
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   RouteReuseStrategy,
@@ -31,7 +31,7 @@ bootstrapApplication(AppComponent, {
       new QueryClient(),
       withDevtools(() => ({ loadDevtools: 'auto' })),
     ),
-    provideExperimentalZonelessChangeDetection(),
+    provideZonelessChangeDetection(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),

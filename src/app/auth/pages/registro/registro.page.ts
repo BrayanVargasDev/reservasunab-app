@@ -29,8 +29,8 @@ import {
 } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
-import { AppService } from 'src/app/app.service';
-import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.component";
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'app-registro',
@@ -51,8 +51,8 @@ import { WebIconComponent } from "../../../shared/components/web-icon/web-icon.c
     IonRow,
     IonCol,
     ActionButtonComponent,
-    WebIconComponent
-],
+    WebIconComponent,
+  ],
 })
 export class RegistroPage implements OnInit {
   registroForm!: FormGroup;
@@ -80,13 +80,13 @@ export class RegistroPage implements OnInit {
       },
       {
         validators: [FormUtils.sonCamposIguales('password', 'confirmPassword')],
-      },
+      }
     );
   }
 
   // Métodos para controlar las validaciones usando FormUtils
   isFieldInvalid(fieldName: string): boolean {
-    return !!this.formUtils.esCampoValido(this.registroForm, fieldName);
+    return !!this.formUtils.esCampoInvalido(this.registroForm, fieldName);
   }
 
   isFieldValid(fieldName: string): boolean {
@@ -109,14 +109,20 @@ export class RegistroPage implements OnInit {
 
   // Método específico para confirmar contraseña
   isConfirmPasswordInvalid(): boolean {
-    return this.isFieldInvalid('confirmPassword') ||
-           this.registroForm.hasError('camposNoIguales');
+    return (
+      this.isFieldInvalid('confirmPassword') ||
+      this.registroForm.hasError('camposNoIguales')
+    );
   }
 
   isConfirmPasswordValid(): boolean {
     const control = this.registroForm.get('confirmPassword');
-    return control !== null && control.valid && control.touched &&
-           !this.registroForm.hasError('camposNoIguales');
+    return (
+      control !== null &&
+      control.valid &&
+      control.touched &&
+      !this.registroForm.hasError('camposNoIguales')
+    );
   }
 
   getConfirmPasswordClass(): { [key: string]: boolean } {
@@ -137,13 +143,19 @@ export class RegistroPage implements OnInit {
     const messages: string[] = [];
 
     // Usar FormUtils para obtener el mensaje de error principal
-    const errorMessage = this.formUtils.obtenerErrorDelCampo(this.registroForm, fieldName);
+    const errorMessage = this.formUtils.obtenerErrorDelCampo(
+      this.registroForm,
+      fieldName
+    );
     if (errorMessage) {
       messages.push(errorMessage);
     }
 
     // Manejar el caso especial de confirmPassword
-    if (fieldName === 'confirmPassword' && this.registroForm.hasError('camposNoIguales')) {
+    if (
+      fieldName === 'confirmPassword' &&
+      this.registroForm.hasError('camposNoIguales')
+    ) {
       messages.push('Las contraseñas no coinciden');
     }
 

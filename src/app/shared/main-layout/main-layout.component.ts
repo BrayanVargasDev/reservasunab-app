@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { RouterOutlet } from '@angular/router';
 import { SideMenuComponent } from '../components/side-menu/side-menu.component';
 import { HeaderComponent } from '../components/header/header.component';
-import { inject } from '@angular/core';
-import { AppService } from 'src/app/app.service';
-import { RouterOutlet } from '@angular/router';
+import { AppService } from '@app/app.service';
 
 @Component({
   selector: 'app-main-layout',

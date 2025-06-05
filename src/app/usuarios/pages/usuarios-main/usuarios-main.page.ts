@@ -11,7 +11,13 @@ import {
 } from '@angular/core';
 import { IonicModule, IonChip } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -21,10 +27,13 @@ import {
   createOutline,
   personCircle,
   trashOutline,
+  caretDownOutline,
+  openOutline,
+  cameraOutline,
+  refreshOutline,
 } from 'ionicons/icons';
 import { Usuario } from '@usuarios/intefaces';
 
-// Importaciones de @tanstack/angular-table
 import {
   CellContext,
   ColumnDef,
@@ -41,8 +50,10 @@ import {
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { TableAvatarComponent } from '@shared/components/table-avatar/table-avatar.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
-import { AppService } from 'src/app/app.service';
-import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { UsuariosService } from '@app/usuarios/services/usuarios.service';
+import { ModalUsuariosComponent } from '../../components/modal-usuarios/modal-usuarios.component';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -53,19 +64,23 @@ import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.c
   imports: [
     IonicModule,
     CommonModule,
-    FormsModule, // Agregado para habilitar ngModel
+    FormsModule,
+    ReactiveFormsModule,
     FlexRenderDirective,
     ResponsiveTableDirective,
     TableExpansorComponent,
-    TableAvatarComponent,
     WebIconComponent,
+    ModalUsuariosComponent,
   ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },
 })
 export class UsuariosMainPage implements OnInit {
+  private usuariosService = inject(UsuariosService);
   public appService = inject(AppService);
+
+  protected readonly TableAvatarComponent = TableAvatarComponent;
 
   public ionChip =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
@@ -87,22 +102,21 @@ export class UsuariosMainPage implements OnInit {
       'celdaRol',
     );
 
-  public usuariosModal =
-    viewChild<ElementRef<HTMLDialogElement>>('usuariosModal');
+  // Método para el avatar component
+  private renderAvatar = (context: CellContext<Usuario, any>) => {
+    return flexRenderComponent(this.TableAvatarComponent, {
+      inputs: {
+        avatar: context.row.original.avatar,
+      },
+    });
+  };
 
-  public usuariosData = signal<Usuario[]>([]);
   public columnas = signal<ColumnDef<Usuario>[]>([
     {
       id: 'avatar',
       accessorKey: 'avatar',
       header: '',
-      cell: ({ row }) => {
-        return flexRenderComponent(TableAvatarComponent, {
-          inputs: {
-            avatar: row.original.avatar,
-          },
-        });
-      },
+      cell: this.renderAvatar,
       size: 50,
       meta: {
         className: 'avatar-column',
@@ -143,7 +157,10 @@ export class UsuariosMainPage implements OnInit {
     {
       id: 'fechaCreacion',
       header: 'Fecha Creación',
-      cell: (info) => info.getValue(),
+      cell: (info) => {
+        const fecha = info.getValue();
+        return new Date(fecha as string).toLocaleString();
+      },
       accessorFn: (row) => {
         return row.fechaCreacion.split(' ')[0];
       },
@@ -188,19 +205,35 @@ export class UsuariosMainPage implements OnInit {
 
   public filtroTexto: string = '';
 
-  public tituloModal = signal<string>('Agregar Usuario');
-  public colorModal = signal<string>('secondary');
-
   public tableState = signal({
     pagination: {
       pageIndex: 0,
       pageSize: 10,
     } as PaginationState,
     expanded: {} as ExpandedState,
+    globalFilter: '',
+  });
+
+  // Signal para los datos filtrados
+  public usuariosFiltrados = computed(() => {
+    const usuarios = this.usuariosQuery.data() || [];
+    if (!this.filtroTexto.trim()) {
+      return usuarios;
+    }
+
+    const filtroLower = this.filtroTexto.toLowerCase();
+    return usuarios.filter((usuario) => {
+      return (
+        usuario.nombre.toLowerCase().includes(filtroLower) ||
+        usuario.apellido.toLowerCase().includes(filtroLower) ||
+        usuario.email.toLowerCase().includes(filtroLower) ||
+        usuario.rol.toLowerCase().includes(filtroLower)
+      );
+    });
   });
 
   table = createAngularTable(() => ({
-    data: this.usuariosData(),
+    data: this.usuariosFiltrados(),
     columns: this.columnas(),
     state: this.tableState(),
     enableRowExpanding: true,
@@ -243,7 +276,6 @@ export class UsuariosMainPage implements OnInit {
   headerGroups = computed(() => this.table.getHeaderGroups());
 
   ngOnInit() {
-    this.cargarUsuarios();
     addIcons({
       trashOutline,
       createOutline,
@@ -252,195 +284,40 @@ export class UsuariosMainPage implements OnInit {
       chevronForwardOutline,
       chevronUpOutline,
       personCircle,
+      caretDownOutline,
+      openOutline,
+      cameraOutline,
+      refreshOutline,
     });
   }
 
-  cargarUsuarios() {
-    const generarFechaAleatoria = (): string => {
-      const hoy = new Date();
-      const fechaAnterior = new Date(hoy);
-      fechaAnterior.setFullYear(hoy.getFullYear() - 1);
-
-      const fechaAleatoria = new Date(
-        fechaAnterior.getTime() +
-          Math.random() * (hoy.getTime() - fechaAnterior.getTime()),
-      );
-
-      const dia = fechaAleatoria.getDate().toString().padStart(2, '0');
-      const mes = (fechaAleatoria.getMonth() + 1).toString().padStart(2, '0');
-      const anio = fechaAleatoria.getFullYear() - 2000;
-      const hora = fechaAleatoria.getHours() % 12 || 12;
-      const minutos = fechaAleatoria.getMinutes().toString().padStart(2, '0');
-      const ampm = fechaAleatoria.getHours() >= 12 ? 'PM' : 'AM';
-
-      return `${dia}/${mes}/${anio} ${hora}:${minutos} ${ampm}`;
-    };
-
-    const usuarios = [
-      {
-        id: 1,
-        nombre: 'Juan',
-        apellido: 'Pérez',
-        email: 'juan@ejemplo.com',
-        rol: 'Admin',
-        estado: 'Activo',
-        ultimoAcceso: generarFechaAleatoria(),
-        tipoUsuario: 'Interno',
-        documento: '12345678',
-        fechaCreacion: generarFechaAleatoria(),
-        avatar: '',
-        viendoDetalles: false,
-        telefono: '987654321',
-        direccion: 'Calle Falsa 123',
-        fechaNacimiento: '01/01/1990',
-      },
-      {
-        id: 2,
-        nombre: 'María',
-        apellido: 'López',
-        email: 'maria@ejemplo.com',
-        rol: 'Usuario',
-        estado: 'Activo',
-        ultimoAcceso: generarFechaAleatoria(),
-        tipoUsuario: 'Externo',
-        documento: '87654321',
-        fechaCreacion: generarFechaAleatoria(),
-        avatar: '',
-        viendoDetalles: false,
-        telefono: '123456789',
-        direccion: 'Calle Falsa 123',
-        fechaNacimiento: '01/01/1990',
-      },
-      {
-        id: 3,
-        nombre: 'Carlos',
-        apellido: 'Gómez',
-        email: 'carlos@ejemplo.com',
-        rol: 'Editor',
-        estado: 'Inactivo',
-        ultimoAcceso: generarFechaAleatoria(),
-        tipoUsuario: 'Interno',
-        documento: '23456789',
-        fechaCreacion: generarFechaAleatoria(),
-        avatar: '',
-        viendoDetalles: false,
-        telefono: '987654321',
-        direccion: 'Calle Falsa 123',
-        fechaNacimiento: '01/01/1990',
-      },
-      {
-        id: 4,
-        nombre: 'Ana',
-        apellido: 'Ramírez',
-        email: 'ana@ejemplo.com',
-        rol: 'Usuario',
-        estado: 'Activo',
-        ultimoAcceso: generarFechaAleatoria(),
-        tipoUsuario: 'Externo',
-        documento: '34567890',
-        fechaCreacion: generarFechaAleatoria(),
-        avatar: '',
-        viendoDetalles: false,
-        telefono: '987654321',
-        direccion: 'Calle Falsa 123',
-        fechaNacimiento: '01/01/1990',
-      },
-      {
-        id: 5,
-        nombre: 'Roberto',
-        apellido: 'Sánchez',
-        email: 'roberto@ejemplo.com',
-        rol: 'Editor',
-        estado: 'Activo',
-        ultimoAcceso: generarFechaAleatoria(),
-        tipoUsuario: 'Interno',
-        documento: '45678901',
-        fechaCreacion: generarFechaAleatoria(),
-        avatar: '',
-        viendoDetalles: false,
-        telefono: '123456789',
-        direccion: 'Calle Falsa 123',
-        fechaNacimiento: '01/01/1990',
-      },
-    ];
-
-    this.usuariosData.set(usuarios);
+  get usuariosQuery() {
+    return this.usuariosService.queryUsuarios;
   }
 
   aplicarFiltro() {
-    if (!this.filtroTexto.trim()) {
-      return;
-    }
-
-    const filtroLower = this.filtroTexto.toLowerCase();
-    const usuariosFiltrados = this.usuariosData().filter((usuario) => {
-      return (
-        usuario.nombre.toLowerCase().includes(filtroLower) ||
-        usuario.apellido.toLowerCase().includes(filtroLower) ||
-        usuario.email.toLowerCase().includes(filtroLower) ||
-        usuario.rol.toLowerCase().includes(filtroLower)
-      );
-    });
-
-    this.usuariosData.set(usuariosFiltrados);
+    // El filtro se aplica automáticamente a través del computed usuariosFiltrados
+    // No necesitamos hacer nada más aquí, ya que la tabla usa los datos filtrados
   }
 
   limpiarFiltro() {
-    if (this.filtroTexto.trim()) {
-      this.filtroTexto = '';
-      this.cargarUsuarios();
-    }
-  }
-
-  eliminarUsuario(id: number) {
-    const usuariosActualizados = this.usuariosData().filter((u) => u.id !== id);
-    this.usuariosData.set(usuariosActualizados);
-  }
-
-  async cerrarModal() {
-    if (this.usuariosModal()) {
-      this.usuariosModal()!.nativeElement.close();
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    this.tituloModal.set('Agregar Usuario');
-    this.colorModal.set('secondary');
-  }
-
-  agregarUsuario() {
-    this.tituloModal.set('Agregar Usuario');
-    this.colorModal.set('secondary');
-
-    if (this.usuariosModal()) {
-      this.usuariosModal()!.nativeElement.showModal();
-    }
-  }
-
-  editarUsuario(usuario: Usuario) {
-    this.tituloModal.set('Editar Usuario');
-    this.colorModal.set('accent');
-
-    // Aquí podrías cargar los datos del usuario en un formulario para editar
-    if (this.usuariosModal()) {
-      this.usuariosModal()!.nativeElement.showModal();
-    }
+    this.filtroTexto = '';
   }
 
   verDetalles(id: number, expanded: boolean) {
-    this.usuariosData.update((usuarios) =>
-      usuarios.map((usuario) => {
-        if (usuario.id === id) {
-          return {
-            ...usuario,
-            viendoDetalles: expanded,
-          };
-        }
-        return usuario;
-      }),
-    );
+    // this.usuariosData.update((usuarios) =>
+    //   usuarios.map((usuario) => {
+    //     if (usuario.id === id) {
+    //       return {
+    //         ...usuario,
+    //         viendoDetalles: expanded,
+    //       };
+    //     }
+    //     return usuario;
+    //   }),
+    // );
   }
 
-  // Método para expandir/contraer una fila manualmente desde el botón
   toggleRowExpanded(id: number) {
     const rowId = String(id);
     const currentExpanded =
@@ -462,4 +339,25 @@ export class UsuariosMainPage implements OnInit {
       String(id)
     ];
   }
+
+  // * Gestión del usuario
+  crearUsuario() {
+    this.usuariosService.abrirModal();
+  }
+
+  editarUsuario(usuario: Usuario) {
+    this.usuariosService.setUsuarioAEditar(usuario);
+    this.usuariosService.setModoEdicion(true);
+    this.usuariosService.abrirModal();
+  }
+
+  cambiarRolUsuario(usuario: Usuario, nuevoRol: string) {}
+
+  cambiarEstadoUsuario(usuario: Usuario) {}
+
+  refrescarDatos() {
+    this.usuariosService.queryUsuarios.refetch();
+  }
+
+  eliminarUsuario(id: number) {}
 }

@@ -32,7 +32,7 @@
               lines="none"
               [ngClass]="{
                 'auth-item': true,
-                'auth-item--invalid': formUtils.esCampoValido(loginForm, 'email'),
+                'auth-item--invalid': formUtils.esCampoInvalido(loginForm, 'email'),
                 }">
               <ion-icon
                 name="mail-outline"
@@ -54,8 +54,8 @@
             <div class="error-container">
               <ion-text
                 class="error-text"
-                [class.visible]="formUtils.esCampoValido(loginForm, 'email')">
-                {{ formUtils.esCampoValido(loginForm, 'email') ?
+                [class.visible]="formUtils.esCampoInvalido(loginForm, 'email')">
+                {{ formUtils.esCampoInvalido(loginForm, 'email') ?
                 formUtils.obtenerErrorDelCampo(loginForm, 'email') : ' ' }}
               </ion-text>
             </div>
@@ -65,7 +65,7 @@
             lines="none"
             [ngClass]="{
               'auth-item': true,
-              'auth-item--invalid': formUtils.esCampoValido(loginForm, 'password'),
+              'auth-item--invalid': formUtils.esCampoInvalido(loginForm, 'password'),
             }">
             <ion-icon
               name="key-outline"
@@ -91,8 +91,8 @@
           <div class="error-container">
             <ion-text
               class="error-text"
-              [class.visible]="formUtils.esCampoValido(loginForm, 'password')">
-              {{ formUtils.esCampoValido(loginForm, 'password') ?
+              [class.visible]="formUtils.esCampoInvalido(loginForm, 'password')">
+              {{ formUtils.esCampoInvalido(loginForm, 'password') ?
               formUtils.obtenerErrorDelCampo(loginForm, 'password') : ' ' }}
             </ion-text>
           </div>
@@ -209,15 +209,15 @@
             placeholder="tu@email.com"
             [ngClass]="{
                     'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
-                    'border-error focus:ring-error focus:border-error': formUtils.esCampoValido(loginForm, 'email'),
-                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoValido(loginForm, 'email')
+                    'border-error focus:ring-error focus:border-error': formUtils.esCampoInvalido(loginForm, 'email'),
+                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoInvalido(loginForm, 'email')
                   }" />
         </div>
-        <div
-          *ngIf="formUtils.esCampoValido(loginForm, 'email')"
-          class="text-sm text-error">
+        @if (formUtils.esCampoInvalido(loginForm, 'email')) {
+        <div class="text-sm text-error">
           {{ formUtils.obtenerErrorDelCampo(loginForm, 'email') }}
         </div>
+        }
       </div>
 
       <div class="space-y-2">
@@ -237,8 +237,8 @@
             placeholder="••••••••"
             [ngClass]="{
                     'w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
-                    'border-error focus:ring-error focus:border-error': formUtils.esCampoValido(loginForm, 'password'),
-                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoValido(loginForm, 'password')
+                    'border-error focus:ring-error focus:border-error': formUtils.esCampoInvalido(loginForm, 'password'),
+                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoInvalido(loginForm, 'password')
                   }" />
           <button
             type="button"
@@ -256,11 +256,11 @@
             }
           </button>
         </div>
-        <div
-          *ngIf="formUtils.esCampoValido(loginForm, 'password')"
-          class="text-sm text-error">
+        @if (formUtils.esCampoInvalido(loginForm, 'password')) {
+        <div class="text-sm text-error">
           {{ formUtils.obtenerErrorDelCampo(loginForm, 'password') }}
         </div>
+        }
       </div>
 
       <div class="text-right">

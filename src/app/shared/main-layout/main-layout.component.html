@@ -1,26 +1,23 @@
 @if (appService.esMovil()) {
 <ion-content id="wrapper-principal">
   <ion-row class="app-content">
-    <ion-col
-      class="menu-wrapper"
-      size="1">
-    </ion-col>
-    <ion-col
-      size="11"
-      class="ion-no-padding"
-      id="main-content-col">
+    <ion-col class="menu-wrapper" size="1"> </ion-col>
+    <ion-col size="11" class="ion-no-padding" id="main-content-col">
       <ion-router-outlet id="main-content"></ion-router-outlet>
     </ion-col>
   </ion-row>
 </ion-content>
 } @else {
-<div class="flex flex-col w-full h-screen bg-base-300">
+<div class="flex flex-col w-full h-screen bg-base-300 relative">
   <app-header></app-header>
+
   <div class="flex grow gap-1 w-full p-2 md:p-4 overflow-hidden">
     <div class="hidden md:flex md:col-span-1 flex-col h-full">
       <app-side-menu></app-side-menu>
     </div>
-    <div class="flex flex-col w-full h-full max-h-[100%] overflow-hidden relative">
+    <div
+      class="flex flex-col w-full h-full max-h-[100%] overflow-hidden relative"
+    >
       <router-outlet class="flex"></router-outlet>
     </div>
   </div>
