@@ -108,7 +108,6 @@ export class LoginPage {
     this.disableForm();
     this.authService.setLoading(true);
     const samlUrl = `${this.environment.samlUrl}/saml/${this.environment.tenantId}/login`;
-    console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
     window.location.href = samlUrl;
   }
 

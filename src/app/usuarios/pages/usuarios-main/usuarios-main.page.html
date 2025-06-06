@@ -1,19 +1,16 @@
 @if (!appService.esMovil()) {
-<ng-template
-  #ionChip
-  let-context>
+<ng-template #ionChip let-context>
   <ion-chip
     [color]="context.getValue() === 'Activo' ? 'success' : 'danger'"
     [outline]="true"
     (click)="cambiarEstadoUsuario(context.row.original)"
-    class="cursor-pointer">
+    class="cursor-pointer"
+  >
     {{ context.getValue() }}
   </ion-chip>
 </ng-template>
 
-<ng-template
-  #chipWeb
-  let-context>
+<ng-template #chipWeb let-context>
   <div
     [attr.data-tip]="context.getValue() === 'Activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
@@ -21,30 +18,26 @@
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
-    (click)="cambiarEstadoUsuario(context.row.original)">
+    (click)="cambiarEstadoUsuario(context.row.original)"
+  >
     {{ context.getValue() }}
   </div>
 </ng-template>
 
-<ng-template
-  #celdaNombre
-  let-context>
+<ng-template #celdaNombre let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span>{{ context.getValue() }}</span>
     <button
       class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
       (click)="editarUsuario(context.row.original)"
-      data-tip="Editar usuario">
-      <app-web-icon
-        estilos="h-4 w-4"
-        nombreIcono="open-outline"></app-web-icon>
+      data-tip="Editar usuario"
+    >
+      <app-web-icon estilos="h-4 w-4" nombreIcono="open-outline"></app-web-icon>
     </button>
   </div>
 </ng-template>
 
-<ng-template
-  #celdaRol
-  let-context>
+<ng-template #celdaRol let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="capitalize">{{ context.getValue() }}</span>
     <div class="dropdown dropdown-left">
@@ -52,20 +45,24 @@
         role="button"
         tabindex="0"
         class="btn btn-soft btn-secondary w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
-        data-tip="Cambiar rol">
+        data-tip="Cambiar rol"
+      >
         <app-web-icon
           estilos="h-4 w-4"
-          nombreIcono="caret-down-outline"></app-web-icon>
+          nombreIcono="caret-down-outline"
+        ></app-web-icon>
       </button>
       <ul
         tabindex="0"
         class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
-        style="position-anchor: --anchor-1">
+        style="position-anchor: --anchor-1"
+      >
         <li>
           <button
             type="button"
             class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Administrador')">
+            (click)="cambiarRolUsuario(context.row.original, 'Administrador')"
+          >
             Administrador
           </button>
         </li>
@@ -73,7 +70,8 @@
           <button
             type="button"
             class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Docente')">
+            (click)="cambiarRolUsuario(context.row.original, 'Docente')"
+          >
             Docente
           </button>
         </li>
@@ -81,17 +79,20 @@
           <button
             type="button"
             class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Estudiante')">
+            (click)="cambiarRolUsuario(context.row.original, 'Estudiante')"
+          >
             Estudiante
           </button>
         </li>
         <li class="flex justify-between items-center w-full">
           <button
-            class="btn btn-soft btn-accent w-full h-8 btn-sm flex justify-center items-center">
+            class="btn btn-soft btn-accent w-full h-8 btn-sm flex justify-center items-center"
+          >
             <span>Crear un rol</span>
             <app-web-icon
               estilos="h-4 w-4"
-              nombreIcono="open-outline"></app-web-icon>
+              nombreIcono="open-outline"
+            ></app-web-icon>
           </button>
         </li>
       </ul>
@@ -100,7 +101,8 @@
 </ng-template>
 
 <div
-  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300">
+  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+>
   <div class="flex items-center">
     <h2 class="font-bold text-4xl">Usuarios</h2>
   </div>
@@ -110,22 +112,21 @@
       placeholder="Buscar por nombre, email o rol..."
       class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm"
       [(ngModel)]="filtroTexto"
-      (input)="aplicarFiltro()" />
+      (input)="aplicarFiltro()"
+    />
     <button
       class="btn btn-secondary h-11 rounded-box"
       (click)="refrescarDatos()"
-      [disabled]="usuariosQuery.isFetching()">
+      [disabled]="usuariosQuery.isFetching()"
+    >
       <app-web-icon
         estilos="h-6 w-6"
-        nombreIcono="refresh-outline"></app-web-icon>
+        nombreIcono="refresh-outline"
+      ></app-web-icon>
       @if (usuariosQuery.isFetching()) { Actualizando... } @else { Actualizar }
     </button>
-    <button
-      (click)="crearUsuario()"
-      class="btn btn-primary h-11 rounded-box">
-      <app-web-icon
-        estilos="h-6 w-6"
-        nombreIcono="add-outline"></app-web-icon>
+    <button (click)="crearUsuario()" class="btn btn-primary h-11 rounded-box">
+      <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
       Nuevo Usuario
     </button>
   </div>
@@ -140,11 +141,10 @@
 <div class="alert alert-error mb-4">
   <app-web-icon
     estilos="h-6 w-6"
-    nombreIcono="alert-circle-outline"></app-web-icon>
+    nombreIcono="alert-circle-outline"
+  ></app-web-icon>
   <span>Error al cargar los usuarios. </span>
-  <button
-    class="btn btn-sm btn-outline"
-    (click)="refrescarDatos()">
+  <button class="btn btn-sm btn-outline" (click)="refrescarDatos()">
     Reintentar
   </button>
 </div>
@@ -153,7 +153,8 @@
   responsiveTable
   #responsiveWeb="responsiveTable"
   [table]="table()"
-  class="table table-sm sm:table-md rounded-box bg-base-100 w-full overflow-y-auto">
+  class="table table-sm sm:table-md rounded-box bg-base-100 w-full overflow-y-auto"
+>
   <thead>
     @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
     <tr>
@@ -163,13 +164,15 @@
       (!header.isPlaceholder) {
       <th
         [class]="header.column.columnDef.meta?.className || ''"
-        [style.width]="header.getSize()">
+        [style.width]="header.getSize()"
+      >
         <ng-container
           *flexRender="
-                    header.column.columnDef.header;
-                    props: header.getContext();
-                    let header
-                  ">
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
           <div [innerHTML]="header"></div>
         </ng-container>
       </th>
@@ -180,30 +183,34 @@
   <tbody>
     @if (!rows().length) {
     <tr>
-      <td
-        [attr.colspan]="columnas().length"
-        class="text-center">
-        No se encontraron resultados. Intenta con otro filtro.
+      <td [attr.colspan]="columnas().length" class="text-center">
+        No se encontraron resultados.
       </td>
     </tr>
     } @else { @for (row of rows(); track row.id) {
     <tr
-      [ngClass]="{ 'hover:bg-base-200': true, 'bg-base-200': isRowExpanded(+row.id) }"
-      [class.expanded]="isRowExpanded(+row.id)">
+      [ngClass]="{
+        'hover:bg-base-200': true,
+        'bg-base-200': isRowExpanded(+row.id)
+      }"
+      [class.expanded]="isRowExpanded(+row.id)"
+    >
       @if (responsiveWeb.hiddenColumnIds().size !== 0) {
       <td class="!pe-0">
         <app-table-expansor
           [isExpanded]="isRowExpanded(+row.id)"
-          (toggleExpand)="row.toggleExpanded()"></app-table-expansor>
+          (toggleExpand)="row.toggleExpanded()"
+        ></app-table-expansor>
       </td>
       } @for (cell of row.getVisibleCells(); track cell.id) {
       <td>
         <ng-container
           *flexRender="
-              cell.column.columnDef.cell;
-              props: cell.getContext();
-              let cell
-            ">
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
           <div [innerHTML]="cell"></div>
         </ng-container>
       </td>
@@ -224,10 +231,11 @@
             <span>
               <ng-container
                 *flexRender="
-                        responsiveWeb.getCell(col, row).column.columnDef.cell;
-                        props: responsiveWeb.getCell(col, row).getContext();
-                        let cell
-                      ">
+                  responsiveWeb.getCell(col, row).column.columnDef.cell;
+                  props: responsiveWeb.getCell(col, row).getContext();
+                  let cell
+                "
+              >
                 <div [innerHTML]="cell"></div>
               </ng-container>
             </span>
@@ -240,5 +248,10 @@
     } } }
   </tbody>
 </table>
-<usuarios-gestion-modal></usuarios-gestion-modal>
+
+<ng-template #alertaUsuarios></ng-template>
+
+<usuarios-gestion-modal
+  (guardadoExitoso)="usuarioGuardadoExitoso($event)"
+></usuarios-gestion-modal>
 } }

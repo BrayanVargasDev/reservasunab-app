@@ -5,6 +5,7 @@ export interface Usuario {
   tipoUsuario: string;
   telefono: string;
   rol: string;
+  tipoDocumento: number;
   documento: string;
   nombre: string;
   apellido: string;

@@ -17,7 +17,6 @@ export interface Alerta {
 @Injectable({ providedIn: 'root' })
 export class AlertasService {
   show(alert: Alerta): ComponentRef<AlertaComponent> {
-    console.log('Mostrando alerta:', alert.referencia);
     alert.referencia.clear();
 
     const alertRef = alert.referencia.createComponent(AlertaComponent);

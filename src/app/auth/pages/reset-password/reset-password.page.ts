@@ -24,8 +24,8 @@ import { addIcons } from 'ionicons';
 import { mailOutline, checkmarkCircle } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
-import { AppService } from 'src/app/app.service';
-import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'app-reset-password',

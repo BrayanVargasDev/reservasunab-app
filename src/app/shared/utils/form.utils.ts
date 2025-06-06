@@ -21,8 +21,6 @@ export class FormUtils {
   static patronSoloNumeros = '^[0-9]+$';
 
   static obtenerTextoDelError(errors: ValidationErrors) {
-    console.log('Errores', errors);
-
     const opcionesErrerores: { [key: string]: any } = {
       required: 'Este campo es requerido',
       minlength: `Mínimo de ${errors['minlength']?.requiredLength} caracteres.`,
@@ -33,7 +31,6 @@ export class FormUtils {
     };
 
     for (const key of Object.keys(errors)) {
-      console.log(key);
       if (!(key in opcionesErrerores)) {
         return `Error de validación no controlado ${key}`;
       }
@@ -56,7 +53,7 @@ export class FormUtils {
 
   static obtenerErrorDelCampo(
     form: FormGroup,
-    fieldName: string
+    fieldName: string,
   ): string | null {
     if (!form.controls[fieldName]) return null;
 
@@ -93,11 +90,11 @@ export class FormUtils {
   }
 
   static async validarRespuestaServidor(
-    control: AbstractControl
+    control: AbstractControl,
   ): Promise<ValidationErrors | null> {
     const valorFormulario = control.value;
 
-    const estaDisponible = validarEmailTomado(valorFormulario.trim());
+    const estaDisponible = await validarEmailTomado(valorFormulario.trim());
 
     if (!estaDisponible) {
       return {

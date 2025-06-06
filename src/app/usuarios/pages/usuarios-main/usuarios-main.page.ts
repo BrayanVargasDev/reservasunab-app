@@ -8,6 +8,7 @@ import {
   inject,
   signal,
   viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import { IonicModule, IonChip } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -54,6 +55,7 @@ import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { UsuariosService } from '@app/usuarios/services/usuarios.service';
 import { ModalUsuariosComponent } from '../../components/modal-usuarios/modal-usuarios.component';
+import { AlertasService } from '../../../shared/services/alertas.service';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -78,10 +80,14 @@ import { ModalUsuariosComponent } from '../../components/modal-usuarios/modal-us
 })
 export class UsuariosMainPage implements OnInit {
   private usuariosService = inject(UsuariosService);
+  private alertaService = inject(AlertasService);
   public appService = inject(AppService);
 
   protected readonly TableAvatarComponent = TableAvatarComponent;
 
+  public alertaUsuarios = viewChild.required('alertaUsuarios', {
+    read: ViewContainerRef,
+  });
   public ionChip =
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'ionChip',
@@ -127,7 +133,7 @@ export class UsuariosMainPage implements OnInit {
       id: 'nombreCompleto',
       accessorKey: 'nombreCompleto',
       header: 'Nombre',
-      accessorFn: (row) => `${row.nombre} ${row.apellido}`,
+      accessorFn: row => `${row.nombre} ${row.apellido}`,
       cell: () => this.celdaNombre(),
       meta: {
         className: 'nombre-column',
@@ -138,7 +144,7 @@ export class UsuariosMainPage implements OnInit {
       id: 'email',
       header: 'Email',
       accessorKey: 'email',
-      cell: (info) => info.getValue(),
+      cell: info => info.getValue(),
       meta: {
         className: 'email-column',
         priority: 3,
@@ -157,11 +163,11 @@ export class UsuariosMainPage implements OnInit {
     {
       id: 'fechaCreacion',
       header: 'Fecha Creación',
-      cell: (info) => {
+      cell: info => {
         const fecha = info.getValue();
         return new Date(fecha as string).toLocaleString();
       },
-      accessorFn: (row) => {
+      accessorFn: row => {
         return row.fechaCreacion.split(' ')[0];
       },
       accessorKey: 'fechaCreacion',
@@ -222,7 +228,7 @@ export class UsuariosMainPage implements OnInit {
     }
 
     const filtroLower = this.filtroTexto.toLowerCase();
-    return usuarios.filter((usuario) => {
+    return usuarios.filter(usuario => {
       return (
         usuario.nombre.toLowerCase().includes(filtroLower) ||
         usuario.apellido.toLowerCase().includes(filtroLower) ||
@@ -237,16 +243,16 @@ export class UsuariosMainPage implements OnInit {
     columns: this.columnas(),
     state: this.tableState(),
     enableRowExpanding: true,
-    getRowId: (row) => String(row.id),
+    getRowId: row => String(row.id),
     getSubRows: () => [],
-    onExpandedChange: (updater) => {
+    onExpandedChange: updater => {
       const currentExpanded = this.tableState().expanded;
 
       const newExpanded =
         typeof updater === 'function' ? updater(currentExpanded) : updater;
 
       const changedId = Object.keys(newExpanded).find(
-        (id) =>
+        id =>
           (newExpanded as Record<string, boolean>)[id] !==
           (currentExpanded as Record<string, boolean>)[id],
       );
@@ -258,7 +264,7 @@ export class UsuariosMainPage implements OnInit {
         );
       }
 
-      this.tableState.update((state) => ({
+      this.tableState.update(state => ({
         ...state,
         expanded: newExpanded,
       }));
@@ -323,7 +329,7 @@ export class UsuariosMainPage implements OnInit {
     const currentExpanded =
       (this.tableState().expanded as Record<string, boolean>)[rowId] || false;
 
-    this.tableState.update((state) => ({
+    this.tableState.update(state => ({
       ...state,
       expanded: {
         ...(state.expanded as object),
@@ -360,4 +366,24 @@ export class UsuariosMainPage implements OnInit {
   }
 
   eliminarUsuario(id: number) {}
+
+  usuarioGuardadoExitoso(event: boolean) {
+    const estilosAlerta =
+      'fixed flex p-4 transition-all ease-in-out bottom-4 right-4';
+    if (event) {
+      this.alertaService.success(
+        'Usuario guardado exitosamente.',
+        50000,
+        this.alertaUsuarios(),
+        estilosAlerta,
+      );
+    } else {
+      this.alertaService.error(
+        'Error al guardar el usuario. Por favor, inténtalo de nuevo.',
+        50000,
+        this.alertaUsuarios(),
+        estilosAlerta,
+      );
+    }
+  }
 }
