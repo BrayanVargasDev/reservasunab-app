@@ -31,7 +31,7 @@ import { UsuariosService } from '@usuarios/services/usuarios.service';
 import { AppService } from '@app/app.service';
 import { InputSoloNumerosDirective } from '@shared/directives/input-solo-numeros.directive';
 import { AlertasService } from '@shared/services/alertas.service';
-import { SaveUsuarioResponse } from '../../intefaces/save-usuario-response.interface';
+import { SaveUsuarioResponse } from '@usuarios/intefaces';
 
 @Component({
   selector: 'usuarios-gestion-modal',

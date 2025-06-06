@@ -1,6 +1,6 @@
 import { Usuario } from '../intefaces';
 import { environment } from '@environments/environment';
-import { SaveUsuarioResponse } from '../intefaces/save-usuario-response.interface';
+import { SaveUsuarioResponse } from '../intefaces';
 
 const BASE_URL = environment.apiUrl;
 
