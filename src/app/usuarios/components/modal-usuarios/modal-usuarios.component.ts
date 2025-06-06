@@ -114,34 +114,9 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
       field: this.fechaNacimientoPicker()?.nativeElement,
       container: this.contenedorCalendario()?.nativeElement,
       yearRange: [1950, moment().year() - 16],
-      i18n: {
-        previousMonth: 'Mes Anterior',
-        nextMonth: 'Mes Siguiente',
-        months: [
-          'Enero',
-          'Febrero',
-          'Marzo',
-          'Abril',
-          'Mayo',
-          'Junio',
-          'Julio',
-          'Agosto',
-          'Septiembre',
-          'Octubre',
-          'Noviembre',
-          'Diciembre',
-        ],
-        weekdays: [
-          'Domingo',
-          'Lunes',
-          'Martes',
-          'Miércoles',
-          'Jueves',
-          'Viernes',
-          'Sábado',
-        ],
-        weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-      },
+      maxDate: moment().subtract(16, 'years').toDate(),
+      i18n: this.usuarioService.i18nDatePicker(),
+      defaultDate: moment().subtract(16, 'years').toDate(),
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
         const fechaFormateada = moment(date).format('DD/MM/YYYY');
@@ -208,7 +183,6 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
   }
 
   public enviarFormulario() {
-    console.log('Formulario enviado:', this.usuarioForm.value);
     if (this.usuarioForm.invalid) {
       this.usuarioForm.markAllAsTouched();
       return;
@@ -216,19 +190,25 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
 
     let usuario = null;
 
+    const fechaNacimiento = moment(
+      this.usuarioForm.value.fechaNacimiento,
+      'DD/MM/YYYY',
+    ).format('YYYY-DD-MM');
+
     if (this.usuarioService.modoEdicion()) {
       usuario = {
         ...this.usuarioService.usuarioAEditar(),
         ...this.usuarioForm.value,
-        fechaNacimiento: moment(
-          this.usuarioForm.value.fechaNacimiento,
-          'DD/MM/YYYY',
-        ).format('YYYY-DD-MM'),
+        fechaNacimiento,
       };
     } else {
-      usuario = this.usuarioForm.value;
+      usuario = {
+        ...this.usuarioForm.value,
+        fechaNacimiento,
+      };
     }
 
+    console.log('Formulario enviado:', usuario);
     this.usuarioService
       .guardarUsuario(usuario)
       .then((response: SaveUsuarioResponse) => {

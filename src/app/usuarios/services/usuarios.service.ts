@@ -25,6 +25,35 @@ export class UsuariosService {
 
   private _usuarioAEditar = signal<Usuario | null>(null);
   public usuarioAEditar = this._usuarioAEditar.asReadonly();
+  private _i18nDatePicker = signal({
+    previousMonth: 'Mes Anterior',
+    nextMonth: 'Mes Siguiente',
+    months: [
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
+    ],
+    weekdays: [
+      'Domingo',
+      'Lunes',
+      'Martes',
+      'Miércoles',
+      'Jueves',
+      'Viernes',
+      'Sábado',
+    ],
+    weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+  });
+  public i18nDatePicker = this._i18nDatePicker.asReadonly();
 
   public setUsuarioAEditar(usuario: Usuario | null) {
     this._usuarioAEditar.set(usuario);
@@ -58,5 +87,27 @@ export class UsuariosService {
 
   public guardarUsuario(usuario: Usuario) {
     return saveUsuario(usuario, this._modoEdicion(), true);
+  }
+
+  public async eliminarUsuario(usuarioId: number): Promise<void> {
+    return deleteUsuario(usuarioId);
+  }
+
+  public async activarUsuario(usuarioId: number): Promise<Usuario> {
+    return updateUsuarioEstado(usuarioId, 'activo');
+  }
+
+  public async cambiarRolUsuario(
+    usuarioId: number,
+    nuevoRol: string,
+  ): Promise<Usuario> {
+    return updateUsuarioRol(usuarioId, nuevoRol);
+  }
+
+  public async cambiarEstadoUsuario(
+    usuarioId: number,
+    nuevoEstado: string,
+  ): Promise<Usuario> {
+    return updateUsuarioEstado(usuarioId, nuevoEstado);
   }
 }

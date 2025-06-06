@@ -357,15 +357,136 @@ export class UsuariosMainPage implements OnInit {
     this.usuariosService.abrirModal();
   }
 
-  cambiarRolUsuario(usuario: Usuario, nuevoRol: string) {}
+  cambiarRolUsuario(usuario: Usuario, nuevoRol: string) {
+    this.alertaService
+      .confirmarAccion(
+        `¿Estás seguro de que quieres cambiar el rol de ${usuario.nombre} ${usuario.apellido} a ${nuevoRol}?`,
+        this.alertaUsuarios(),
+        'Cambiar rol de usuario',
+        'info'
+      )
+      .then((confirmado) => {
+        if (confirmado) {
+          this.usuariosService
+            .cambiarRolUsuario(usuario.id, nuevoRol)
+            .then(() => {
+              this.alertaService.success(
+                'Rol de usuario actualizado exitosamente.',
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+              this.usuariosService.queryUsuarios.refetch();
+            })
+            .catch((error: any) => {
+              console.error('Error al cambiar el rol del usuario:', error);
+              this.alertaService.error(
+                'Error al cambiar el rol del usuario. Por favor, inténtalo de nuevo.',
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+            });
+        }
+      });
+  }
 
-  cambiarEstadoUsuario(usuario: Usuario) {}
+  cambiarEstadoUsuario(usuario: Usuario) {
+    const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
+    
+    this.alertaService
+      .confirmarAccion(
+        `¿Estás seguro de que quieres ${accion} a ${usuario.nombre} ${usuario.apellido}?`,
+        this.alertaUsuarios(),
+        `${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario`,
+        nuevoEstado === 'activo' ? 'success' : 'warning'
+      )
+      .then((confirmado) => {
+        if (confirmado) {
+          this.usuariosService
+            .cambiarEstadoUsuario(usuario.id, nuevoEstado)
+            .then(() => {
+              this.alertaService.success(
+                `Usuario ${accion === 'activar' ? 'activado' : 'desactivado'} exitosamente.`,
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+              this.usuariosService.queryUsuarios.refetch();
+            })
+            .catch((error: any) => {
+              console.error(`Error al ${accion} el usuario:`, error);
+              this.alertaService.error(
+                `Error al ${accion} el usuario. Por favor, inténtalo de nuevo.`,
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+            });
+        }
+      });
+  }
 
   refrescarDatos() {
     this.usuariosService.queryUsuarios.refetch();
   }
 
-  eliminarUsuario(id: number) {}
+  eliminarUsuario(id: number) {
+    this.alertaService
+      .confirmarEliminacion(
+        '¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.',
+        this.alertaUsuarios(),
+        'Eliminar usuario'
+      )
+      .then((confirmado) => {
+        if (confirmado) {
+          this.usuariosService
+            .eliminarUsuario(id)
+            .then(() => {
+              this.alertaService.success(
+                'Usuario eliminado exitosamente.',
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+              this.usuariosService.queryUsuarios.refetch();
+            })
+            .catch((error: any) => {
+              console.error('Error al eliminar el usuario:', error);
+              this.alertaService.error(
+                'Error al eliminar el usuario. Por favor, inténtalo de nuevo.',
+                5000,
+                this.alertaUsuarios(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+            });
+        }
+      });
+  }
+
+  activarUsuario(usuario: Usuario) {
+    this.usuariosService
+      .activarUsuario(usuario.id)
+      .then(() => {
+        this.alertaService.success(
+          'Usuario activado exitosamente.',
+          5000,
+          this.alertaUsuarios(),
+          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+        );
+        this.usuariosService.queryUsuarios.refetch();
+      })
+      .catch(error => {
+        console.error('Error al activar el usuario:', error);
+        this.alertaService.error(
+          'Error al activar el usuario. Por favor, inténtalo de nuevo.',
+          5000,
+          this.alertaUsuarios(),
+          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+        );
+      });
+  }
 
   usuarioGuardadoExitoso(event: boolean) {
     const estilosAlerta =

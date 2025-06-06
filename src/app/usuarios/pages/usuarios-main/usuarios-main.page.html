@@ -18,7 +18,7 @@
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
-    (click)="cambiarEstadoUsuario(context.row.original)"
+    (click)="context.getValue() === 'Activo' ? eliminarUsuario(context.row.original) : activarUsuario(context.row.original)"
   >
     {{ context.getValue() }}
   </div>
