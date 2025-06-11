@@ -116,7 +116,6 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
       yearRange: [1950, moment().year() - 16],
       maxDate: moment().subtract(16, 'years').toDate(),
       i18n: this.usuarioService.i18nDatePicker(),
-      defaultDate: moment().subtract(16, 'years').toDate(),
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
         const fechaFormateada = moment(date).format('DD/MM/YYYY');
@@ -149,10 +148,14 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
     if (this.usuarioService.modoEdicion()) {
       const usuarioAEditar = this.usuarioService.usuarioAEditar();
       if (usuarioAEditar) {
-        const fechaFormateada = moment(
-          usuarioAEditar.fechaNacimiento,
-          'YYYY-DD-MM',
-        ).format('DD/MM/YYYY');
+        const fechaTmp = usuarioAEditar.fechaNacimiento.split('T')[0];
+        const fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format(
+          'DD/MM/YYYY',
+        );
+        console.log(
+          '🚀 ✅ ~ ModalUsuariosComponent ~ abrirModal ~ fechaFormateada:',
+          fechaFormateada,
+        );
         this.usuarioForm.patchValue({
           ...usuarioAEditar,
           fechaNacimiento: fechaFormateada,
@@ -193,7 +196,7 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
     const fechaNacimiento = moment(
       this.usuarioForm.value.fechaNacimiento,
       'DD/MM/YYYY',
-    ).format('YYYY-DD-MM');
+    ).format('YYYY-MM-DD');
 
     if (this.usuarioService.modoEdicion()) {
       usuario = {

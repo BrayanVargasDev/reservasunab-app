@@ -1,8 +1,11 @@
+import { TipoUsuario } from '@shared/enums/usuarios.enum';
+import { Estado } from '@shared/enums/usuarios.enum';
+
 export interface Usuario {
   id: number;
   avatar: string;
   email: string;
-  tipoUsuario: string;
+  tipoUsuario: TipoUsuario;
   telefono: string;
   rol: string;
   tipoDocumento: number;
@@ -10,7 +13,7 @@ export interface Usuario {
   nombre: string;
   apellido: string;
   ultimoAcceso: string;
-  estado: string;
+  estado: Estado;
   fechaCreacion: string;
   viendoDetalles?: boolean;
   direccion: string;

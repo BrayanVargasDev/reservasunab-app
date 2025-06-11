@@ -1,20 +1,36 @@
+import { PaginationState } from '@tanstack/angular-table';
 import { environment } from '@environments/environment';
-import { type Usuario } from '../intefaces';
+import { type Usuario, GetUsuariosParams } from '../intefaces';
+import {
+  PaginatedResponse,
+  Meta,
+} from '@shared/interfaces/paginatd-response.interface';
 
 const BASE_URL = environment.apiUrl;
 
-export const getUsuarios = async (): Promise<Usuario[]> => {
+export const getUsuarios = async (
+  params: PaginationState & GetUsuariosParams,
+): Promise<PaginatedResponse<Usuario>> => {
+  const queryParams = new URLSearchParams({
+    per_page: params.pageSize.toString(),
+    search: params.search || '',
+  });
+
+  if (params.pageIndex !== 0) {
+    queryParams.set('page', (params.pageIndex + 1).toString());
+  }
+
+  const url = `${BASE_URL}/usuarios?${queryParams.toString()}`;
+
   try {
-    const response = await fetch(`${BASE_URL}/usuarios`, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    const { data } = await response.json();
-    const usuarios: Usuario[] = data;
-    return usuarios;
+    return await response.json();
   } catch (error) {
     console.error('Error in getUsuarios action:', error);
     throw error;

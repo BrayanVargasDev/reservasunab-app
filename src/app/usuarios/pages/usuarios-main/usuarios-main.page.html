@@ -18,7 +18,11 @@
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
-    (click)="context.getValue() === 'Activo' ? eliminarUsuario(context.row.original) : activarUsuario(context.row.original)"
+    (click)="
+      context.getValue() === 'Activo'
+        ? eliminarUsuario(context.row.original)
+        : activarUsuario(context.row.original)
+    "
   >
     {{ context.getValue() }}
   </div>
@@ -26,7 +30,7 @@
 
 <ng-template #celdaNombre let-context>
   <div class="flex w-full h-full items-center justify-between">
-    <span>{{ context.getValue() }}</span>
+    <span class="min-w-20">{{ context.getValue() }}</span>
     <button
       class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
       (click)="editarUsuario(context.row.original)"
@@ -40,7 +44,7 @@
 <ng-template #celdaRol let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="capitalize">{{ context.getValue() }}</span>
-    <div class="dropdown dropdown-left">
+    <div class="dropdown lg:dropdown-left">
       <button
         role="button"
         tabindex="0"
@@ -101,7 +105,7 @@
 </ng-template>
 
 <div
-  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+  class="flex flex-col md:flex-row md:mt-2 md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
   <div class="flex items-center">
     <h2 class="font-bold text-4xl">Usuarios</h2>
@@ -114,17 +118,6 @@
       [(ngModel)]="filtroTexto"
       (input)="aplicarFiltro()"
     />
-    <button
-      class="btn btn-secondary h-11 rounded-box"
-      (click)="refrescarDatos()"
-      [disabled]="usuariosQuery.isFetching()"
-    >
-      <app-web-icon
-        estilos="h-6 w-6"
-        nombreIcono="refresh-outline"
-      ></app-web-icon>
-      @if (usuariosQuery.isFetching()) { Actualizando... } @else { Actualizar }
-    </button>
     <button (click)="crearUsuario()" class="btn btn-primary h-11 rounded-box">
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
       Nuevo Usuario
@@ -153,7 +146,13 @@
   responsiveTable
   #responsiveWeb="responsiveTable"
   [table]="table()"
-  class="table table-sm sm:table-md rounded-box bg-base-100 w-full overflow-y-auto"
+  [ngClass]="{
+    'table rounded-none table-sm sm:table-md rounded-t-box bg-base-100 w-full overflow-y-auto': true,
+    'rounded-b-box':
+      !usuariosQuery.isPending() && !usuariosQuery.isError()
+        ? usuariosQuery.data()!.length > 10
+        : false
+  }"
 >
   <thead>
     @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
@@ -181,16 +180,17 @@
     }
   </thead>
   <tbody>
-    @if (!rows().length) {
+    @if (!usuariosQuery.data()) {
     <tr>
       <td [attr.colspan]="columnas().length" class="text-center">
         No se encontraron resultados.
       </td>
     </tr>
-    } @else { @for (row of rows(); track row.id) {
+    } @else { @for (row of table().getCoreRowModel().rows; track row.id) {
     <tr
       [ngClass]="{
         'hover:bg-base-200': true,
+        'last:rounded-b-none': true,
         'bg-base-200': isRowExpanded(+row.id)
       }"
       [class.expanded]="isRowExpanded(+row.id)"
@@ -211,7 +211,7 @@
             let cell
           "
         >
-          <div [innerHTML]="cell"></div>
+          <span [innerHTML]="cell"></span>
         </ng-container>
       </td>
       }
@@ -248,6 +248,21 @@
     } } }
   </tbody>
 </table>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="usuariosService.paginacion()"
+  [paginacion]="usuariosService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="usuariosQuery.isFetching()"
+>
+</app-paginador>
 
 <ng-template #alertaUsuarios></ng-template>
 

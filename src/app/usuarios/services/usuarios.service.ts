@@ -1,11 +1,15 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 
 import { injectQuery } from '@tanstack/angular-query-experimental';
+import { PaginationState } from '@tanstack/angular-table';
 
 import { Usuario } from '@usuarios/intefaces';
 import { getUsuarios } from '@usuarios/actions/get-usuarios.action';
 import { saveUsuario } from '@usuarios/actions/save-usuarios.action';
 import { AlertasService } from '@shared/services/alertas.service';
+import { Meta } from '@shared/interfaces';
+import { i18nTablaUsuarios } from '../constants/lenguaje.constant';
+import { PaginatedResponse } from '../../shared/interfaces/paginatd-response.interface';
 import {
   updateUsuarioRol,
   updateUsuarioEstado,
@@ -18,41 +22,44 @@ import {
 export class UsuariosService {
   private alertaService = inject(AlertasService);
 
+  private _paginacion = signal<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+  private _datosPaginador = signal<Meta | null>(null);
+
+  public paginacion = computed(() => this._paginacion());
+  public datosPaginador = computed(() => this._datosPaginador());
+
   queryUsuarios = injectQuery(() => ({
-    queryKey: ['usuarios'],
-    queryFn: () => getUsuarios(),
+    queryKey: ['usuarios', this.paginacion()],
+    queryFn: () => getUsuarios(this.paginacion()),
+    select: (response: PaginatedResponse<Usuario>) => {
+      this._datosPaginador.set(response.meta);
+
+      const nuevoPageIndex = response.meta.current_page - 1;
+      const nuevoPageSize = response.meta.per_page;
+
+
+      const paginacionActual = this.paginacion();
+
+      if (
+        paginacionActual.pageIndex !== nuevoPageIndex ||
+        paginacionActual.pageSize !== nuevoPageSize
+      ) {
+        this._paginacion.set({
+          pageIndex: nuevoPageIndex,
+          pageSize: nuevoPageSize,
+        });
+      }
+
+      return response.data;
+    },
   }));
 
   private _usuarioAEditar = signal<Usuario | null>(null);
   public usuarioAEditar = this._usuarioAEditar.asReadonly();
-  private _i18nDatePicker = signal({
-    previousMonth: 'Mes Anterior',
-    nextMonth: 'Mes Siguiente',
-    months: [
-      'Enero',
-      'Febrero',
-      'Marzo',
-      'Abril',
-      'Mayo',
-      'Junio',
-      'Julio',
-      'Agosto',
-      'Septiembre',
-      'Octubre',
-      'Noviembre',
-      'Diciembre',
-    ],
-    weekdays: [
-      'Domingo',
-      'Lunes',
-      'Martes',
-      'Miércoles',
-      'Jueves',
-      'Viernes',
-      'Sábado',
-    ],
-    weekdaysShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
-  });
+  private _i18nDatePicker = signal(i18nTablaUsuarios);
   public i18nDatePicker = this._i18nDatePicker.asReadonly();
 
   public setUsuarioAEditar(usuario: Usuario | null) {
@@ -109,5 +116,19 @@ export class UsuariosService {
     nuevoEstado: string,
   ): Promise<Usuario> {
     return updateUsuarioEstado(usuarioId, nuevoEstado);
+  }
+
+  public setPaginacion(paginacion: PaginationState) {
+    this._paginacion.set(paginacion);
+  }
+
+  public setDatosPaginador(datos: Partial<Meta>) {
+    this._datosPaginador.update(
+      state =>
+        ({
+          ...state,
+          ...datos,
+        } as Meta),
+    );
   }
 }

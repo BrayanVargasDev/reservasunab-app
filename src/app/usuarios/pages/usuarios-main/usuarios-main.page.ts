@@ -47,6 +47,7 @@ import {
   getExpandedRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
 } from '@tanstack/angular-table';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { TableAvatarComponent } from '@shared/components/table-avatar/table-avatar.component';
@@ -54,8 +55,9 @@ import { ResponsiveTableDirective } from '@shared/directives/responsive-table.di
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { UsuariosService } from '@app/usuarios/services/usuarios.service';
-import { ModalUsuariosComponent } from '../../components/modal-usuarios/modal-usuarios.component';
-import { AlertasService } from '../../../shared/services/alertas.service';
+import { ModalUsuariosComponent } from '@usuarios/components/modal-usuarios/modal-usuarios.component';
+import { AlertasService } from '@shared/services/alertas.service';
+import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -73,14 +75,15 @@ import { AlertasService } from '../../../shared/services/alertas.service';
     TableExpansorComponent,
     WebIconComponent,
     ModalUsuariosComponent,
+    PaginadorComponent,
   ],
   host: {
-    class: 'flex flex-col grow w-full sm:pl-3 relative',
+    class: 'flex flex-col grow w-full sm:pl-3 relative overflow-y-auto',
   },
 })
 export class UsuariosMainPage implements OnInit {
-  private usuariosService = inject(UsuariosService);
   private alertaService = inject(AlertasService);
+  public usuariosService = inject(UsuariosService);
   public appService = inject(AppService);
 
   protected readonly TableAvatarComponent = TableAvatarComponent;
@@ -108,7 +111,6 @@ export class UsuariosMainPage implements OnInit {
       'celdaRol',
     );
 
-  // Método para el avatar component
   private renderAvatar = (context: CellContext<Usuario, any>) => {
     return flexRenderComponent(this.TableAvatarComponent, {
       inputs: {
@@ -123,7 +125,7 @@ export class UsuariosMainPage implements OnInit {
       accessorKey: 'avatar',
       header: '',
       cell: this.renderAvatar,
-      size: 50,
+      size: 300,
       meta: {
         className: 'avatar-column',
         priority: Infinity,
@@ -154,6 +156,7 @@ export class UsuariosMainPage implements OnInit {
       id: 'rol',
       header: 'Rol',
       accessorKey: 'rol',
+      size: 300,
       cell: () => this.celdaRol(),
       meta: {
         className: 'rol-column',
@@ -180,42 +183,18 @@ export class UsuariosMainPage implements OnInit {
       id: 'estado',
       header: 'Estado',
       accessorKey: 'estado',
+      size: 300,
       cell: () => (this.appService.esMovil() ? this.ionChip() : this.chipWeb()),
       meta: {
         className: 'estado-column',
         priority: 2,
       },
     },
-    // {
-    //   id: 'acciones',
-    //   header: () => '',
-    //   cell: (context) => {
-    //     return flexRenderComponent(TableExpansorComponent, {
-    //       inputs: {
-    //         isExpanded: context.row.getIsExpanded(),
-    //       },
-    //       outputs: {
-    //         toggleExpand: () => {
-    //           context.row.toggleExpanded();
-    //         },
-    //       },
-    //     });
-    //   },
-    //   meta: {
-    //     responsive: false,
-    //     className: 'acciones-column',
-    //     priority: Infinity,
-    //   },
-    // },
   ]);
 
   public filtroTexto: string = '';
 
   public tableState = signal({
-    pagination: {
-      pageIndex: 0,
-      pageSize: 10,
-    } as PaginationState,
     expanded: {} as ExpandedState,
     globalFilter: '',
   });
@@ -239,9 +218,12 @@ export class UsuariosMainPage implements OnInit {
   });
 
   table = createAngularTable(() => ({
-    data: this.usuariosFiltrados(),
+    data: this.usuariosQuery.data()!,
     columns: this.columnas(),
-    state: this.tableState(),
+    state: {
+      ...this.tableState(),
+      pagination: this.usuariosService.paginacion(),
+    },
     enableRowExpanding: true,
     getRowId: row => String(row.id),
     getSubRows: () => [],
@@ -269,15 +251,28 @@ export class UsuariosMainPage implements OnInit {
         expanded: newExpanded,
       }));
     },
+    onPaginationChange: estado => {
+      const newPagination =
+        typeof estado === 'function'
+          ? estado(this.usuariosService.paginacion())
+          : estado;
+
+      this.usuariosService.setPaginacion({
+        pageIndex: newPagination.pageIndex,
+        pageSize: newPagination.pageSize,
+      });
+    },
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowCanExpand: () => true,
+    autoResetPageIndex: false,
     debugAll: false,
   }));
 
-  rows = computed(() => this.table.getRowModel().rows);
   columns = computed(() => this.table.getAllColumns());
   headerGroups = computed(() => this.table.getHeaderGroups());
 
@@ -363,9 +358,9 @@ export class UsuariosMainPage implements OnInit {
         `¿Estás seguro de que quieres cambiar el rol de ${usuario.nombre} ${usuario.apellido} a ${nuevoRol}?`,
         this.alertaUsuarios(),
         'Cambiar rol de usuario',
-        'info'
+        'info',
       )
-      .then((confirmado) => {
+      .then(confirmado => {
         if (confirmado) {
           this.usuariosService
             .cambiarRolUsuario(usuario.id, nuevoRol)
@@ -392,23 +387,26 @@ export class UsuariosMainPage implements OnInit {
   }
 
   cambiarEstadoUsuario(usuario: Usuario) {
-    const nuevoEstado = usuario.estado === 'activo' ? 'inactivo' : 'activo';
+    const nuevoEstado =
+      usuario.estado.toLowerCase() === 'inactivo' ? 'inactivo' : 'activo';
     const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
-    
+
     this.alertaService
       .confirmarAccion(
         `¿Estás seguro de que quieres ${accion} a ${usuario.nombre} ${usuario.apellido}?`,
         this.alertaUsuarios(),
         `${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario`,
-        nuevoEstado === 'activo' ? 'success' : 'warning'
+        nuevoEstado === 'activo' ? 'success' : 'warning',
       )
-      .then((confirmado) => {
+      .then(confirmado => {
         if (confirmado) {
           this.usuariosService
             .cambiarEstadoUsuario(usuario.id, nuevoEstado)
             .then(() => {
               this.alertaService.success(
-                `Usuario ${accion === 'activar' ? 'activado' : 'desactivado'} exitosamente.`,
+                `Usuario ${
+                  accion === 'activar' ? 'activado' : 'desactivado'
+                } exitosamente.`,
                 5000,
                 this.alertaUsuarios(),
                 'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
@@ -437,9 +435,9 @@ export class UsuariosMainPage implements OnInit {
       .confirmarEliminacion(
         '¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.',
         this.alertaUsuarios(),
-        'Eliminar usuario'
+        'Eliminar usuario',
       )
-      .then((confirmado) => {
+      .then(confirmado => {
         if (confirmado) {
           this.usuariosService
             .eliminarUsuario(id)
@@ -486,6 +484,10 @@ export class UsuariosMainPage implements OnInit {
           'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
         );
       });
+  }
+
+  onPageChange(estado: PaginationState): void {
+    this.usuariosService.setPaginacion(estado);
   }
 
   usuarioGuardadoExitoso(event: boolean) {

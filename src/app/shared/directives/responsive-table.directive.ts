@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Column, Row, RowData, type Table } from '@tanstack/angular-table';
 
+// Extiende la definición de meta para columnas responsivas
 declare module '@tanstack/table-core' {
   interface ColumnMeta<TData, TValue> {
     className?: string;
@@ -27,7 +28,6 @@ export class ResponsiveTableDirective<T extends RowData> {
 
   private host = inject(ElementRef<HTMLElement>);
   private destroyRef = inject(DestroyRef);
-
   private tableWidth = signal(0);
   hiddenColumnIds = signal<Set<string>>(new Set());
 
@@ -38,52 +38,59 @@ export class ResponsiveTableDirective<T extends RowData> {
 
     resizeObserver.observe(this.host.nativeElement);
 
-    this.destroyRef.onDestroy(() => {
-      resizeObserver.disconnect();
-    });
+    this.destroyRef.onDestroy(() => resizeObserver.disconnect());
 
     effect(() => {
       const width = this.tableWidth();
+      const tableInstance = this.table();
+      if (!tableInstance) return;
 
-      if (!this.table) return;
+      const allColumns = tableInstance.getAllColumns();
 
-      const allColumns = this.table().getAllColumns();
+      // Filtra columnas visibles y responsivas
       const responsiveColumns = allColumns
-        .filter((column) => column.columnDef.meta?.responsive !== false)
-        .map((column) => ({
-          column,
-          priority: column.columnDef.meta?.priority ?? 0,
-          size: column.getSize() || 200,
+        .filter(col => col.columnDef.meta?.responsive !== false)
+        .map(col => ({
+          column: col,
+          priority: col.columnDef.meta?.priority ?? 0,
+          size: col.getSize() || 200,
         }))
         .sort((a, b) => b.priority - a.priority);
 
-      let total = 0;
+      let accumulatedWidth = 0;
       const toHide: string[] = [];
 
       for (const { column, size } of responsiveColumns) {
-        total += size;
-        if (total > width) {
+        accumulatedWidth += size;
+        if (accumulatedWidth > width) {
           toHide.push(column.id);
         }
       }
 
-      this.hiddenColumnIds.set(new Set(toHide));
+      const hiddenSet = new Set(toHide);
 
-      const newVisibility = { ...this.table().getState().columnVisibility };
+      // Solo actualiza si hay un cambio real
+      const prevHidden = this.hiddenColumnIds();
+      const changed =
+        toHide.length !== prevHidden.size ||
+        toHide.some(id => !prevHidden.has(id));
+      if (!changed) return;
+
+      this.hiddenColumnIds.set(hiddenSet);
+
+      const newVisibility = { ...tableInstance.getState().columnVisibility };
       for (const { column } of responsiveColumns) {
-        newVisibility[column.id] = !toHide.includes(column.id);
+        newVisibility[column.id] = !hiddenSet.has(column.id);
       }
 
-      this.table().setColumnVisibility(newVisibility);
+      tableInstance.setColumnVisibility(newVisibility);
     });
   }
 
   getCell(column: Column<T, unknown>, row: Row<T>) {
-    const cell = this.table()!
+    return this.table()
       .getRow(row.id)
       .getAllCells()
-      .find((cell) => cell.column.id === column.id)!;
-
-    return cell;
+      .find(cell => cell.column.id === column.id)!;
   }
 }
