@@ -1,14 +1,11 @@
 import {
-  computed,
   inject,
   output,
   Component,
-  OnInit,
   viewChild,
   ElementRef,
   ChangeDetectionStrategy,
   effect,
-  Injector,
   ViewContainerRef,
   signal,
   AfterViewInit,
@@ -77,7 +74,6 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
       ],
     ],
     direccion: [''],
-    imagen: [''],
     fechaNacimiento: [''],
     // rol: ['', [Validators.required]],
     tipoUsuario: ['externo'],
@@ -151,10 +147,6 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
         const fechaTmp = usuarioAEditar.fechaNacimiento.split('T')[0];
         const fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format(
           'DD/MM/YYYY',
-        );
-        console.log(
-          '🚀 ✅ ~ ModalUsuariosComponent ~ abrirModal ~ fechaFormateada:',
-          fechaFormateada,
         );
         this.usuarioForm.patchValue({
           ...usuarioAEditar,

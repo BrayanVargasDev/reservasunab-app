@@ -121,13 +121,12 @@ export class UsuariosMainPage implements OnInit {
 
   public columnas = signal<ColumnDef<Usuario>[]>([
     {
-      id: 'avatar',
-      accessorKey: 'avatar',
-      header: '',
-      cell: this.renderAvatar,
+      id: 'documento',
+      header: 'Documento',
+      accessorKey: 'documento',
+      cell: info => `<span class="font-bold">${info.getValue()}</span>`,
       size: 300,
       meta: {
-        className: 'avatar-column',
         priority: Infinity,
       },
     },
