@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, input, Output, EventEmitter, signal } from '@angular/core';
 import { IonButton, IonIcon, IonText } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
@@ -9,26 +9,25 @@ import { arrowForwardOutline } from 'ionicons/icons';
   templateUrl: './action-button.component.html',
   styleUrls: ['./action-button.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonButton, IonIcon, IonText]
+  imports: [CommonModule, IonButton, IonIcon, IonText],
 })
 export class ActionButtonComponent {
-  @Input() texto: string = 'Aceptar';
-  @Input() color: string = 'primary';
-  @Input() expand: 'block' | 'full' | undefined = 'block';
-  @Input() tipo: 'submit' | 'button' | 'reset' = 'button';
-  @Input() icono: string | null = null;
-  @Input() iconoSlot: 'start' | 'end' = 'end';
-  @Input() disabled: boolean = false;
-  @Input() tamaño: 'small' | 'default' | 'large' = 'default';
-  @Input() fill: 'solid' | 'clear' | 'outline' = 'solid';
-  @Input() classList: string = '';
-  @Input() textoClase: string = '';
+  public texto = input<string>('Aceptar');
+  public color = input<string>('primary');
+  public expand = input<'block' | 'full' | undefined>('block');
+  public tipo = input<'submit' | 'button' | 'reset'>('button');
+  public icono = input<string | null>(null);
+  public iconoSlot = input<'start' | 'end'>('end');
+  public disabled = input<boolean>(false);
+  public tamano = input<'small' | 'default' | 'large'>('default');
+  public fill = input<'solid' | 'clear' | 'outline'>('solid');
+  public textoClase = input<string>('');
 
-  @Output() accionClick = new EventEmitter<Event>();
+  public accionClick = new EventEmitter<Event>();
 
   constructor() {
     addIcons({
-      arrowForwardOutline
+      arrowForwardOutline,
     });
   }
 
@@ -39,8 +38,8 @@ export class ActionButtonComponent {
   }
 
   get sizeValue(): string | undefined {
-    if (this.tamaño === 'small') return 'small';
-    if (this.tamaño === 'large') return 'large';
+    if (this.tamano() === 'small') return 'small';
+    if (this.tamano() === 'large') return 'large';
     return undefined;
   }
 }
