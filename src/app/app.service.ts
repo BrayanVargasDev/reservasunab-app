@@ -1,8 +1,8 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import { Platform } from '@ionic/angular';
 import { environment } from '@environments/environment';
 import { injectQuery } from '@tanstack/angular-query-experimental';
-import { getTiposDocumentos } from './shared/actions/get-tipo-documento.action';
+import { getTiposDocumentos, getPantallas } from './shared/actions';
 
 @Injectable({
   providedIn: 'root',
@@ -12,7 +12,7 @@ export class AppService {
   private _esMovil = signal(false);
   private _apiUrl = signal(environment.apiUrl || 'https://api.example.com');
   private _samlUrl = signal(
-    environment.samlUrl || 'https://saml.example.com/login'
+    environment.samlUrl || 'https://saml.example.com/login',
   );
   private _tenantId = signal(environment.tenantId || 'default-tenant-id');
 
@@ -45,8 +45,15 @@ export class AppService {
     queryFn: () => getTiposDocumentos(),
   }));
 
-  // public rolesQuery = injectQuery(() => ({
-  //   queryKey: ['roles'],
-  //   queryFn: () => fetch(`${this.apiUrl}/roles`).then((res) => res.json()),
-  // }));
+  public pantallasQuery = injectQuery(() => ({
+    queryKey: ['pantallas'],
+    queryFn: () => getPantallas(),
+  }));
+
+  private _editando = signal(false);
+  public editando = computed(() => this._editando());
+
+  public setEditando(value: boolean): void {
+    this._editando.set(value);
+  }
 }

@@ -1,10 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  computed,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { MenuItem, MenuService } from '../../services/menu.service';
-import { Observable, of, Subscription } from 'rxjs';
-import { AuthService } from '@auth/services/auth.service';
+
 import { addIcons } from 'ionicons';
 import {
   cardOutline,
@@ -16,8 +21,12 @@ import {
   personOutline,
   speedometerOutline,
 } from 'ionicons/icons';
-import { AppService } from 'src/app/app.service';
+
 import { WebIconComponent } from '../web-icon/web-icon.component';
+import { AppService } from '@app/app.service';
+import { AuthService } from '@auth/services/auth.service';
+import { ChangeDetectionStrategy } from '@angular/core';
+import { Pantalla } from '../../interfaces/pantalla.interface';
 
 @Component({
   selector: 'app-side-menu',
@@ -31,13 +40,20 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
     RouterLinkActive,
     WebIconComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SideMenuComponent implements OnInit, OnDestroy {
-  private menuServicio = inject(MenuService);
+export class SideMenuComponent {
   private authServicio = inject(AuthService);
 
-  appService = inject(AppService);
-  menuItems$: Observable<MenuItem[]> = of([]);
+  public appService = inject(AppService);
+
+  menuItems = computed<Pantalla[]>(
+    () =>
+      this.appService.pantallasQuery
+        .data()
+        ?.filter(pantalla => pantalla.visible)
+        .sort((a, b) => a.orden - b.orden) ?? [],
+  );
   isMenuOpen = signal(false);
   usuarioActual = this.authServicio.usuario();
 
@@ -54,30 +70,6 @@ export class SideMenuComponent implements OnInit, OnDestroy {
       peopleOutline,
       personOutline,
     });
-  }
-
-  ngOnInit() {
-    this.loadMenuItems();
-
-    // Escuchar el evento personalizado para controlar el menú desde el header
-    this.toggleMenuSubscription = () => {
-      this.toggleMenu();
-    };
-    document.addEventListener('toggle-menu', this.toggleMenuSubscription);
-  }
-
-  ngOnDestroy() {
-    // Limpiar los event listeners al destruir el componente
-    if (this.toggleMenuSubscription) {
-      document.removeEventListener('toggle-menu', this.toggleMenuSubscription);
-    }
-  }
-
-  /**
-   * Carga los elementos del menú desde el servicio
-   */
-  loadMenuItems() {
-    this.menuItems$ = this.menuServicio.getMockMenuItems();
   }
 
   /**
