@@ -15,7 +15,8 @@
       "@permisos/*": ["src/app/permisos/*"],
       "@home/*": ["src/app/home/*"],
       "@shared/*": ["src/app/shared/*"],
-      "@usuarios/*": ["src/app/usuarios/*"]
+      "@usuarios/*": ["src/app/usuarios/*"],
+      "@espacios/*": ["src/app/espacios/*"],
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
