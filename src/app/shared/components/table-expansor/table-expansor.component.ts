@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '@app/app.service';
 import { WebIconComponent } from '../web-icon/web-icon.component';
 
 @Component({
@@ -21,11 +21,15 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
 export class TableExpansorComponent {
   appService = inject(AppService);
 
+  disabled = input<boolean>(false);
   isExpanded = input<boolean>(false);
   color = input<string>('primary');
   toggleExpand = output<boolean>();
 
   toggle() {
+    if (this.disabled() || this.appService.editando()) {
+      return;
+    }
     this.toggleExpand.emit(!this.isExpanded);
   }
 }

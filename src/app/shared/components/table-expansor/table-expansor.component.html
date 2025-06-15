@@ -1,35 +1,31 @@
 @if (appService.esMovil()) {
-<ion-button
-  fill="outline"
-  color="primary"
-  size="small"
-  (click)="toggle()">
+<ion-button fill="outline" color="primary" size="small" (click)="toggle()">
   @if (isExpanded()) {
   <ion-icon
     slot="icon-only"
-    [name]="
-      isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'
-    "></ion-icon>
+    [name]="isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'"
+  ></ion-icon>
   } @else {
   <ion-icon
     slot="icon-only"
-    [name]="
-      isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'
-    "></ion-icon>
+    [name]="isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'"
+  ></ion-icon>
   }
 </ion-button>
 } @else{
 <div class="flex justify-center">
   @if (isExpanded()) {
   <app-web-icon
-    estilos="h-6 w-6 cursor-pointer"
+    [estilos]="`h-6 w-6 cursor-pointer ${ disabled() ? 'opacity-50 pointer-events-none' : ''}`"
     (click)="toggle()"
-    [nombreIcono]="'chevron-up-circle-outline'"></app-web-icon>
+    [nombreIcono]="'chevron-up-circle-outline'"
+  ></app-web-icon>
   } @else {
   <app-web-icon
-    estilos="h-6 w-6 cursor-pointer"
+    [estilos]="`h-6 w-6 cursor-pointer ${ disabled() ? 'opacity-50 pointer-events-none' : ''}`"
     (click)="toggle()"
-    [nombreIcono]="'chevron-down-circle-outline'"></app-web-icon>
+    [nombreIcono]="'chevron-down-circle-outline'"
+  ></app-web-icon>
   }
 </div>
 }

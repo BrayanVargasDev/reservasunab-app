@@ -61,44 +61,17 @@
         class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
         style="position-anchor: --anchor-1"
       >
+        @for (rol of rolesQuery; track $index) {
         <li>
           <button
             type="button"
             class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Administrador')"
+            (click)="cambiarRolUsuario(context.row.original, rol.nombre!)"
           >
-            Administrador
+            {{ rol.nombre | titlecase }}
           </button>
         </li>
-        <li>
-          <button
-            type="button"
-            class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Docente')"
-          >
-            Docente
-          </button>
-        </li>
-        <li>
-          <button
-            type="button"
-            class="w-full text-left"
-            (click)="cambiarRolUsuario(context.row.original, 'Estudiante')"
-          >
-            Estudiante
-          </button>
-        </li>
-        <li class="flex justify-between items-center w-full">
-          <button
-            class="btn btn-soft btn-accent w-full h-8 btn-sm flex justify-center items-center"
-          >
-            <span>Crear un rol</span>
-            <app-web-icon
-              estilos="h-4 w-4"
-              nombreIcono="open-outline"
-            ></app-web-icon>
-          </button>
-        </li>
+        }
       </ul>
     </div>
   </div>

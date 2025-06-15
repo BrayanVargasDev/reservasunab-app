@@ -50,7 +50,6 @@ import {
   getPaginationRowModel,
 } from '@tanstack/angular-table';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
-import { TableAvatarComponent } from '@shared/components/table-avatar/table-avatar.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -86,8 +85,6 @@ export class UsuariosMainPage implements OnInit {
   public usuariosService = inject(UsuariosService);
   public appService = inject(AppService);
 
-  protected readonly TableAvatarComponent = TableAvatarComponent;
-
   public alertaUsuarios = viewChild.required('alertaUsuarios', {
     read: ViewContainerRef,
   });
@@ -110,14 +107,6 @@ export class UsuariosMainPage implements OnInit {
     viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
       'celdaRol',
     );
-
-  private renderAvatar = (context: CellContext<Usuario, any>) => {
-    return flexRenderComponent(this.TableAvatarComponent, {
-      inputs: {
-        avatar: context.row.original.avatar,
-      },
-    });
-  };
 
   public columnas = signal<ColumnDef<Usuario>[]>([
     {
@@ -293,6 +282,14 @@ export class UsuariosMainPage implements OnInit {
 
   get usuariosQuery() {
     return this.usuariosService.queryUsuarios;
+  }
+
+  get rolesQuery() {
+    return (
+      this.appService.rolesQuery
+        .data()
+        ?.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '')) || []
+    );
   }
 
   aplicarFiltro() {
