@@ -8,7 +8,7 @@ import { MainLayoutComponent } from '@shared/main-layout/main-layout.component';
 export const routes: Routes = [
   {
     path: 'auth',
-    loadChildren: () => import('@auth/auth.routes').then((m) => m.authRoutes),
+    loadChildren: () => import('@auth/auth.routes').then(m => m.authRoutes),
   },
   {
     path: 'acceso-denegado',
@@ -22,33 +22,40 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadChildren: () =>
-          import('@dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
+          import('@dashboard/dashboard.routes').then(m => m.dashboardRoutes),
         canActivate: [AuthGuard],
       },
       {
         path: 'perfil',
         loadChildren: () =>
-          import('@perfil/perfil.routes').then((m) => m.perfilRoutes),
+          import('@perfil/perfil.routes').then(m => m.perfilRoutes),
         canActivate: [AuthGuard],
       },
       {
         path: 'usuarios',
         loadChildren: () =>
-          import('@usuarios/usuarios.routes').then((m) => m.usuariosRoutes),
+          import('@usuarios/usuarios.routes').then(m => m.usuariosRoutes),
         canActivate: [AuthGuard],
         data: { permission: 'usuarios_ver' },
       },
       {
         path: 'pagos',
         loadChildren: () =>
-          import('@pagos/pagos.routes').then((m) => m.pagosRoutes),
+          import('@pagos/pagos.routes').then(m => m.pagosRoutes),
         canActivate: [AuthGuard],
         data: { permission: 'pagos_ver' },
       },
       {
         path: 'permisos',
         loadChildren: () =>
-          import('@permisos/permisos.routes').then((m) => m.permisosRoutes),
+          import('@permisos/permisos.routes').then(m => m.permisosRoutes),
+        canActivate: [AuthGuard],
+        data: { permission: 'admin' },
+      },
+      {
+        path: 'espacios',
+        loadChildren: () =>
+          import('@espacios/espacios.routes').then(m => m.espaciosRoutes),
         canActivate: [AuthGuard],
         data: { permission: 'admin' },
       },
