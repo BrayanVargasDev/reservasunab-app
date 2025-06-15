@@ -35,12 +35,7 @@ import { SaveUsuarioResponse } from '@usuarios/intefaces';
   templateUrl: './modal-usuarios.component.html',
   styleUrls: ['./modal-usuarios.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    WebIconComponent,
-    ReactiveFormsModule,
-    InputSoloNumerosDirective,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, InputSoloNumerosDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {},
 })
@@ -144,10 +139,12 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
     if (this.usuarioService.modoEdicion()) {
       const usuarioAEditar = this.usuarioService.usuarioAEditar();
       if (usuarioAEditar) {
-        const fechaTmp = usuarioAEditar.fechaNacimiento.split('T')[0];
-        const fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format(
-          'DD/MM/YYYY',
-        );
+        let fechaFormateada = '';
+        if (usuarioAEditar.fechaNacimiento) {
+          const fechaTmp = usuarioAEditar.fechaNacimiento.split('T')[0];
+          fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format('DD/MM/YYYY');
+        }
+
         this.usuarioForm.patchValue({
           ...usuarioAEditar,
           fechaNacimiento: fechaFormateada,

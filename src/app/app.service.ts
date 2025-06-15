@@ -3,6 +3,7 @@ import { Platform } from '@ionic/angular';
 import { environment } from '@environments/environment';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { getTiposDocumentos, getPantallas } from './shared/actions';
+import { getRoles } from '@permisos/actions/get-roles.action';
 
 @Injectable({
   providedIn: 'root',
@@ -48,6 +49,11 @@ export class AppService {
   public pantallasQuery = injectQuery(() => ({
     queryKey: ['pantallas'],
     queryFn: () => getPantallas(),
+  }));
+
+  rolesQuery = injectQuery(() => ({
+    queryKey: ['roles'],
+    queryFn: () => getRoles(),
   }));
 
   private _editando = signal(false);

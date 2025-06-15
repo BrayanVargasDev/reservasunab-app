@@ -1,14 +1,10 @@
 @if (appService.esMovil()) {
-<ion-content
-  [fullscreen]="true"
-  class="ion-padding">
+<ion-content [fullscreen]="true" class="ion-padding">
   <div class="permisos-container">
     <ion-grid>
       <ion-row>
         <!-- Panel izquierdo: Lista de roles -->
-        <ion-col
-          size="12"
-          size-lg="3">
+        <ion-col size="12" size-lg="3">
           <ion-card class="roles-card">
             <ion-card-header>
               <ion-card-title>Roles</ion-card-title>
@@ -20,11 +16,25 @@
                   button
                   detail="false"
                   [class.selected]="rolSeleccionado?.id === rol.id"
-                  (click)="seleccionarRol(rol)">
+                  (click)="seleccionarRol(rol)"
+                >
                   <ion-icon
                     slot="start"
-                    [name]="rol.nombre === 'Administrador' ? 'shield' : rol.nombre === 'Editor' ? 'create' : 'eye'"
-                    [color]="rol.nombre === 'Administrador' ? 'danger' : rol.nombre === 'Editor' ? 'warning' : 'success'">
+                    [name]="
+                      rol.nombre === 'Administrador'
+                        ? 'shield'
+                        : rol.nombre === 'Editor'
+                        ? 'create'
+                        : 'eye'
+                    "
+                    [color]="
+                      rol.nombre === 'Administrador'
+                        ? 'danger'
+                        : rol.nombre === 'Editor'
+                        ? 'warning'
+                        : 'success'
+                    "
+                  >
                   </ion-icon>
                   <ion-label>
                     <h2>{{ rol.nombre }}</h2>
@@ -42,20 +52,14 @@
             </ion-card-content>
           </ion-card>
 
-          <ion-button
-            expand="block"
-            class="ion-margin-top">
-            <ion-icon
-              slot="start"
-              name="add-outline"></ion-icon>
+          <ion-button expand="block" class="ion-margin-top">
+            <ion-icon slot="start" name="add-outline"></ion-icon>
             Crear Nuevo Rol
           </ion-button>
         </ion-col>
 
         <!-- Panel derecho: Permisos del rol seleccionado -->
-        <ion-col
-          size="12"
-          size-lg="9">
+        <ion-col size="12" size-lg="9">
           @if (rolSeleccionado) {
           <ion-card class="permisos-card">
             <ion-card-header>
@@ -68,28 +72,28 @@
               >
             </ion-card-header>
             <ion-card-content>
-              @for (categoria of categorias(); track categoria) {
+              <!-- @for (categoria of categorias(); track categoria) {
               <div class="categoria-permisos">
                 <h3>{{ categoria }}</h3>
                 <ion-list>
                   <ion-item
                     lines="none"
-                    *ngFor="let permiso of permisosPorCategoria(categoria)">
+                    *ngFor="let permiso of permisosPorCategoria(categoria)"
+                  >
                     <ion-checkbox
                       [checked]="tienePermiso(permiso.id)"
                       (ionChange)="togglePermiso(permiso.id)"
-                      labelPlacement="end">
+                      labelPlacement="end"
+                    >
                       {{ permiso.nombre }}
                     </ion-checkbox>
                   </ion-item>
                 </ion-list>
               </div>
-              }
+              } -->
 
               <div class="actions-footer">
-                <ion-button
-                  fill="outline"
-                  color="medium">
+                <ion-button fill="outline" color="medium">
                   Cancelar
                 </ion-button>
                 <ion-button (click)="guardarCambios()">
@@ -111,26 +115,96 @@
   </div>
 </ion-content>
 } @else {
-<div class="flex flex-col grow w-full sm:pl-3 relative">
-  <div
-    class="flex flex-col md:flex-row w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300">
-    <div class="flex items-center">
-      <h2 class="font-bold text-4xl">Roles y permisos</h2>
-    </div>
-    <div class="flex flex-col md:flex-row gap-2">
-      <input
-        type="text"
-        placeholder="Buscar por nombre, email o rol..."
-        class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm"
-        [(ngModel)]="filtroTexto" />
-      <button class="btn btn-primary h-11 rounded-box">
+
+<div
+  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+>
+  <div class="flex items-center">
+    <h2 class="font-bold text-4xl">Roles y permisos</h2>
+  </div>
+  <div class="flex flex-col md:flex-row gap-2">
+    <input
+      type="text"
+      [disabled]="permisosService.modoCreacion() || appService.editando()"
+      placeholder="Buscar por nombre, email o rol..."
+      class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+      [(ngModel)]="filtroTexto"
+    />
+    <button
+      [disabled]="appService.editando() || tabPermiso.checked"
+      class="btn btn-primary h-11 rounded-box"
+      (click)="crearRol()"
+    >
+      <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
+      Nuevo Rol
+    </button>
+  </div>
+</div>
+<div class="w-full h-full max-h-full overflow-hidden flex flex-col">
+  <!-- Tabs para pantallas pequeñas -->
+  <div class="tabs tabs-lift overflow-y-auto">
+    <input
+      #tabPermiso
+      type="radio"
+      name="my_tabs_2"
+      class="tab font-semibold text-[1.125rem]"
+      aria-label="Permisos"
+      checked="checked"
+      (change)="cambiarPestana('permiso')"
+    />
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !h-[calc(100vh_-_14.75rem)]"
+    >
+      @if (permisosQuery.isPending()) {
+      <div class="flex justify-center items-center py-8">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span class="ml-2 text-base-content">Cargando permisos...</span>
+      </div>
+      } @else if (permisosQuery.isError()) {
+      <div class="alert alert-error mb-4">
         <app-web-icon
           estilos="h-6 w-6"
-          nombreIcono="add-outline"></app-web-icon>
-        Nuevo Rol
-      </button>
+          nombreIcono="alert-circle-outline"
+        ></app-web-icon>
+        <span>Error al cargar los usuarios. </span>
+        <button class="btn btn-sm btn-outline">Reintentar</button>
+      </div>
+      } @else {
+      <tabla-permisos
+        [ngClass]="'flex flex-col h-full overflow-y-auto'"
+      ></tabla-permisos>
+      }
+    </div>
+
+    <input
+      #tabRol
+      type="radio"
+      name="my_tabs_2"
+      class="tab font-semibold text-[1.125rem]"
+      aria-label="Roles"
+      (change)="cambiarPestana('rol')"
+    />
+    <div class="tab-content border-base-300 bg-base-100 p-6">
+      @if (rolesQuery.isPending()) {
+      <div class="flex justify-center items-center py-8">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span class="ml-2 text-base-content">Cargando roles...</span>
+      </div>
+      } @else if (rolesQuery.isError()) {
+      <div class="alert alert-error mb-4">
+        <app-web-icon
+          estilos="h-6 w-6"
+          nombreIcono="alert-circle-outline"
+        ></app-web-icon>
+        <span>Error al cargar los roles. </span>
+        <button class="btn btn-sm btn-outline">Reintentar</button>
+      </div>
+      } @else {
+      <tabla-roles
+        [modoCreacion]="permisosService.modoCreacion()"
+      ></tabla-roles>
+      }
     </div>
   </div>
-  <div class="w-full"></div>
 </div>
 }

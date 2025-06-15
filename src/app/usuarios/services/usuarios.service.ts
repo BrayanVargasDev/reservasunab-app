@@ -36,23 +36,6 @@ export class UsuariosService {
     queryFn: () => getUsuarios(this.paginacion()),
     select: (response: PaginatedResponse<Usuario>) => {
       this._datosPaginador.set(response.meta);
-
-      const nuevoPageIndex = response.meta.current_page - 1;
-      const nuevoPageSize = response.meta.per_page;
-
-
-      const paginacionActual = this.paginacion();
-
-      if (
-        paginacionActual.pageIndex !== nuevoPageIndex ||
-        paginacionActual.pageSize !== nuevoPageSize
-      ) {
-        this._paginacion.set({
-          pageIndex: nuevoPageIndex,
-          pageSize: nuevoPageSize,
-        });
-      }
-
       return response.data;
     },
   }));

@@ -57,7 +57,6 @@
   <span class="text-base-content/70">Mostrar:</span>
   <select
     class="select select-xs w-fit select-bordered"
-    [disabled]="deshabilitado()"
     [formControl]="valorSelect"
     (change)="cambiarTamanoPagina(+$any($event.target).value)"
   >

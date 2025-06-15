@@ -24,6 +24,8 @@ import { inject } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaginadorComponent {
+  private injector = inject(Injector);
+
   valorSelect = new FormControl(5);
 
   paginacion = input<Meta | null>(null);
@@ -61,21 +63,17 @@ export class PaginadorComponent {
   });
 
   ngOnInit() {
-    // effect(
-    //   () => {
-    //     console.log('pageIndex:', this.estado().pageIndex);
-    //     console.log('totalPages:', this.totalPaginas());
-    //     console.log('puedeAvanzar:', this.puedeAvanzar());
-    //     console.log('puedeRetroceder:', this.puedeRetroceder());
-    //     console.log('pageSize:', this.estado().pageSize);
-    //   },
-    //   {
-    //     injector: this.injector,
-    //     allowSignalWrites: true,
-    //   },
-    // );
-
-    this.valorSelect.setValue(this.estado().pageSize);
+    effect(
+      () => {
+        const currentPageSize = this.estado().pageSize;
+        if (this.valorSelect.value !== currentPageSize) {
+          this.valorSelect.setValue(currentPageSize, { emitEvent: false });
+        }
+      },
+      {
+        injector: this.injector,
+      },
+    );
   }
 
   cambiarPagina(pagina: number) {

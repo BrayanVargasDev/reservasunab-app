@@ -1,0 +1,167 @@
+<ng-template #celdaRol let-context>
+  <div class="flex w-full h-full items-center justify-between">
+    <span class="capitalize">{{ context.getValue() }}</span>
+    <div class="dropdown lg:dropdown-left">
+      <button
+        role="button"
+        tabindex="0"
+        [disabled]="appService.editando()"
+        class="btn btn-soft btn-secondary w-8 h-8 rounded-box btn-sm lg:tooltip lg:tooltip-left p-0"
+        data-tip="Cambiar rol"
+      >
+        <app-web-icon
+          estilos="h-4 w-4"
+          nombreIcono="caret-down-outline"
+        ></app-web-icon>
+      </button>
+      <ul
+        tabindex="0"
+        class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+        style="position-anchor: --anchor-1"
+      >
+        @for (rol of rolesQuery; track $index) {
+        <li>
+          <button type="button" class="w-full text-left">
+            {{ rol.nombre | titlecase }}
+          </button>
+        </li>
+        }
+      </ul>
+    </div>
+  </div>
+</ng-template>
+
+<table
+  responsiveTable
+  #tabla="responsiveTable"
+  [table]="tablaPermisos()"
+  class="table w-full rounded-md table-sm sm:table-md"
+>
+  <thead class="sticky top-0 z-20 bg-base-100">
+    @for (headerGroup of tablaPermisos.getHeaderGroups(); track headerGroup.id)
+    {
+    <tr>
+      @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @for (row of tablaPermisos.getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+    @if (row.getIsExpanded()) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+          @if (tabla.hiddenColumnIds().size !== 0) {
+          <ul>
+            @for (col of tablaPermisos.getAllLeafColumns(); track $index) { @if
+            (tabla.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span class="font-bold text-base-content">
+                {{ col.columnDef.header }}:
+              </span>
+              <span>
+                <ng-container
+                  *flexRender="
+                    tabla.getCell(col, row).column.columnDef.cell;
+                    props: tabla.getCell(col, row).getContext();
+                    let cell
+                  "
+                >
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </span>
+            </li>
+            } }
+          </ul>
+          <div class="divider my-1"></div>
+          }
+
+          <h3 class="text-base font-bold text-center mt-3 mb-2">
+            Asignar permisos al usuario
+          </h3>
+
+          <div class="w-full flex flex-col lg:flex-row gap-1 lg:gap-3 p-4">
+            <div class="flex flex-row lg:flex-col gap-1 w-fit flex-wrap">
+              @for(pantalla of pantallas; track pantalla.id_pantalla) {
+              <button
+                [ngClass]="{'flex justify-between items-center font-semibold px-2 h-[2.75rem] md:h-[3.125rem] md:px-3 cursor-pointer btn btn-secondary btn-soft grow md:w-[12rem] group': true,
+                  'btn-active': pantalla.id_pantalla === permisosService.pantallaSeleccionada()?.id_pantalla,
+                }"
+                (click)="permisosService.setPantallaSeleccionada(pantalla)"
+              >
+                <div
+                  [ngClass]="{
+                    'flex w-full items-center gap-1 md:gap-2 justify-between': true,
+                    'btn-active': pantalla.id_pantalla === permisosService.pantallaSeleccionada()?.id_pantalla,
+                  }"
+                >
+                  <div class="flex items-center gap-1 md:gap-2">
+                    <app-web-icon
+                      [nombreIcono]="pantalla.icono"
+                      [estilos]="'h-4 w-4 md:h-5 md:w-5'"
+                    ></app-web-icon>
+                    <span class="text-sm">{{ pantalla.nombre }}</span>
+                  </div>
+                </div>
+              </button>
+              }
+            </div>
+            <div>
+              <lista-permisos-pantalla
+                [permisos]="obtenerPermisos(row.original)"
+              ></lista-permisos-pantalla>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    } }
+  </tbody>
+</table>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="permisosService.paginacion()"
+  [paginacion]="permisosService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="permisosQuery.isFetching()"
+>
+</app-paginador>

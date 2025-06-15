@@ -1,0 +1,92 @@
+<table
+  class="w-full border-separate border-spacing-y-0.5 bg-base-300 rounded-md border border-base-300 table-sm sm:table-md overflow-y-auto"
+>
+  <thead>
+    @for (headerGroup of tablaRoles.getHeaderGroups(); track headerGroup.id) {
+    <tr>
+      @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-sm text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (modoCreacion()) {
+    <tr class="bg-base-100">
+      <td class="p-2">
+        <input
+          [formControl]="nombre"
+          placeholder="Inserte nombre"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        />
+      </td>
+      <td class="p-2">
+        <input
+          [formControl]="descripcion"
+          placeholder="Inserte descripción"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        />
+      </td>
+      <td class="p-2">
+        <span class="text-sm">{{ fechaActual() }}</span>
+      </td>
+      <td class="p-2">
+        <acciones-tabla
+          [acciones]="accionesNuevoRol()"
+          [ngClass]="'flex justify-between'"
+        ></acciones-tabla>
+      </td>
+    </tr>
+    } @for (row of tablaRoles.getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div
+            [ngClass]="{
+            'text-sm p-2': true,
+          }"
+            [innerHTML]="cell"
+          ></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+    }
+  </tbody>
+</table>
+
+<!-- Paginador -->
+<!-- <app-paginador
+  [class]="'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'"
+  [table]="tablaRoles"
+  [showPageSizeSelector]="true"
+  [showPageInfo]="true"
+  [showFirstLastButtons]="true"
+  [pageSizeOptions]="[5, 10, 25, 50]"
+  [paginasVisibles]="5"
+>
+</app-paginador> -->

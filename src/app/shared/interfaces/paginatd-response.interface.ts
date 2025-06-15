@@ -2,6 +2,9 @@ export interface PaginatedResponse<T> {
   data: T[];
   links: Links;
   meta: Meta;
+  status?: string;
+  message?: string;
+  error?: string | string[];
 }
 
 export interface Links {

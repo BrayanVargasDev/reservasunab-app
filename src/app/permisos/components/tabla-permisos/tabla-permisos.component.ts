@@ -1,0 +1,265 @@
+import {
+  Component,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+  viewChild,
+  TemplateRef,
+  OnInit,
+  OnDestroy,
+  effect,
+  Injector,
+} from '@angular/core';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
+
+import {
+  ColumnDef,
+  createAngularTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getFilteredRowModel,
+  getExpandedRowModel,
+  FlexRenderDirective,
+  flexRenderComponent,
+  CellContext,
+  ExpandedState,
+} from '@tanstack/angular-table';
+import moment from 'moment';
+
+import { AppService } from '@app/app.service';
+import { Permiso } from '@permisos/interfaces/permiso.interface';
+import { PermisosService } from '@permisos/services/permisos.service';
+import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
+import { type BotonAcciones } from '@shared/interfaces/boton-acciones.interface';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
+import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
+import { computed } from '@angular/core';
+import { PermisosUsuario } from '@permisos/interfaces/permisos-usuario.interface';
+import { Pantalla } from '@shared/interfaces/pantalla.interface';
+import { ListaPermisosPantallaComponent } from '../lista-permisos-pantalla/lista-permisos-pantalla.component';
+import { Row, PaginationState } from '@tanstack/angular-table';
+import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
+
+interface Util {
+  $implicit: CellContext<any, any>;
+  data: BotonAcciones[];
+}
+
+@Component({
+  selector: 'tabla-permisos',
+  imports: [
+    CommonModule,
+    FlexRenderDirective,
+    TableExpansorComponent,
+    ResponsiveTableDirective,
+    WebIconComponent,
+    ListaPermisosPantallaComponent,
+    PaginadorComponent,
+  ],
+  templateUrl: './tabla-permisos.component.html',
+  styleUrl: './tabla-permisos.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+})
+export class TablaPermisosComponent implements OnDestroy, OnInit {
+  private injector = inject(Injector);
+  public permisosService = inject(PermisosService);
+
+  private columnasPorDefecto = signal<ColumnDef<PermisosUsuario>[]>([
+    {
+      id: 'expansor',
+      header: () => '',
+      size: 55,
+      cell: context =>
+        flexRenderComponent(TableExpansorComponent, {
+          inputs: {
+            isExpanded: context.row.getIsExpanded(),
+            disabled: this.appService.editando(),
+          },
+          outputs: {
+            toggleExpand: () => this.onToggleRow(context.row),
+          },
+        }),
+    },
+    {
+      id: 'documento',
+      accessorKey: 'documento',
+      header: 'Documento',
+      cell: info => `<span class="font-bold">${info.getValue()}</span>`,
+    },
+    {
+      id: 'nombre',
+      accessorKey: 'nombre',
+      header: 'Nombre',
+      cell: info => info.getValue(),
+    },
+    {
+      id: 'rol',
+      header: 'Rol',
+      accessorKey: 'rol',
+      cell: () => this.celdaRol(),
+    },
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      cell: context => {
+        const id = context.row.original.id_usuario;
+        const enEdicion = this.permisosService.filaPermisosEditando()[id];
+
+        const acciones: BotonAcciones[] = enEdicion
+          ? [
+              {
+                tooltip: 'Cancelar',
+                icono: 'remove-circle-outline',
+                color: 'error',
+                eventoClick: () => {
+                  this.permisosService.setEditandoFilaPermisos(id, false);
+                  this.onToggleRow(context.row);
+                  this.permisosService.setModoCreacion(false);
+                  this.appService.setEditando(false);
+                },
+              },
+              {
+                tooltip: 'Guardar',
+                icono: 'save-outline',
+                color: 'success',
+                eventoClick: () => {
+                  this.permisosService.setEditandoFilaPermisos(id, false);
+                  this.onToggleRow(context.row);
+                },
+              },
+            ]
+          : [
+              {
+                tooltip: 'Editar',
+                icono: 'pencil-outline',
+                color: 'accent',
+                eventoClick: () => {
+                  this.permisosService.setEditandoFilaPermisos(id, true);
+                  this.onToggleRow(context.row, true);
+                  this.permisosService.setModoCreacion(false);
+                  this.appService.setEditando(true);
+                },
+              },
+            ];
+
+        return flexRenderComponent(AccionesTablaComponent, {
+          inputs: {
+            acciones,
+          },
+        });
+      },
+    },
+  ]);
+
+  ngOnInit() {
+    effect(
+      () => {
+        this.permisosService.botonArenderizar();
+        this.tablaPermisos.setExpanded({});
+      },
+      {
+        injector: this.injector,
+      },
+    );
+  }
+
+  public appService = inject(AppService);
+  public celdaAcciones = viewChild.required<TemplateRef<Util>>('celdaAcciones');
+
+  public tableState = signal({
+    expanded: {} as ExpandedState,
+    globalFilter: '',
+  });
+
+  public tablaPermisos = createAngularTable(() => ({
+    data: this.permisosQuery.data() ?? [],
+    columns: this.columnasPorDefecto(),
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getRowCanExpand: () => true,
+    autoResetExpanded: true,
+    getFilteredRowModel: getFilteredRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    manualPagination: true,
+    autoResetPageIndex: false,
+    state: {
+      pagination: this.permisosService.paginacion(),
+      expanded: this.tableState().expanded,
+      globalFilter: this.tableState().globalFilter,
+    },
+    onPaginationChange: estado => {
+      const newPagination =
+        typeof estado === 'function'
+          ? estado(this.permisosService.paginacion())
+          : estado;
+
+      this.permisosService.setPaginacion({
+        pageIndex: newPagination.pageIndex,
+        pageSize: newPagination.pageSize,
+      });
+    },
+  }));
+
+  public celdaRol =
+    viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
+      'celdaRol',
+    );
+
+  get permisosQuery() {
+    return this.permisosService.permisosQuery;
+  }
+
+  get rolesQuery() {
+    return this.appService.rolesQuery.data();
+  }
+
+  get pantallas() {
+    return (
+      this.appService.pantallasQuery
+        .data()
+        ?.sort((a, b) => a.orden - b.orden) ?? []
+    );
+  }
+
+  ngOnDestroy() {
+    this.permisosService.setModoCreacion(false);
+    this.appService.setEditando(false);
+  }
+
+  public onToggleRow(row: Row<PermisosUsuario>, editing = false) {
+    const rowId = row.id;
+    const expanded = this.tablaPermisos.getState().expanded as Record<
+      string,
+      boolean
+    >;
+
+    const newState: Record<string, boolean> = {};
+    if (!expanded[rowId] || editing) {
+      newState[rowId] = true;
+    }
+
+    this.permisosService.setPantallaSeleccionada(null);
+    this.tablaPermisos.setExpanded(newState);
+  }
+
+  public obtenerPermisos(row: PermisosUsuario): Permiso[] {
+    return row.permisos.filter(
+      permiso =>
+        permiso.id_pantalla ===
+        this.permisosService.pantallaSeleccionada()?.id_pantalla,
+    );
+  }
+
+  onPageChange(estado: PaginationState): void {
+    this.permisosService.setPaginacion(estado);
+  }
+
+  // Método para manejar el toggle de permisos
+  public onPermisoToggle(evento: { permiso: Permiso; activo: boolean }): void {
+    console.log('Permiso toggle:', evento);
+    // Aquí puedes implementar la lógica para actualizar los permisos del usuario
+    // Por ejemplo, hacer una llamada al servicio para guardar los cambios
+  }
+}
