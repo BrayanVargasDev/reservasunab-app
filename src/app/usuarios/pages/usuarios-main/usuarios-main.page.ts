@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   OnInit,
+  OnDestroy,
   TemplateRef,
   computed,
   inject,
@@ -34,6 +35,7 @@ import {
   refreshOutline,
 } from 'ionicons/icons';
 import { Usuario } from '@usuarios/intefaces';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 
 import {
   CellContext,
@@ -81,10 +83,13 @@ import { Rol } from '../../../permisos/interfaces/rol.interface';
     class: 'flex flex-col grow w-full sm:pl-3 relative overflow-y-auto',
   },
 })
-export class UsuariosMainPage implements OnInit {
+export class UsuariosMainPage implements OnInit, OnDestroy {
   private alertaService = inject(AlertasService);
   public usuariosService = inject(UsuariosService);
   public appService = inject(AppService);
+
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   public alertaUsuarios = viewChild.required('alertaUsuarios', {
     read: ViewContainerRef,
@@ -181,29 +186,9 @@ export class UsuariosMainPage implements OnInit {
     },
   ]);
 
-  public filtroTexto: string = '';
-
   public tableState = signal({
     expanded: {} as ExpandedState,
     globalFilter: '',
-  });
-
-  // Signal para los datos filtrados
-  public usuariosFiltrados = computed(() => {
-    const usuarios = this.usuariosQuery.data() || [];
-    if (!this.filtroTexto.trim()) {
-      return usuarios;
-    }
-
-    const filtroLower = this.filtroTexto.toLowerCase();
-    return usuarios.filter(usuario => {
-      return (
-        usuario.nombre.toLowerCase().includes(filtroLower) ||
-        usuario.apellido.toLowerCase().includes(filtroLower) ||
-        usuario.email.toLowerCase().includes(filtroLower) ||
-        usuario.rol.toLowerCase().includes(filtroLower)
-      );
-    });
   });
 
   table = createAngularTable(() => ({
@@ -272,6 +257,22 @@ export class UsuariosMainPage implements OnInit {
       cameraOutline,
       refreshOutline,
     });
+
+    // Configurar debounce para la búsqueda
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((texto: string) => {
+        this.usuariosService.setFiltroTexto(texto);
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get usuariosQuery() {
@@ -286,13 +287,12 @@ export class UsuariosMainPage implements OnInit {
     );
   }
 
-  aplicarFiltro() {
-    // El filtro se aplica automáticamente a través del computed usuariosFiltrados
-    // No necesitamos hacer nada más aquí, ya que la tabla usa los datos filtrados
+  aplicarFiltro(texto: string) {
+    this.searchSubject.next(texto);
   }
 
   limpiarFiltro() {
-    this.filtroTexto = '';
+    this.usuariosService.limpiarFiltro();
   }
 
   toggleRowExpanded(id: number) {

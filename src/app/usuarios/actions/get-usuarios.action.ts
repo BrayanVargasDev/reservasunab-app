@@ -12,13 +12,10 @@ export const getUsuarios = async (
   params: PaginationState & GetUsuariosParams,
 ): Promise<PaginatedResponse<Usuario>> => {
   const queryParams = new URLSearchParams({
+    page: (params.pageIndex + 1).toString(),
     per_page: params.pageSize.toString(),
-    search: params.search || '',
+    search: params.search?.trim() || '',
   });
-
-  if (params.pageIndex !== 0) {
-    queryParams.set('page', (params.pageIndex + 1).toString());
-  }
 
   const url = `${BASE_URL}/usuarios?${queryParams.toString()}`;
 

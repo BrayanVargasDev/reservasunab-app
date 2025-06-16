@@ -21,13 +21,19 @@ export class UsuariosService {
     pageSize: 5,
   });
   private _datosPaginador = signal<Meta | null>(null);
+  private _filtroTexto = signal<string>('');
 
   public paginacion = computed(() => this._paginacion());
   public datosPaginador = computed(() => this._datosPaginador());
+  public filtroTexto = this._filtroTexto.asReadonly();
 
   queryUsuarios = injectQuery(() => ({
-    queryKey: ['usuarios', this.paginacion()],
-    queryFn: () => getUsuarios(this.paginacion()),
+    queryKey: ['usuarios', this.paginacion(), this._filtroTexto()],
+    queryFn: () =>
+      getUsuarios({
+        ...this.paginacion(),
+        search: this._filtroTexto(),
+      }),
     select: (response: PaginatedResponse<Usuario>) => {
       this._datosPaginador.set(response.meta);
       return response.data;
@@ -95,9 +101,22 @@ export class UsuariosService {
     this._paginacion.set(paginacion);
   }
 
+  public setFiltroTexto(filtro: string) {
+    this._filtroTexto.set(filtro);
+    // Reiniciar a la primera página cuando se cambia el filtro
+    this.setPaginacion({
+      ...this._paginacion(),
+      pageIndex: 0,
+    });
+  }
+
+  public limpiarFiltro() {
+    this._filtroTexto.set('');
+  }
+
   public setDatosPaginador(datos: Partial<Meta>) {
     this._datosPaginador.update(
-      state =>
+      (state) =>
         ({
           ...state,
           ...datos,
@@ -107,8 +126,12 @@ export class UsuariosService {
 
   public prefetchUsuarios(state: PaginationState) {
     this.queryClient.prefetchQuery({
-      queryKey: ['usuarios', state],
-      queryFn: () => getUsuarios(state),
+      queryKey: ['usuarios', state, this._filtroTexto()],
+      queryFn: () =>
+        getUsuarios({
+          ...state,
+          search: this._filtroTexto(),
+        }),
       staleTime: 1000 * 60 * 5,
     });
   }
