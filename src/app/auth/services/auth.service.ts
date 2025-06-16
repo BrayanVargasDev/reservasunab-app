@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+
+import { loginAction } from '../actions';
 
 export interface User {
   id: number;
@@ -22,9 +22,6 @@ export class AuthService {
   private _usuario = signal<User | null>(null);
   private _token = signal<string | null>(null);
   private _isLoading = signal<boolean>(false);
-  private apiUrl = environment.apiUrl;
-
-  private http = inject(HttpClient);
 
   estadoAutenticacion = computed<EstadoAutenticacion>(() => {
     if (this._estadoAutenticacion() === 'chequeando') return 'chequeando';
@@ -48,10 +45,7 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
-    return this.http.post(`${this.apiUrl}/auth/login`, {
-      email: email,
-      password: password,
-    });
+    return loginAction({ email, password });
   }
 
   logout(): void {}

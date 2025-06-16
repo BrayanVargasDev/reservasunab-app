@@ -1,22 +1,28 @@
 import { LoginResponse } from '@auth/interfaces';
 import { CredencialesLogin } from '@auth/interfaces/credenciales-login.interface';
+import { environment } from '@environments/environment';
 
-export interface HttpClient {
-  post<T>(url: string, data: any): Promise<T>;
-}
+const BASE_URL = environment.apiUrl;
 
-export class LoginAction {
-  constructor(private httpClient: HttpClient) {}
+export async function loginAction(
+  credentials: CredencialesLogin,
+): Promise<LoginResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/singin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
 
-  async execute(credentials: CredencialesLogin): Promise<LoginResponse> {
-    try {
-      const response = await this.httpClient.post<LoginResponse>(
-        '/api/auth/login',
-        credentials,
-      );
-      return response;
-    } catch (error) {
-      throw new Error('Login failed');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw errorData.message;
     }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
 }

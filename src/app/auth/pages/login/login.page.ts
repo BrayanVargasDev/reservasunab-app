@@ -3,6 +3,8 @@ import {
   Component,
   inject,
   signal,
+  viewChild,
+  ViewContainerRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -37,9 +39,9 @@ import {
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from '@app/app.service';
-import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { AuthService } from '@auth/services/auth.service';
-import { environment } from '@environments/environment';
+import { AlertasService } from '@shared/services/alertas.service';
 
 @Component({
   selector: 'app-login',
@@ -67,18 +69,21 @@ import { environment } from '@environments/environment';
 })
 export class LoginPage {
   private formBuilder = inject(FormBuilder);
-  private environment = environment;
+  private alertaService = inject(AlertasService);
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
-  formUtils = FormUtils;
-  loginForm: FormGroup = this.formBuilder.group({
+  public formUtils = FormUtils;
+  public loginForm: FormGroup = this.formBuilder.group({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [
       Validators.required,
       Validators.minLength(6),
     ]),
-    remember: [false],
+  });
+
+  public alertaLogin = viewChild.required('alertaLogin', {
+    read: ViewContainerRef,
   });
 
   showPassword = signal(false);
@@ -107,8 +112,7 @@ export class LoginPage {
   loginSaml() {
     this.disableForm();
     this.authService.setLoading(true);
-    const samlUrl = `${this.environment.samlUrl}/saml/${this.environment.tenantId}/login`;
-    window.location.href = samlUrl;
+    // window.location.href = samlUrl;
   }
 
   disableForm() {
@@ -116,10 +120,30 @@ export class LoginPage {
   }
 
   onLogin() {
-    if (this.loginForm.valid) {
-      console.log('Intentando iniciar sesión con:', this.loginForm.value);
-    } else {
-      this.loginForm.markAllAsTouched();
+    this.loginForm.markAllAsTouched();
+    if (this.loginForm.invalid) {
+      this.loginForm.enable();
+      return;
     }
+
+    const { email, password } = this.loginForm.value;
+
+    this.authService.setLoading(true);
+    this.authService
+      .login(email, password)
+      .then(() => {
+        this.authService.setLoading(false);
+      })
+      .catch(error => {
+        this.authService.setLoading(false);
+        this.loginForm.enable();
+        this.alertaService.error(
+          `Error al iniciar sesión ${
+            error || ' inténtelo de nuevo más tarde.'
+          }`,
+          5000,
+          this.alertaLogin(),
+        );
+      });
   }
 }
