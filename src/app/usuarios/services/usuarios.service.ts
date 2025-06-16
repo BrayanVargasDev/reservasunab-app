@@ -1,15 +1,13 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
 
 import { Usuario } from '@usuarios/intefaces';
-import { getUsuarios } from '@usuarios/actions/get-usuarios.action';
-import { saveUsuario } from '@usuarios/actions/save-usuarios.action';
+import { getUsuarios, saveUsuario } from '@usuarios/actions';
 import { AlertasService } from '@shared/services/alertas.service';
-import { Meta } from '@shared/interfaces';
+import { Meta, PaginatedResponse } from '@shared/interfaces';
 import { i18nTablaUsuarios } from '../constants/lenguaje.constant';
-import { PaginatedResponse } from '../../shared/interfaces/paginatd-response.interface';
 import { updateUsuarioRol, updateUsuarioEstado } from '../actions';
 
 @Injectable({
@@ -17,7 +15,7 @@ import { updateUsuarioRol, updateUsuarioEstado } from '../actions';
 })
 export class UsuariosService {
   private alertaService = inject(AlertasService);
-
+  private queryClient = inject(QueryClient);
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -105,5 +103,13 @@ export class UsuariosService {
           ...datos,
         } as Meta),
     );
+  }
+
+  public prefetchUsuarios(state: PaginationState) {
+    this.queryClient.prefetchQuery({
+      queryKey: ['usuarios', state],
+      queryFn: () => getUsuarios(state),
+      staleTime: 1000 * 60 * 5,
+    });
   }
 }

@@ -35,6 +35,7 @@ export class PaginadorComponent {
   mostrarExtremos = input(true);
   opcionesTamano = input<number[]>([5, 10, 25, 50, 100]);
   deshabilitado = input(false);
+  prefetchFunction = output<PaginationState>();
 
   cambioPaginacion = output<PaginationState>();
 
@@ -54,8 +55,9 @@ export class PaginadorComponent {
 
   paginasVisibles = computed(() => {
     const enlaces = this.paginacion()?.links || [];
-    return enlaces.map(link => ({
+    return enlaces.map((link, index) => ({
       ...link,
+      tablePageIndex: index > 0 ? index - 1 : 0,
       label: link.label
         .replace('&laquo; Previous', '&lsaquo;')
         .replace('Next &raquo;', '&rsaquo;'),
@@ -141,5 +143,9 @@ export class PaginadorComponent {
     if (event.key === 'Enter') {
       this.onPageInputBlur();
     }
+  }
+
+  onMouseEnter(paginacion: PaginationState) {
+    this.prefetchFunction.emit(paginacion);
   }
 }

@@ -31,6 +31,14 @@
         [class.btn-outline]="!page.active"
         [disabled]="deshabilitado()"
         (click)="irPaginaDesdeLink(page)"
+        (mouseenter)="
+          !page.active
+            ? onMouseEnter({
+                pageIndex: page.tablePageIndex,
+                pageSize: estado().pageSize
+              })
+            : null
+        "
         type="button"
       >
         <span [innerHTML]="page.label"></span>

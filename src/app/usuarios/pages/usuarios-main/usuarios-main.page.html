@@ -230,6 +230,7 @@
   [mostrarSelectorTamano]="true"
   [mostrarExtremos]="true"
   [deshabilitado]="usuariosQuery.isFetching()"
+  (prefetchFunction)="usuariosService.prefetchUsuarios($event)"
 >
 </app-paginador>
 

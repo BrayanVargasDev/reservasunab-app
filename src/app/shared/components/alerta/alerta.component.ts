@@ -35,6 +35,9 @@ import { computed } from '@angular/core';
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'z-[9999]',
+  }
 })
 export class AlertaComponent {
   alertaService = inject(AlertasService);
