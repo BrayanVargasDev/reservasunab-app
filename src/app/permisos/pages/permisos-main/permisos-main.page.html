@@ -141,7 +141,6 @@
   </div>
 </div>
 <div class="w-full h-full max-h-full overflow-hidden flex flex-col">
-  <!-- Tabs para pantallas pequeñas -->
   <div class="tabs tabs-lift overflow-y-auto">
     <input
       #tabPermiso
@@ -153,7 +152,7 @@
       (change)="cambiarPestana('permiso')"
     />
     <div
-      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !h-[calc(100vh_-_14.75rem)]"
+      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
     >
       @if (permisosQuery.isPending()) {
       <div class="flex justify-center items-center py-8">

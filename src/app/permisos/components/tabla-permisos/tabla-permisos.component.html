@@ -21,7 +21,11 @@
       >
         @for (rol of rolesQuery; track $index) {
         <li>
-          <button type="button" class="w-full text-left">
+          <button
+            type="button"
+            class="w-full text-left"
+            (click)="cambiarRolUsuario(context.row.original, rol)"
+          >
             {{ rol.nombre | titlecase }}
           </button>
         </li>
@@ -162,5 +166,8 @@
   [mostrarSelectorTamano]="true"
   [mostrarExtremos]="true"
   [deshabilitado]="permisosQuery.isFetching()"
+  (prefetchFunction)="permisosService.prefetchPermisos($event)"
 >
 </app-paginador>
+
+<ng-template #alertaPermisos></ng-template>

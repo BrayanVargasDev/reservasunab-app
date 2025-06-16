@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Permiso } from '@permisos/interfaces/permiso.interface';
 import { PermisosService } from '@permisos/services/permisos.service';
+import { AppService } from '../../../app.service';
 
 @Component({
   selector: 'lista-permisos-pantalla',
@@ -32,6 +33,7 @@ import { PermisosService } from '@permisos/services/permisos.service';
         <label class="cursor-pointer label">
           <input
             type="checkbox"
+            [disabled]="!appService.editando()"
             [checked]="permisoActivo(permiso)"
             (change)="onPermisoToggle(permiso, $event)"
             class="checkbox checkbox-primary checkbox-sm "
@@ -62,6 +64,7 @@ import { PermisosService } from '@permisos/services/permisos.service';
 })
 export class ListaPermisosPantallaComponent {
   readonly permisosService = inject(PermisosService);
+  readonly appService = inject(AppService);
   permisos = input.required<Permiso[]>();
   permisosActivos = input<number[]>([]);
 

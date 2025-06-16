@@ -9,6 +9,7 @@ import {
   OnDestroy,
   effect,
   Injector,
+  ViewContainerRef,
 } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 
@@ -40,6 +41,10 @@ import { Pantalla } from '@shared/interfaces/pantalla.interface';
 import { ListaPermisosPantallaComponent } from '../lista-permisos-pantalla/lista-permisos-pantalla.component';
 import { Row, PaginationState } from '@tanstack/angular-table';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
+import { AlertasService } from '@shared/services/alertas.service';
+import { UsuariosService } from '@usuarios/services/usuarios.service';
+import { Usuario } from '@usuarios/intefaces';
+import { Rol } from '@permisos/interfaces';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -64,6 +69,8 @@ interface Util {
 })
 export class TablaPermisosComponent implements OnDestroy, OnInit {
   private injector = inject(Injector);
+  private alertaService = inject(AlertasService);
+  public usuariosService = inject(UsuariosService);
   public permisosService = inject(PermisosService);
 
   private columnasPorDefecto = signal<ColumnDef<PermisosUsuario>[]>([
@@ -152,6 +159,10 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
       },
     },
   ]);
+
+  public alertaPermisos = viewChild.required('alertaPermisos', {
+    read: ViewContainerRef,
+  });
 
   ngOnInit() {
     effect(
@@ -257,14 +268,13 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
       newExpanded = { [rowId]: true };
     } else {
       newExpanded = currentExpanded[rowId] ? {} : { [rowId]: true };
+      this.permisosService.setPantallaSeleccionada(null);
     }
 
     this.tableState.update(state => ({
       ...state,
       expanded: newExpanded,
     }));
-
-    this.permisosService.setPantallaSeleccionada(null);
   }
 
   public obtenerPermisos(row: PermisosUsuario): Permiso[] {
@@ -284,5 +294,39 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     console.log('Permiso toggle:', evento);
     // Aquí puedes implementar la lógica para actualizar los permisos del usuario
     // Por ejemplo, hacer una llamada al servicio para guardar los cambios
+  }
+
+  cambiarRolUsuario(usuario: PermisosUsuario, nuevoRol: Rol) {
+    this.alertaService
+      .confirmarAccion(
+        `¿Estás seguro de que quieres cambiar el rol de <strong>${usuario.nombre}</strong> a <strong>${nuevoRol.nombre}</strong>?`,
+        this.alertaPermisos(),
+        'Cambiar rol de usuario',
+        'info',
+      )
+      .then(confirmado => {
+        if (confirmado) {
+          this.usuariosService
+            .cambiarRolUsuario(usuario.id_usuario, nuevoRol.id || 0)
+            .then(() => {
+              this.alertaService.success(
+                'Rol de usuario actualizado exitosamente.',
+                5000,
+                this.alertaPermisos(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+              this.permisosService.permisosQuery.refetch();
+            })
+            .catch((error: any) => {
+              console.error('Error al cambiar el rol del usuario:', error);
+              this.alertaService.error(
+                'Error al cambiar el rol del usuario. Por favor, inténtalo de nuevo.',
+                5000,
+                this.alertaPermisos(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+            });
+        }
+      });
   }
 }

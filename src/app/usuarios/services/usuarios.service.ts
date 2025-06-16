@@ -103,7 +103,7 @@ export class UsuariosService {
 
   public setFiltroTexto(filtro: string) {
     this._filtroTexto.set(filtro);
-    // Reiniciar a la primera página cuando se cambia el filtro
+
     this.setPaginacion({
       ...this._paginacion(),
       pageIndex: 0,
