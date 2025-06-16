@@ -138,11 +138,10 @@
               </button>
               }
             </div>
-            <div>
-              <lista-permisos-pantalla
-                [permisos]="obtenerPermisos(row.original)"
-              ></lista-permisos-pantalla>
-            </div>
+            <lista-permisos-pantalla
+              [ngClass]="'w-full'"
+              [permisos]="obtenerPermisos(row.original)"
+            ></lista-permisos-pantalla>
           </div>
         </div>
       </td>

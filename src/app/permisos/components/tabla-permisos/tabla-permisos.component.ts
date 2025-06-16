@@ -157,7 +157,11 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     effect(
       () => {
         this.permisosService.botonArenderizar();
-        this.tablaPermisos.setExpanded({});
+        this.tableState.update(state => ({
+          ...state,
+          expanded: {},
+        }));
+        this.permisosService.setPantallaSeleccionada(null);
       },
       {
         injector: this.injector,
@@ -179,7 +183,7 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getRowCanExpand: () => true,
-    autoResetExpanded: true,
+    autoResetExpanded: false,
     getFilteredRowModel: getFilteredRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     manualPagination: true,
@@ -199,6 +203,17 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
         pageIndex: newPagination.pageIndex,
         pageSize: newPagination.pageSize,
       });
+    },
+    onExpandedChange: estado => {
+      const newExpanded =
+        typeof estado === 'function'
+          ? estado(this.tableState().expanded)
+          : estado;
+
+      this.tableState.update(state => ({
+        ...state,
+        expanded: newExpanded,
+      }));
     },
   }));
 
@@ -229,19 +244,27 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
   }
 
   public onToggleRow(row: Row<PermisosUsuario>, editing = false) {
+    console.log('Toggling row:', row);
     const rowId = row.id;
-    const expanded = this.tablaPermisos.getState().expanded as Record<
+    const currentExpanded = this.tableState().expanded as Record<
       string,
       boolean
     >;
 
-    const newState: Record<string, boolean> = {};
-    if (!expanded[rowId] || editing) {
-      newState[rowId] = true;
+    let newExpanded: Record<string, boolean>;
+
+    if (editing) {
+      newExpanded = { [rowId]: true };
+    } else {
+      newExpanded = currentExpanded[rowId] ? {} : { [rowId]: true };
     }
 
+    this.tableState.update(state => ({
+      ...state,
+      expanded: newExpanded,
+    }));
+
     this.permisosService.setPantallaSeleccionada(null);
-    this.tablaPermisos.setExpanded(newState);
   }
 
   public obtenerPermisos(row: PermisosUsuario): Permiso[] {

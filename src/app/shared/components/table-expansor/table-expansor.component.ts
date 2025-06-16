@@ -30,6 +30,6 @@ export class TableExpansorComponent {
     if (this.disabled() || this.appService.editando()) {
       return;
     }
-    this.toggleExpand.emit(!this.isExpanded);
+    this.toggleExpand.emit(!this.isExpanded());
   }
 }
