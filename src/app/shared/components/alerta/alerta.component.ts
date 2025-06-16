@@ -27,8 +27,11 @@ import { computed } from '@angular/core';
         'max-w-md': true,
       }"
     >
-      <app-web-icon [nombreIcono]="obtenerNombreIcono()" estilos="h-5 w-5"></app-web-icon>
-      <span>{{ mensaje() }}</span>
+      <app-web-icon
+        [nombreIcono]="obtenerNombreIcono()"
+        estilos="h-5 w-5"
+      ></app-web-icon>
+      <span [innerHTML]="mensaje()"></span>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

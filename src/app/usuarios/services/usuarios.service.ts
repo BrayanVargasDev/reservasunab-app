@@ -10,11 +10,7 @@ import { AlertasService } from '@shared/services/alertas.service';
 import { Meta } from '@shared/interfaces';
 import { i18nTablaUsuarios } from '../constants/lenguaje.constant';
 import { PaginatedResponse } from '../../shared/interfaces/paginatd-response.interface';
-import {
-  updateUsuarioRol,
-  updateUsuarioEstado,
-  deleteUsuario,
-} from '../actions';
+import { updateUsuarioRol, updateUsuarioEstado } from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -79,17 +75,13 @@ export class UsuariosService {
     return saveUsuario(usuario, this._modoEdicion(), true);
   }
 
-  public async eliminarUsuario(usuarioId: number): Promise<void> {
-    return deleteUsuario(usuarioId);
-  }
-
   public async activarUsuario(usuarioId: number): Promise<Usuario> {
     return updateUsuarioEstado(usuarioId, 'activo');
   }
 
   public async cambiarRolUsuario(
     usuarioId: number,
-    nuevoRol: string,
+    nuevoRol: number,
   ): Promise<Usuario> {
     return updateUsuarioRol(usuarioId, nuevoRol);
   }

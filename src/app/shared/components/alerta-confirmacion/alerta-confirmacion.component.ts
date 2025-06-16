@@ -62,9 +62,11 @@ export type PosicionAlerta =
             <h3 class="text-lg font-semibold mb-1" [ngClass]="clasesTitulo()">
               {{ titulo() }}
             </h3>
-            <p class="text-sm m-0 text-base-300" [ngClass]="clasesMensaje()">
-              {{ mensaje() }}
-            </p>
+            <p
+              class="text-sm m-0 text-base-300"
+              [ngClass]="clasesMensaje()"
+              [innerHTML]="mensaje()"
+            ></p>
           </div>
         </div>
 

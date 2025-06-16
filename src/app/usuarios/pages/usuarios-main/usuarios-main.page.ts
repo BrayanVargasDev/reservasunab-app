@@ -57,6 +57,7 @@ import { UsuariosService } from '@app/usuarios/services/usuarios.service';
 import { ModalUsuariosComponent } from '@usuarios/components/modal-usuarios/modal-usuarios.component';
 import { AlertasService } from '@shared/services/alertas.service';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
+import { Rol } from '../../../permisos/interfaces/rol.interface';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -325,10 +326,10 @@ export class UsuariosMainPage implements OnInit {
     this.usuariosService.abrirModal();
   }
 
-  cambiarRolUsuario(usuario: Usuario, nuevoRol: string) {
+  cambiarRolUsuario(usuario: Usuario, nuevoRol: Rol) {
     this.alertaService
       .confirmarAccion(
-        `¿Estás seguro de que quieres cambiar el rol de ${usuario.nombre} ${usuario.apellido} a ${nuevoRol}?`,
+        `¿Estás seguro de que quieres cambiar el rol de <strong>${usuario.nombre} ${usuario.apellido}</strong> a <strong>${nuevoRol.nombre}</strong>?`,
         this.alertaUsuarios(),
         'Cambiar rol de usuario',
         'info',
@@ -336,7 +337,7 @@ export class UsuariosMainPage implements OnInit {
       .then(confirmado => {
         if (confirmado) {
           this.usuariosService
-            .cambiarRolUsuario(usuario.id, nuevoRol)
+            .cambiarRolUsuario(usuario.id, nuevoRol.id || 0)
             .then(() => {
               this.alertaService.success(
                 'Rol de usuario actualizado exitosamente.',
