@@ -25,27 +25,7 @@ export const updateUsuarioRol = async (usuarioId: number, nuevoRol: string): Pro
   }
 };
 
-export const updateUsuarioEstado = async (usuarioId: number, nuevoEstado: string): Promise<Usuario> => {
-  try {
-    const response = await fetch(`${BASE_URL}/usuarios/${usuarioId}/estado`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ estado: nuevoEstado }),
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const { data } = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error in updateUsuarioEstado action:', error);
-    throw error;
-  }
-};
 
 export const deleteUsuario = async (usuarioId: number): Promise<void> => {
   try {

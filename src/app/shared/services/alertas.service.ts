@@ -9,7 +9,7 @@ import {
   AlertaConfirmacionComponent,
   ConfiguracionBoton,
   TipoAlertaConfirmacion,
-  PosicionAlerta
+  PosicionAlerta,
 } from '@shared/components/alerta-confirmacion/alerta-confirmacion.component';
 
 export interface Alerta {
@@ -90,29 +90,39 @@ export class AlertasService {
    * @param config Configuración de la alerta de confirmación
    * @returns Promise que se resuelve con true si se confirma, false si se cancela
    */
-  async confirmacion(config: ConfiguracionAlertaConfirmacion): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
+  async confirmacion(
+    config: ConfiguracionAlertaConfirmacion,
+  ): Promise<boolean> {
+    return new Promise<boolean>(resolve => {
       config.referencia.clear();
 
-      const alertRef = config.referencia.createComponent(AlertaConfirmacionComponent);
+      const alertRef = config.referencia.createComponent(
+        AlertaConfirmacionComponent,
+      );
 
       // Configurar inputs
       alertRef.setInput('tipo', config.tipo || 'question');
       alertRef.setInput('titulo', config.titulo || 'Confirmación');
       alertRef.setInput('mensaje', config.mensaje);
       alertRef.setInput('posicion', config.posicion || 'centro');
-      alertRef.setInput('botones', config.botones || [
-        { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
-        { texto: 'Confirmar', tipo: 'confirmar', estilo: 'btn-primary' }
-      ]);
-      alertRef.setInput('estilosPersonalizados', config.estilosPersonalizados || '');
+      alertRef.setInput(
+        'botones',
+        config.botones ||
+          this.establecerBotonesPredeterminados(config.tipo || 'question'),
+      );
+      alertRef.setInput(
+        'estilosPersonalizados',
+        config.estilosPersonalizados || '',
+      );
       alertRef.setInput('mostrarIcono', config.mostrarIcono !== false);
       alertRef.setInput('anchuraMaxima', config.anchuraMaxima || '28rem');
 
       // Suscribirse a los outputs
-      const confirmadoSubscription = alertRef.instance.confirmado.subscribe((confirmado: boolean) => {
-        resolve(confirmado);
-      });
+      const confirmadoSubscription = alertRef.instance.confirmado.subscribe(
+        (confirmado: boolean) => {
+          resolve(confirmado);
+        },
+      );
 
       const cerradoSubscription = alertRef.instance.cerrado.subscribe(() => {
         setTimeout(() => {
@@ -130,7 +140,7 @@ export class AlertasService {
   async confirmarEliminacion(
     mensaje: string = '¿Estás seguro de que quieres eliminar este elemento?',
     referencia: ViewContainerRef,
-    titulo: string = 'Confirmar eliminación'
+    titulo: string = 'Confirmar eliminación',
   ): Promise<boolean> {
     return this.confirmacion({
       tipo: 'error',
@@ -139,15 +149,19 @@ export class AlertasService {
       referencia,
       botones: [
         { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
-        { texto: 'Eliminar', tipo: 'confirmar', estilo: 'bg-red-600 text-white hover:bg-red-700' }
-      ]
+        {
+          texto: 'Eliminar',
+          tipo: 'confirmar',
+          estilo: 'bg-red-600 text-white hover:bg-red-700',
+        },
+      ],
     });
   }
 
   async confirmarGuardado(
     mensaje: string = '¿Quieres guardar los cambios?',
     referencia: ViewContainerRef,
-    titulo: string = 'Guardar cambios'
+    titulo: string = 'Guardar cambios',
   ): Promise<boolean> {
     return this.confirmacion({
       tipo: 'success',
@@ -156,8 +170,12 @@ export class AlertasService {
       referencia,
       botones: [
         { texto: 'No guardar', tipo: 'cancelar', estilo: 'btn-ghost' },
-        { texto: 'Guardar', tipo: 'confirmar', estilo: 'bg-green-600 text-white hover:bg-green-700' }
-      ]
+        {
+          texto: 'Guardar',
+          tipo: 'confirmar',
+          estilo: 'bg-green-600 text-white hover:bg-green-700',
+        },
+      ],
     });
   }
 
@@ -165,13 +183,42 @@ export class AlertasService {
     mensaje: string,
     referencia: ViewContainerRef,
     titulo: string = 'Confirmar acción',
-    tipo: TipoAlertaConfirmacion = 'question'
+    tipo: TipoAlertaConfirmacion = 'question',
   ): Promise<boolean> {
     return this.confirmacion({
       tipo,
       titulo,
       mensaje,
-      referencia
+      referencia,
     });
+  }
+
+  private establecerBotonesPredeterminados(
+    tipo: TipoAlertaConfirmacion,
+  ): ConfiguracionBoton[] {
+    switch (tipo) {
+      case 'success':
+        return [
+          { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
+          { texto: 'Aceptar', tipo: 'confirmar', estilo: 'btn-success' },
+        ];
+      case 'error':
+        return [
+          { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
+          { texto: 'Reintentar', tipo: 'confirmar', estilo: 'btn-danger' },
+        ];
+      case 'warning':
+        return [
+          { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
+          { texto: 'Continuar', tipo: 'confirmar', estilo: 'btn-warning' },
+        ];
+      case 'info':
+        return [
+          { texto: 'Cerrar', tipo: 'cancelar', estilo: 'btn-ghost' },
+          { texto: 'Aceptar', tipo: 'confirmar', estilo: 'btn-info' },
+        ];
+      default:
+        return [];
+    }
   }
 }

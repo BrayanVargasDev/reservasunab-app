@@ -227,13 +227,6 @@ export class UsuariosMainPage implements OnInit {
           (currentExpanded as Record<string, boolean>)[id],
       );
 
-      if (changedId) {
-        this.verDetalles(
-          Number(changedId),
-          (newExpanded as Record<string, boolean>)[changedId],
-        );
-      }
-
       this.tableState.update(state => ({
         ...state,
         expanded: newExpanded,
@@ -301,20 +294,6 @@ export class UsuariosMainPage implements OnInit {
     this.filtroTexto = '';
   }
 
-  verDetalles(id: number, expanded: boolean) {
-    // this.usuariosData.update((usuarios) =>
-    //   usuarios.map((usuario) => {
-    //     if (usuario.id === id) {
-    //       return {
-    //         ...usuario,
-    //         viendoDetalles: expanded,
-    //       };
-    //     }
-    //     return usuario;
-    //   }),
-    // );
-  }
-
   toggleRowExpanded(id: number) {
     const rowId = String(id);
     const currentExpanded =
@@ -327,8 +306,6 @@ export class UsuariosMainPage implements OnInit {
         [rowId]: !currentExpanded,
       },
     }));
-
-    this.verDetalles(id, !currentExpanded);
   }
 
   isRowExpanded(id: number): boolean {
@@ -384,7 +361,7 @@ export class UsuariosMainPage implements OnInit {
 
   cambiarEstadoUsuario(usuario: Usuario) {
     const nuevoEstado =
-      usuario.estado.toLowerCase() === 'inactivo' ? 'inactivo' : 'activo';
+      usuario.estado.toLowerCase() === 'activo' ? 'inactivo' : 'activo';
     const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
 
     this.alertaService
@@ -424,62 +401,6 @@ export class UsuariosMainPage implements OnInit {
 
   refrescarDatos() {
     this.usuariosService.queryUsuarios.refetch();
-  }
-
-  eliminarUsuario(id: number) {
-    this.alertaService
-      .confirmarEliminacion(
-        '¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.',
-        this.alertaUsuarios(),
-        'Eliminar usuario',
-      )
-      .then(confirmado => {
-        if (confirmado) {
-          this.usuariosService
-            .eliminarUsuario(id)
-            .then(() => {
-              this.alertaService.success(
-                'Usuario eliminado exitosamente.',
-                5000,
-                this.alertaUsuarios(),
-                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-              );
-              this.usuariosService.queryUsuarios.refetch();
-            })
-            .catch((error: any) => {
-              console.error('Error al eliminar el usuario:', error);
-              this.alertaService.error(
-                'Error al eliminar el usuario. Por favor, inténtalo de nuevo.',
-                5000,
-                this.alertaUsuarios(),
-                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-              );
-            });
-        }
-      });
-  }
-
-  activarUsuario(usuario: Usuario) {
-    this.usuariosService
-      .activarUsuario(usuario.id)
-      .then(() => {
-        this.alertaService.success(
-          'Usuario activado exitosamente.',
-          5000,
-          this.alertaUsuarios(),
-          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-        );
-        this.usuariosService.queryUsuarios.refetch();
-      })
-      .catch(error => {
-        console.error('Error al activar el usuario:', error);
-        this.alertaService.error(
-          'Error al activar el usuario. Por favor, inténtalo de nuevo.',
-          5000,
-          this.alertaUsuarios(),
-          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-        );
-      });
   }
 
   onPageChange(estado: PaginationState): void {
