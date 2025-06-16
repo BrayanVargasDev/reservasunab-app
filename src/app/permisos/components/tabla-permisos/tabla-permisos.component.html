@@ -145,6 +145,7 @@
             <lista-permisos-pantalla
               [ngClass]="'w-full'"
               [permisos]="obtenerPermisos(row.original)"
+              (permisoToggle)="onPermisoToggle($event, row.original.id_usuario)"
             ></lista-permisos-pantalla>
           </div>
         </div>

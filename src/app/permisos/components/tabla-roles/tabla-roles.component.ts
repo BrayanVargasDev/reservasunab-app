@@ -198,13 +198,11 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
       () => {
         this.permisosService.botonArenderizar();
         this.permisosService.paginacionRoles();
-        // Reset expansión al cambiar datos, pero mantener permisos seleccionados
         this.tableState.update(state => ({
           ...state,
           expanded: {},
         }));
-        this.permisosService.setPantallaSeleccionada(null);
-        this.permisosService.resetFilaPermisosEditando();
+        this.permisosService.resetAllexceptPaginacion();
       },
       {
         injector: this.injector,
@@ -345,7 +343,6 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
 
-      // Limpiar estado de edición
       this.permisosService.setEditandoFilaPermisos(rol.id, false);
       this.onToggleRow(row);
       this.appService.setEditando(false);
@@ -354,7 +351,6 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
       this.descripcion.reset();
       this.permisosService.limpiarPermisosSeleccionados(rol.id);
 
-      // Refetch data
       this.rolesQuery.refetch();
     } catch (error) {
       console.error('Error al actualizar rol:', error);
@@ -469,15 +465,10 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     }
   }
 
-  /**
-   * Obtiene permisos para el nuevo rol en creación
-   * Usa los permisos disponibles del sistema, filtrando por pantalla seleccionada
-   */
   public obtenerPermisosNuevoRol(): Permiso[] {
     const pantallaSeleccionada = this.permisosService.pantallaSeleccionada();
     if (!pantallaSeleccionada) return [];
 
-    // Obtener todos los permisos disponibles del sistema
     const permisosDisponibles =
       this.pantallas.find(
         pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
@@ -485,7 +476,6 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
 
     const permisosSeleccionados = this.permisosService.permisosNuevoRol();
 
-    // Filtrar por pantalla y marcar los que están seleccionados
     return permisosDisponibles
       .filter(
         permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
@@ -511,7 +501,6 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     rolId: number,
   ) {
     if (this.permisosService.modoCreacion()) {
-      // Para nuevo rol en creación
       const permisosActuales = this.permisosService.permisosNuevoRol();
       let nuevosPermisos: Permiso[];
 
@@ -566,14 +555,13 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
           );
         }
       } else {
-        // Remover o marcar como no concedido
         nuevosPermisos = permisosActuales
           .map(p =>
             p.id_permiso === evento.permiso.id_permiso
               ? { ...p, concedido: false }
               : p,
           )
-          .filter(p => p.concedido); // Remover permisos no concedidos
+          .filter(p => p.concedido);
       }
 
       this.permisosService.setPermisosSeleccionados(rolId, nuevosPermisos);

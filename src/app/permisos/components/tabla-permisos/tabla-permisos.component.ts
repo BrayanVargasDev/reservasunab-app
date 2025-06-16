@@ -56,7 +56,6 @@ interface Util {
   imports: [
     CommonModule,
     FlexRenderDirective,
-    TableExpansorComponent,
     ResponsiveTableDirective,
     WebIconComponent,
     ListaPermisosPantallaComponent,
@@ -120,21 +119,13 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
                 tooltip: 'Cancelar',
                 icono: 'remove-circle-outline',
                 color: 'error',
-                eventoClick: () => {
-                  this.permisosService.setEditandoFilaPermisos(id, false);
-                  this.onToggleRow(context.row);
-                  this.permisosService.setModoCreacion(false);
-                  this.appService.setEditando(false);
-                },
+                eventoClick: () => this.onCancelarEdicionUsuario(context.row),
               },
               {
                 tooltip: 'Guardar',
                 icono: 'save-outline',
                 color: 'success',
-                eventoClick: () => {
-                  this.permisosService.setEditandoFilaPermisos(id, false);
-                  this.onToggleRow(context.row);
-                },
+                eventoClick: () => this.onGuardarEdicionUsuario(context.row),
               },
             ]
           : [
@@ -142,12 +133,10 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
                 tooltip: 'Editar',
                 icono: 'pencil-outline',
                 color: 'accent',
-                eventoClick: () => {
-                  this.permisosService.setEditandoFilaPermisos(id, true);
-                  this.onToggleRow(context.row, true);
-                  this.permisosService.setModoCreacion(false);
-                  this.appService.setEditando(true);
-                },
+                disabled:
+                  this.appService.editando() ||
+                  this.permisosService.modoCreacion(),
+                eventoClick: () => this.iniciarEdicionUsuario(context.row),
               },
             ];
 
@@ -164,6 +153,8 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     read: ViewContainerRef,
   });
 
+  private usuarioEnEdicion = signal<PermisosUsuario | null>(null);
+
   ngOnInit() {
     effect(
       () => {
@@ -173,8 +164,7 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
           ...state,
           expanded: {},
         }));
-        this.permisosService.setPantallaSeleccionada(null);
-        this.permisosService.resetFilaPermisosEditando();
+        this.permisosService.resetAllexceptPaginacion();
       },
       {
         injector: this.injector,
@@ -254,6 +244,7 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
   ngOnDestroy() {
     this.permisosService.setModoCreacion(false);
     this.appService.setEditando(false);
+    this.permisosService.resetPermisosSeleccionados();
   }
 
   public onToggleRow(row: Row<PermisosUsuario>, editing = false) {
@@ -278,22 +269,172 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     }));
   }
 
+  private iniciarEdicionUsuario(row: Row<PermisosUsuario>) {
+    const usuario = row.original;
+    const id = usuario.id_usuario;
+
+    this.permisosService.setEditandoFilaPermisos(id, true);
+    this.usuarioEnEdicion.set(usuario);
+    this.appService.setEditando(true);
+
+    this.permisosService.setPermisosUsuarioEditando(id, usuario.permisos);
+
+    this.onToggleRow(row, true);
+  }
+
+  public onCancelarEdicionUsuario(row: Row<PermisosUsuario>) {
+    const id = row.original.id_usuario;
+
+    this.permisosService.setEditandoFilaPermisos(id, false);
+    this.onToggleRow(row);
+    this.permisosService.setModoCreacion(false);
+    this.appService.setEditando(false);
+
+    this.permisosService.limpiarPermisosUsuarioEditando(id);
+    this.usuarioEnEdicion.set(null);
+  }
+
+  public async onGuardarEdicionUsuario(row: Row<PermisosUsuario>) {
+    const usuario = row.original;
+    const userId = usuario.id_usuario;
+    const permisosSeleccionados =
+      this.permisosService.getPermisosUsuarioEditando(userId);
+
+    console.log('Guardando permisos de usuario:', {
+      userId,
+      permisos: permisosSeleccionados,
+    });
+
+    try {
+      await this.permisosService.actualizarPermisosUsuarioAsync(
+        userId,
+        permisosSeleccionados,
+      );
+
+      this.alertaService.success(
+        'Permisos de usuario actualizados exitosamente.',
+        5000,
+        this.alertaPermisos(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+
+      // Limpiar estado de edición
+      this.permisosService.setEditandoFilaPermisos(userId, false);
+      this.onToggleRow(row);
+      this.appService.setEditando(false);
+      this.usuarioEnEdicion.set(null);
+      this.permisosService.limpiarPermisosUsuarioEditando(userId);
+
+      // Refetch data
+      this.permisosQuery.refetch();
+    } catch (error) {
+      console.error('Error al actualizar permisos de usuario:', error);
+      this.alertaService.error(
+        'Error al actualizar los permisos del usuario. Por favor, inténtalo de nuevo.',
+        5000,
+        this.alertaPermisos(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+    }
+  }
+
   public obtenerPermisos(row: PermisosUsuario): Permiso[] {
-    return row.permisos.filter(
-      permiso =>
-        permiso.id_pantalla ===
-        this.permisosService.pantallaSeleccionada()?.id_pantalla,
-    );
+    const pantallaSeleccionada = this.permisosService.pantallaSeleccionada();
+    if (!pantallaSeleccionada) return [];
+
+    const userId = row.id_usuario;
+    const enEdicion = this.permisosService.filaPermisosEditando()[userId];
+
+    if (enEdicion) {
+      const permisosDisponibles =
+        this.pantallas.find(
+          pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
+        )?.permisos || [];
+
+      const permisosEnEdicion =
+        this.permisosService.getPermisosUsuarioEditando(userId);
+
+      return permisosDisponibles
+        .filter(
+          permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
+        )
+        .map(permiso => ({
+          ...permiso,
+          concedido: permisosEnEdicion.some(
+            p => p.id_permiso === permiso.id_permiso && p.concedido,
+          ),
+        }));
+    } else {
+      // En modo vista: usar permisos originales del usuario
+      return row.permisos.filter(
+        permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
+      );
+    }
   }
 
   onPageChange(estado: PaginationState): void {
     this.permisosService.setPaginacion(estado);
   }
 
-  // Método para manejar el toggle de permisos
-  public onPermisoToggle(evento: { permiso: Permiso; activo: boolean }): void {
-    // Aquí puedes implementar la lógica para actualizar los permisos del usuario
-    // Por ejemplo, hacer una llamada al servicio para guardar los cambios
+  /**
+   * Maneja el toggle individual de permisos para usuarios
+   * Reutiliza la lógica de persistencia implementada para roles
+   */
+  public onPermisoToggle(
+    evento: { permiso: Permiso; activo: boolean },
+    userId?: number,
+  ): void {
+    // Si no se proporciona userId, intentar obtenerlo del usuario en edición
+    if (!userId && this.usuarioEnEdicion()) {
+      userId = this.usuarioEnEdicion()!.id_usuario;
+    }
+
+    if (!userId) {
+      console.warn(
+        'No se pudo determinar el ID del usuario para el toggle de permiso',
+      );
+      return;
+    }
+
+    console.log('Permiso toggle para usuario:', {
+      userId,
+      permiso: evento.permiso,
+      activo: evento.activo,
+    });
+
+    const permisosActuales =
+      this.permisosService.getPermisosUsuarioEditando(userId);
+    let nuevosPermisos: Permiso[];
+
+    if (evento.activo) {
+      // Agregar permiso si no existe
+      if (
+        !permisosActuales.find(p => p.id_permiso === evento.permiso.id_permiso)
+      ) {
+        nuevosPermisos = [
+          ...permisosActuales,
+          { ...evento.permiso, concedido: true },
+        ];
+      } else {
+        // Actualizar permiso existente
+        nuevosPermisos = permisosActuales.map(p =>
+          p.id_permiso === evento.permiso.id_permiso
+            ? { ...p, concedido: true }
+            : p,
+        );
+      }
+    } else {
+      // Remover o marcar como no concedido
+      nuevosPermisos = permisosActuales
+        .map(p =>
+          p.id_permiso === evento.permiso.id_permiso
+            ? { ...p, concedido: false }
+            : p,
+        )
+        .filter(p => p.concedido); // Remover permisos no concedidos
+    }
+
+    this.permisosService.setPermisosUsuarioEditando(userId, nuevosPermisos);
   }
 
   cambiarRolUsuario(usuario: PermisosUsuario, nuevoRol: Rol) {

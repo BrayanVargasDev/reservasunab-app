@@ -11,6 +11,7 @@ import { getRolesPermisos } from '../actions/get-roles-permisos.action';
 import { getPermisosDisponibles } from '../actions/get-permisos-disponibles.action';
 import { crearRol, actualizarRol } from '../actions';
 import { CreateRolRequest } from '../interfaces/create-rol.interface';
+import { actualizarPermisosUsuario } from '../actions/actualizar-permisos-usuario.action';
 
 @Injectable({
   providedIn: 'root',
@@ -27,11 +28,9 @@ export class PermisosService {
   private _modoCreacion = signal<boolean>(false);
   private _filaPermisosEditando = signal<{ [id: number]: boolean }>({});
   private _pantallaSeleccionada = signal<Pantalla | null>(null);
-
-  // Nuevo signal para persistir permisos seleccionados por rol
   private _permisosSeleccionados = signal<Record<number, Permiso[]>>({});
-  // Signal especial para permisos de nuevo rol (key = -1)
   private _permisosNuevoRol = signal<Permiso[]>([]);
+  private _permisosUsuarioEditando = signal<Record<number, Permiso[]>>({});
 
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
@@ -55,10 +54,11 @@ export class PermisosService {
   public filaPermisosEditando = computed(() => this._filaPermisosEditando());
   public pantallaSeleccionada = computed(() => this._pantallaSeleccionada());
   public filtroTexto = computed(() => this._filtroTexto());
-
-  // Nuevos computed para permisos seleccionados
   public permisosSeleccionados = computed(() => this._permisosSeleccionados());
   public permisosNuevoRol = computed(() => this._permisosNuevoRol());
+  public permisosUsuarioEditando = computed(() =>
+    this._permisosUsuarioEditando(),
+  );
 
   public setBotonARenderizar(value: 'rol' | 'permiso') {
     this._botonARenderizar.set(value);
@@ -168,10 +168,6 @@ export class PermisosService {
     });
   }
 
-  /**
-   * Establece los permisos seleccionados para un rol específico
-   * Mantiene la persistencia de selección entre cambios de pantalla
-   */
   public setPermisosSeleccionados(rolId: number, permisos: Permiso[]) {
     this._permisosSeleccionados.update(state => ({
       ...state,
@@ -179,23 +175,14 @@ export class PermisosService {
     }));
   }
 
-  /**
-   * Obtiene los permisos seleccionados para un rol específico
-   */
   public getPermisosSeleccionados(rolId: number): Permiso[] {
     return this._permisosSeleccionados()[rolId] || [];
   }
 
-  /**
-   * Establece los permisos para el nuevo rol en creación
-   */
   public setPermisosNuevoRol(permisos: Permiso[]) {
     this._permisosNuevoRol.set([...permisos]);
   }
 
-  /**
-   * Limpia los permisos seleccionados para un rol específico
-   */
   public limpiarPermisosSeleccionados(rolId: number) {
     this._permisosSeleccionados.update(state => {
       const newState = { ...state };
@@ -204,28 +191,58 @@ export class PermisosService {
     });
   }
 
-  /**
-   * Limpia todos los permisos seleccionados
-   */
   public resetPermisosSeleccionados() {
     this._permisosSeleccionados.set({});
     this._permisosNuevoRol.set([]);
+    this._permisosUsuarioEditando.set({});
   }
 
-  /**
-   * Crea un nuevo rol con sus permisos
-   */
+  public setPermisosUsuarioEditando(userId: number, permisos: Permiso[]) {
+    const userKey = -Math.abs(userId);
+    this._permisosSeleccionados.update(state => ({
+      ...state,
+      [userKey]: [...permisos],
+    }));
+  }
+
+  public getPermisosUsuarioEditando(userId: number): Permiso[] {
+    const userKey = -Math.abs(userId);
+    return this._permisosSeleccionados()[userKey] || [];
+  }
+
+  public limpiarPermisosUsuarioEditando(userId: number) {
+    const userKey = -Math.abs(userId);
+    this._permisosSeleccionados.update(state => {
+      const newState = { ...state };
+      delete newState[userKey];
+      return newState;
+    });
+  }
+
+  public async actualizarPermisosUsuarioAsync(
+    userId: number,
+    permisos: Permiso[],
+  ): Promise<PermisosUsuario> {
+    return actualizarPermisosUsuario(userId, permisos);
+  }
+
   public async crearRolAsync(rol: CreateRolRequest): Promise<RolPermisos> {
     return crearRol(rol);
   }
 
-  /**
-   * Actualiza un rol existente con sus permisos
-   */
   public async actualizarRolAsync(
     id: number,
     rol: CreateRolRequest,
   ): Promise<RolPermisos> {
     return actualizarRol(id, rol);
+  }
+
+  resetAllexceptPaginacion() {
+    this._modoCreacion.set(false);
+    this._filaPermisosEditando.set({});
+    this._pantallaSeleccionada.set(null);
+    this._permisosSeleccionados.set({});
+    this._permisosNuevoRol.set([]);
+    this._permisosUsuarioEditando.set({});
   }
 }
