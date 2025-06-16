@@ -168,11 +168,13 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     effect(
       () => {
         this.permisosService.botonArenderizar();
+        this.permisosService.paginacion();
         this.tableState.update(state => ({
           ...state,
           expanded: {},
         }));
         this.permisosService.setPantallaSeleccionada(null);
+        this.permisosService.resetFilaPermisosEditando();
       },
       {
         injector: this.injector,
@@ -255,7 +257,6 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
   }
 
   public onToggleRow(row: Row<PermisosUsuario>, editing = false) {
-    console.log('Toggling row:', row);
     const rowId = row.id;
     const currentExpanded = this.tableState().expanded as Record<
       string,
@@ -291,7 +292,6 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
 
   // Método para manejar el toggle de permisos
   public onPermisoToggle(evento: { permiso: Permiso; activo: boolean }): void {
-    console.log('Permiso toggle:', evento);
     // Aquí puedes implementar la lógica para actualizar los permisos del usuario
     // Por ejemplo, hacer una llamada al servicio para guardar los cambios
   }

@@ -200,6 +200,7 @@
       </div>
       } @else {
       <tabla-roles
+        [ngClass]="'flex flex-col h-full overflow-y-auto'"
         [modoCreacion]="permisosService.modoCreacion()"
       ></tabla-roles>
       }
