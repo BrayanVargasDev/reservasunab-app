@@ -1,4 +1,4 @@
-export const i18nTablaUsuarios = {
+export const i18nDatePicker = {
   previousMonth: 'Mes Anterior',
   nextMonth: 'Mes Siguiente',
   months: [

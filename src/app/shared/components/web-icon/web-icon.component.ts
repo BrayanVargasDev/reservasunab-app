@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { icons } from '@shared/constants/icons';
+import { icons } from '@shared/constants';
 
 @Component({
   selector: 'app-web-icon',

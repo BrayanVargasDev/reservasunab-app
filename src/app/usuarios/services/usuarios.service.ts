@@ -7,7 +7,7 @@ import { Usuario } from '@usuarios/intefaces';
 import { getUsuarios, saveUsuario } from '@usuarios/actions';
 import { AlertasService } from '@shared/services/alertas.service';
 import { Meta, PaginatedResponse } from '@shared/interfaces';
-import { i18nTablaUsuarios } from '../constants/lenguaje.constant';
+import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { updateUsuarioRol, updateUsuarioEstado } from '../actions';
 
 @Injectable({
@@ -42,7 +42,7 @@ export class UsuariosService {
 
   private _usuarioAEditar = signal<Usuario | null>(null);
   public usuarioAEditar = this._usuarioAEditar.asReadonly();
-  private _i18nDatePicker = signal(i18nTablaUsuarios);
+  private _i18nDatePicker = signal(i18nDatePicker);
   public i18nDatePicker = this._i18nDatePicker.asReadonly();
 
   public setUsuarioAEditar(usuario: Usuario | null) {

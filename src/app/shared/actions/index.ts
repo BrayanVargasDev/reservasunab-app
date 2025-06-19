@@ -1,4 +1,6 @@
+export * from './get-categorias.action';
 export * from './get-pantallas.action';
+export * from './get-sedes.action';
 export * from './get-tipo-doc-por-id.action';
 export * from './get-tipo-documento.action';
 export * from './validar-email.action';

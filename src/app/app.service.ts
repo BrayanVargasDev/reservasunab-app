@@ -1,9 +1,12 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 import { Platform } from '@ionic/angular';
+
 import { environment } from '@environments/environment';
 import { injectQuery } from '@tanstack/angular-query-experimental';
-import { getTiposDocumentos, getPantallas } from './shared/actions';
-import { getRoles } from '@permisos/actions/get-roles.action';
+
+import { getTiposDocumentos, getPantallas } from '@shared/actions';
+import { getRoles } from '@permisos/actions';
+import { getSedes, getCategorias } from '@shared/actions';
 
 @Injectable({
   providedIn: 'root',
@@ -51,9 +54,19 @@ export class AppService {
     queryFn: () => getPantallas(),
   }));
 
-  rolesQuery = injectQuery(() => ({
+  public rolesQuery = injectQuery(() => ({
     queryKey: ['roles'],
     queryFn: () => getRoles(),
+  }));
+
+  public sedesQuery = injectQuery(() => ({
+    queryKey: ['sedes'],
+    queryFn: () => getSedes(),
+  }));
+
+  public categoriasQuery = injectQuery(() => ({
+    queryKey: ['categorias'],
+    queryFn: () => getCategorias(),
   }));
 
   private _editando = signal(false);
