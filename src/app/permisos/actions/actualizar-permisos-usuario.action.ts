@@ -11,7 +11,7 @@ export const actualizarPermisosUsuario = async (
 
   try {
     const response = await fetch(url, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },

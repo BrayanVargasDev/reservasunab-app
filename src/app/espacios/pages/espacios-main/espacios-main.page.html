@@ -1,1 +1,33 @@
-<p>Hola espacios</p>
+<div
+  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+>
+  <div class="flex items-center">
+    <h2 class="font-bold text-4xl">Espacios</h2>
+  </div>
+  <div class="flex flex-col md:flex-row gap-2">
+    <input
+      type="text"
+      [disabled]="appService.editando()"
+      placeholder="Buscar por nombre, email o rol..."
+      class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+    />
+    <button
+      [disabled]="appService.editando()"
+      class="btn btn-primary h-11 rounded-box"
+      (click)="crearEspacio()"
+    >
+      <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
+      Nuevo espacio
+    </button>
+  </div>
+</div>
+
+<div class="w-full h-full max-h-full overflow-hidden flex flex-col">
+  <tabla-espacios></tabla-espacios>
+</div>
+
+<ng-template #alertaEsacios></ng-template>
+
+<modal-espacios
+  (guardadoExitoso)="espacioGuardadoExitoso($event)"
+></modal-espacios>

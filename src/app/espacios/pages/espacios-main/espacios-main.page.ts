@@ -1,20 +1,77 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  ViewContainerRef,
+  viewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { TablaEspaciosComponent } from '@espacios/components/tabla-espacios/tabla-espacios.component';
+import { EspaciosService } from '@espacios/services/espacios.service';
+import { Espacio } from '@espacios/interfaces';
+import { ModalEspaciosComponent } from '@espacios/components/modal-espacios/modal-espacios.component';
+import { AlertasService } from '@shared/services/alertas.service';
 
 @Component({
   selector: 'app-espacios-main',
   templateUrl: './espacios-main.page.html',
   styleUrls: ['./espacios-main.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    WebIconComponent,
+    TablaEspaciosComponent,
+    ModalEspaciosComponent,
+  ],
+  host: {
+    class: 'flex flex-col grow w-full sm:pl-3 relative',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EspaciosMainPage implements OnInit {
+  private alertaService = inject(AlertasService);
+  public appService = inject(AppService);
+  public espaciosService = inject(EspaciosService);
 
-  constructor() { }
+  public alertaEspacio = viewChild.required('alertaEspacio', {
+    read: ViewContainerRef,
+  });
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  public crearEspacio() {
+    this.espaciosService.abrirModal();
   }
 
+  public editarEspacio(espacio: Espacio) {
+    this.espaciosService.setEspacioAEditar(espacio);
+    this.espaciosService.setModoEdicion(true);
+    this.espaciosService.abrirModal();
+  }
+
+  public espacioGuardadoExitoso(event: boolean) {
+    const estilosAlerta =
+      'fixed flex p-4 transition-all ease-in-out bottom-4 right-4';
+    if (event) {
+      this.alertaService.success(
+        'Usuario guardado exitosamente.',
+        50000,
+        this.alertaEspacio(),
+        estilosAlerta,
+      );
+    } else {
+      this.alertaService.error(
+        'Error al guardar el usuario. Por favor, inténtalo de nuevo.',
+        50000,
+        this.alertaEspacio(),
+        estilosAlerta,
+      );
+    }
+  }
 }

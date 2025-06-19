@@ -1,0 +1,122 @@
+<ng-template #estadoCell let-context>
+  <div
+    [attr.data-tip]="context.getValue() === 'activo' ? 'Desactivar' : 'Activar'"
+    [ngClass]="{
+        'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+        'badge-success': context.getValue() === 'activo',
+        'badge-error': context.getValue() === 'inactivo',
+    }"
+  >
+    {{ context.getValue() | titlecase }}
+  </div>
+</ng-template>
+
+<table
+  responsiveTable
+  #tabla="responsiveTable"
+  [table]="tablaEspacios()"
+  class="table w-full rounded-box table-sm sm:table-md"
+>
+  <thead class="sticky top-0 z-20 bg-base-100">
+    @for (headerGroup of tablaEspacios.getHeaderGroups(); track headerGroup.id)
+    {
+    <tr>
+      @if (tabla.hiddenColumnIds().size !== 0) {
+      <th></th>
+      } @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @for (row of tablaEspacios.getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @if (tabla.hiddenColumnIds().size !== 0) {
+      <td class="!pe-0">
+        <app-table-expansor
+          [disabled]="appService.editando()"
+          [isExpanded]="row.getIsExpanded()"
+          (toggleExpand)="row.toggleExpanded()"
+        ></app-table-expansor>
+      </td>
+      } @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+    @if (row.getIsExpanded() && tabla.hiddenColumnIds().size !== 0) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+          @if (tabla.hiddenColumnIds().size !== 0) {
+          <ul>
+            @for (col of tablaEspacios.getAllLeafColumns(); track $index) { @if
+            (tabla.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span class="font-bold text-base-content">
+                {{ col.columnDef.header }}:
+              </span>
+              <span>
+                <ng-container
+                  *flexRender="
+                    tabla.getCell(col, row).column.columnDef.cell;
+                    props: tabla.getCell(col, row).getContext();
+                    let cell
+                  "
+                >
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </span>
+            </li>
+            } }
+          </ul>
+          }
+        </div>
+      </td>
+    </tr>
+    } }
+  </tbody>
+</table>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="espaciosService.paginacion()"
+  [paginacion]="espaciosService.datosPaginador() ?? null"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="espaciosQuery.isFetching()"
+>
+</app-paginador>
+
+<!-- (cambioPaginacion)="onPageChange($event)"
+(prefetchFunction)="espaciosService.prefetchPermisos($event)" -->
+<ng-template #alertaPermisos></ng-template>
