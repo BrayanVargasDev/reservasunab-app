@@ -57,7 +57,6 @@ export const routes: Routes = [
         loadChildren: () =>
           import('@espacios/espacios.routes').then(m => m.espaciosRoutes),
         canActivate: [AuthGuard],
-        data: { permission: 'admin' },
       },
     ],
   },

@@ -90,10 +90,6 @@ export class ModalEspaciosComponent implements OnInit {
 
   public onPermitirJugadoresChange(event: Event) {
     const checkbox = event.target as HTMLInputElement;
-    console.log(
-      '🚀 ✅ ~ ModalEspaciosComponent ~ onPermitirJugadoresChange ~ checkbox:',
-      checkbox,
-    );
     const minimoControl = this.espacioForm.get('minimoJugadores');
     const maximoControl = this.espacioForm.get('maximoJugadores');
 

@@ -7,4 +7,5 @@ export interface FormEspacio {
   permitirExternos: boolean;
   minimoJugadores?: number;
   maximoJugadores?: number;
+  imagen?: File;
 }

@@ -1,4 +1,4 @@
-export interface TarifaEspacio {
+export interface FranjaHoraria {
   id: number;
   tipo: string;
   monto: number;

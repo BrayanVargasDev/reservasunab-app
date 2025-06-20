@@ -16,7 +16,7 @@ export class AppService {
   private _esMovil = signal(false);
   private _apiUrl = signal(environment.apiUrl || 'https://api.example.com');
   private _samlUrl = signal(
-    environment.samlUrl || 'https://saml.example.com/login',
+    environment.baseUrl || 'https://saml.example.com/login',
   );
   private _tenantId = signal(environment.tenantId || 'default-tenant-id');
 

@@ -4,7 +4,11 @@ import { injectQuery } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
 
 import { type Meta, PaginatedResponse } from '@shared/interfaces';
-import { getEspacios, createEspacio } from '@espacios/actions';
+import {
+  getEspacios,
+  createEspacio,
+  updateEspacioEstado,
+} from '@espacios/actions';
 import { Espacio, FormEspacio } from '@espacios/interfaces';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 
@@ -88,5 +92,12 @@ export class EspaciosService {
 
   public guardarEsapacio(espacio: FormEspacio) {
     return createEspacio(espacio);
+  }
+
+  public async cambiarEstadoEspacio(
+    espacioId: number,
+    nuevoEstado: string,
+  ): Promise<Espacio> {
+    return updateEspacioEstado(espacioId, nuevoEstado);
   }
 }

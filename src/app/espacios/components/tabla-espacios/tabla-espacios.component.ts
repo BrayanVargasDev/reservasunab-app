@@ -9,6 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import {
   ColumnDef,
@@ -30,6 +31,9 @@ import { PaginadorComponent } from '@shared/components/paginador/paginador.compo
 import { EspaciosService } from '@espacios/services/espacios.service';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
+import { AlertasService } from '@shared/services/alertas.service';
+import { BotonAcciones } from '@shared/interfaces';
+import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -50,8 +54,11 @@ interface Util {
   ],
 })
 export class TablaEspaciosComponent implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
+  public alertaService = inject(AlertasService);
 
   ngOnInit() {}
 
@@ -80,7 +87,7 @@ export class TablaEspaciosComponent implements OnInit {
       id: 'tipoEspacio',
       accessorKey: 'tipoEspacio',
       header: 'Tipo de Espacio',
-      cell: info => info.getValue(),
+      cell: info => `<span class="uppercase font-semibold">${info.getValue()}</span>`,
     },
     {
       id: 'estado',
@@ -88,48 +95,35 @@ export class TablaEspaciosComponent implements OnInit {
       header: 'Estado',
       cell: this.estadoCell,
     },
-    // {
-    //   id: 'acciones',
-    //   header: 'Acciones',
-    //   cell: context => {
-    //     const id = context.row.original.id_usuario;
-    //     const enEdicion = this.espaciosService.filaPermisosEditando()[id];
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      cell: context => {
+        const acciones: BotonAcciones[] = [
+          {
+            tooltip: 'Configurar',
+            icono: 'construct-outline',
+            color: 'secondary',
+            disabled: this.appService.editando(),
+            eventoClick: () =>
+              this.router.navigate(['configuracion', context.row.original.id], {
+                relativeTo: this.route,
+              }),
+          },
+        ];
 
-    //     const acciones: BotonAcciones[] = enEdicion
-    //       ? [
-    //           {
-    //             tooltip: 'Cancelar',
-    //             icono: 'remove-circle-outline',
-    //             color: 'error',
-    //             eventoClick: () => this.onCancelarEdicionUsuario(context.row),
-    //           },
-    //           {
-    //             tooltip: 'Guardar',
-    //             icono: 'save-outline',
-    //             color: 'success',
-    //             eventoClick: () => this.onGuardarEdicionUsuario(context.row),
-    //           },
-    //         ]
-    //       : [
-    //           {
-    //             tooltip: 'Editar',
-    //             icono: 'pencil-outline',
-    //             color: 'accent',
-    //             disabled:
-    //               this.appService.editando() ||
-    //               this.espaciosService.modoCreacion(),
-    //             eventoClick: () => this.iniciarEdicionUsuario(context.row),
-    //           },
-    //         ];
-
-    //     return flexRenderComponent(AccionesTablaComponent, {
-    //       inputs: {
-    //         acciones,
-    //       },
-    //     });
-    //   },
-    // },
+        return flexRenderComponent(AccionesTablaComponent, {
+          inputs: {
+            acciones,
+          },
+        });
+      },
+    },
   ]);
+
+  public alertaEspacio = viewChild.required('alertaEspacio', {
+    read: ViewContainerRef,
+  });
 
   public tableState = signal({
     expanded: {} as ExpandedState,
@@ -199,5 +193,45 @@ export class TablaEspaciosComponent implements OnInit {
       ...state,
       expanded: newExpanded,
     }));
+  }
+
+  public cambiarEstadoEspacio(espacio: Espacio) {
+    const nuevoEstado =
+      espacio.estado.toLowerCase() === 'activo' ? 'inactivo' : 'activo';
+    const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
+
+    this.alertaService
+      .confirmarAccion(
+        `¿Estás seguro de que quieres ${accion} a  el espacio <strong>${espacio.nombre}</strong>?`,
+        this.alertaEspacio(),
+        `${accion.charAt(0).toUpperCase() + accion.slice(1)} espacio`,
+        nuevoEstado === 'activo' ? 'success' : 'warning',
+      )
+      .then(confirmado => {
+        if (confirmado) {
+          this.espaciosService
+            .cambiarEstadoEspacio(espacio.id, nuevoEstado)
+            .then(() => {
+              this.alertaService.success(
+                `Espacio ${
+                  accion === 'activar' ? 'activado' : 'desactivado'
+                } exitosamente.`,
+                5000,
+                this.alertaEspacio(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+              this.espaciosService.espaciosQuery.refetch();
+            })
+            .catch((error: any) => {
+              console.error(`Error al ${accion} el espacio:`, error);
+              this.alertaService.error(
+                `Error al ${accion} el espacio. Por favor, inténtalo de nuevo.`,
+                5000,
+                this.alertaEspacio(),
+                'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+              );
+            });
+        }
+      });
   }
 }

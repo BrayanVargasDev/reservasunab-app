@@ -1,0 +1,44 @@
+<div
+  [ngClass]="{
+    'relative flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg transition-colors border-gray-300 hover:border-gray-400 bg-white': true,
+    'cursor-pointer pointer-events-auto': appService.editando(),
+    'curosor-not-allowed opacity-80 pointer-events-none': !appService.editando()
+  }"
+>
+  @if (isDragOver) {
+  <div class="absolute inset-0 bg-accent/10 rounded-lg"></div>
+  }
+
+  <svg
+    class="w-12 h-12 text-gray-400 mb-4"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2
+         M7 10l5-5m0 0l5 5m-5-5v12"
+    />
+  </svg>
+
+  <p class="text-gray-600 text-center">
+    Arrastra y suelta o
+    <span class="text-info hover:underline"> selecciona un archivo </span>
+  </p>
+  <p class="text-sm text-gray-500 text-center">Formatos soportados: .png, .jpg, .svg</p>
+
+  <input
+    type="file"
+    (change)="onFileSelected($event)"
+    [ngClass]="{
+      'absolute inset-0 w-full h-full opacity-0': true,
+      'cursor-pointer pointer-events-auto': appService.editando(),
+      'cursor-not-allowed': !appService.editando()
+    }"
+    accept=".png,.jpg,.svg"
+  />
+</div>

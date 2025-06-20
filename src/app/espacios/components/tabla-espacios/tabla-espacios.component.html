@@ -6,6 +6,7 @@
         'badge-success': context.getValue() === 'activo',
         'badge-error': context.getValue() === 'inactivo',
     }"
+    (click)="cambiarEstadoEspacio(context.row.original)"
   >
     {{ context.getValue() | titlecase }}
   </div>
@@ -22,7 +23,7 @@
     {
     <tr>
       @if (tabla.hiddenColumnIds().size !== 0) {
-      <th></th>
+      <th class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"></th>
       } @for (header of headerGroup.headers; track header.id) {
       <th
         class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
@@ -119,4 +120,4 @@
 
 <!-- (cambioPaginacion)="onPageChange($event)"
 (prefetchFunction)="espaciosService.prefetchPermisos($event)" -->
-<ng-template #alertaPermisos></ng-template>
+<ng-template #alertaEspacio></ng-template>
