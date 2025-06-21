@@ -1,7 +1,6 @@
 import { environment } from '@environments/environment';
 import { type FormEspacio, type Espacio } from '../interfaces';
 import { GeneralResponse } from '@shared/interfaces';
-import { FileUtils } from '@shared/utils/file.utils';
 
 const BASE_URL = environment.apiUrl;
 

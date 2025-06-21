@@ -1,0 +1,165 @@
+<ng-template #estadoCell let-context>
+  <div
+    [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
+    [ngClass]="{
+      'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge-success': context.getValue() === null,
+      'badge-error': context.getValue() !== null,
+      'opacity-50 pointer-events-none badge-ghost': appService.editando()
+    }"
+    (click)="
+      appService.editando() ? null : cambiarEstadoConfig(context.row.original)
+    "
+  >
+    {{ (context.getValue() === null ? 'activo' : 'inactivo') | titlecase }}
+  </div>
+</ng-template>
+
+<div class="flex w-full mb-3">
+  <button
+    class="btn btn-primary h-8"
+    (click)="crearTipoConfig()"
+    [disabled]="appService.editando() || modoCreacion()"
+  >
+    <app-web-icon
+      [nombreIcono]="'add-outline'"
+      [estilos]="'h-5 w-5 mr-1'"
+    ></app-web-icon>
+    <span>Nueva config.</span>
+  </button>
+</div>
+
+<table
+  class="table w-full rounded-md table-sm sm:table-md border-t border-base-200"
+>
+  <thead class="sticky top-0 z-20 bg-base-100">
+    @for (headerGroup of tablaTipoUsuarioConfig().getHeaderGroups(); track
+    headerGroup.id) {
+    <tr>
+      @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (modoCreacion()) {
+    <tr class="bg-base-100">
+      <td></td>
+      <td class="p-2">
+        <select
+          [formControl]="tipo_usuario"
+          placeholder="Inserte nombre"
+          class="select input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        >
+          @for (tipo of tiposUsuarios(); track $index) {
+          <option [value]="tipo.toLowerCase()" [selected]="tipo === 'externo'">
+            {{ tipo | titlecase }}
+          </option>
+          }
+        </select>
+      </td>
+      <td class="p-2">
+        <input
+          [formControl]="porcentaje_descuento"
+          placeholder="Inserte porcentaje"
+          pattern="[0-9]*"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+        />
+      </td>
+      <td class="p-2">
+        <input
+          [formControl]="minutos_retraso"
+          placeholder="Inserte minutos de retraso"
+          pattern="[0-9]*"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="number"
+          min="0"
+          step="1"
+        />
+      </td>
+      <td class="p-2">
+        {{ fechaActual() }}
+      </td>
+      <td class="p-2">
+        <span class="text-sm"></span>
+      </td>
+      <td class="p-2">
+        <acciones-tabla
+          [acciones]="accionesNuevo()"
+          [ngClass]="'flex justify-between'"
+        ></acciones-tabla>
+      </td>
+    </tr>
+    } @if (!configsTipoUsurioQuery.length && !modoCreacion()) {
+    <tr>
+      <td
+        [attr.colspan]="tablaTipoUsuarioConfig().getAllColumns().length"
+        class="text-center text-gray-500"
+      >
+        <span>No hay configuraciones aún...</span>
+      </td>
+    </tr>
+    } @else { @for (row of tablaTipoUsuarioConfig().getRowModel().rows; track
+    row.id) {
+    <tr class="bg-base-100">
+      @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        @if (espaciosConfigService.filaConfigEditando()[row.original.id] &&
+        esColumnaEditable(cell.column.id)) { @switch (cell.column.id) { @case
+        ('porcentaje_descuento') {
+        <input
+          [formControl]="porcentaje_descuento"
+          class="input input-sm h-9 w-full"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+        />
+        } @case ('retraso_reserva') {
+        <input
+          [formControl]="minutos_retraso"
+          class="input input-sm h-9 w-full"
+          type="number"
+          min="0"
+          step="1"
+        />
+        } } } @else {
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+        }
+      </td>
+      }
+    </tr>
+    } }
+  </tbody>
+</table>
+
+<ng-template #alertaRoles></ng-template>

@@ -5,6 +5,9 @@ import {
   ChangeDetectionStrategy,
   viewChild,
   ViewContainerRef,
+  effect,
+  Injector,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -16,20 +19,27 @@ import { EspaciosService } from '@espacios/services/espacios.service';
 import { AppService } from '@app/app.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 import { EspacioGeneralComponent } from '@espacios/components/espacio-general/espacio-general.component';
+import { TablaConfigTipoUsuarioComponent } from '../../components/tabla-config-tipo-usuario/tabla-config-tipo-usuario.component';
 
 @Component({
   selector: 'app-configuracion',
   templateUrl: './configuracion.page.html',
   styleUrls: ['./configuracion.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, EspacioGeneralComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    EspacioGeneralComponent,
+    TablaConfigTipoUsuarioComponent,
+  ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConfiguracionPage {
+export class ConfiguracionPage implements OnInit, OnDestroy {
   public appService = inject(AppService);
+  private injector = inject(Injector);
   private espacioConfigService = inject(EspaciosConfigService);
   private route = inject(ActivatedRoute);
 
@@ -46,7 +56,19 @@ export class ConfiguracionPage {
 
   ngOnInit() {
     this.espacioConfigService.setAlertaEspacioConfigRef(
-      this.alertaEspacioConfig()
+      this.alertaEspacioConfig(),
+    );
+
+    effect(
+      () => {
+        this.espacioConfigService.pestana();
+
+        this.appService.setEditando(false);
+        this.espacioConfigService.resetAll();
+      },
+      {
+        injector: this.injector,
+      },
     );
   }
 
@@ -57,5 +79,9 @@ export class ConfiguracionPage {
   cambiarPestana(pestaña: 'general' | 'base' | 'tipoUsuario' | 'fecha') {
     this.appService.setEditando(false);
     this.espacioConfigService.setPestana(pestaña);
+  }
+
+  ngOnDestroy() {
+    this.espacioConfigService.setImagen('');
   }
 }
