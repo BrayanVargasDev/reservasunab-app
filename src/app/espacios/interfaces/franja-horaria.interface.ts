@@ -1,7 +1,7 @@
 export interface FranjaHoraria {
-  id: number;
-  tipo: string;
-  monto: number;
-  fechaInicio: Date;
-  fechaFin?: Date;
+  id?: number;
+  hora_inicio: string;
+  hora_fin: string;
+  valor: number;
+  activa: boolean;
 }

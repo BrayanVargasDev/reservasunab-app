@@ -1,10 +1,17 @@
-import { Injectable, signal, inject, ViewContainerRef } from '@angular/core';
+import {
+  Injectable,
+  signal,
+  inject,
+  ViewContainerRef,
+  computed,
+} from '@angular/core';
 
 import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 import { getEspacioPorId, updateGeneralEspacio } from '@espacios/actions';
 import { GeneralResponse } from '@shared/interfaces/general-response.interface';
 import { updateEstadoTipoConfig } from '../actions/update-estado-tipo-usuario-config.action';
+import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import {
   createTipoUsuarioConfig,
   updateTipoUsuarioConfig,
@@ -30,12 +37,16 @@ export class EspaciosConfigService {
   private _modoCreacionTipoConfig = signal<boolean>(false);
   private _filaConfigEditando = signal<{ [id: number]: boolean }>({});
 
+  // * Configuracion por fecha
+  public idiomaDatePicker = computed(() => i18nDatePicker);
+
   public alertaEspacioConfigRef = this._alertaEspacioConfigRef.asReadonly();
   public modoEdicionGeneral = this._modoEdicionGeneral.asReadonly();
   public pestana = this._pestana.asReadonly();
   public imagen = this._imagen.asReadonly();
   public modoCreacionTipoConfig = this._modoCreacionTipoConfig.asReadonly();
   public filaConfigEditando = this._filaConfigEditando.asReadonly();
+  public idEspacio = this._idEspacio.asReadonly();
   public espacioQuery = injectQuery(() => ({
     queryKey: ['espacio', this._idEspacio()],
     queryFn: () => getEspacioPorId(this._idEspacio() ?? 0),

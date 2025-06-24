@@ -30,7 +30,13 @@
       aria-label="Base"
       (change)="cambiarPestana('base')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">Hola</div>
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
+      <config-base
+        [ngClass]="'flex flex-col h-full max-h-[inherit] overflow-y-auto'"
+      ></config-base>
+    </div>
 
     <input
       #tabRol
@@ -52,7 +58,9 @@
       aria-label="Por Fecha"
       (change)="cambiarPestana('fecha')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">Hola</div>
+    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
+      <config-por-fecha></config-por-fecha>
+    </div>
   </div>
 </div>
 

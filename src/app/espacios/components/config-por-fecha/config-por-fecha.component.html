@@ -1,0 +1,45 @@
+<div class="flex w-full flex-col gap-2">
+  <div class="flex w-full gap-2 items-center">
+    <label
+      class="label text-base font-[600] text-base-content mb-1 md:mb-0"
+      for="fecha"
+    >
+      Seleccione la fecha:
+    </label>
+    <label
+      class="input input-bordered w-full max-w-60 h-11 rounded-box"
+      [ngClass]="{ 'text-gray-400': !fechaSeleccionada() }"
+    >
+      <input
+        id="fecha"
+        [formControl]="fecha"
+        type="text"
+        #fechaPicker
+        placeholder="dd/mm/yyyy"
+        class="grow pika-single placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm"
+      />
+      <app-web-icon
+        [nombreIcono]="'calendar-outline'"
+        [estilos]="'h-5 w-5'"
+      ></app-web-icon>
+    </label>
+
+    @if (fechaSeleccionada()) {
+    <button
+      class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
+      data-tip="Cancelar"
+    >
+      <app-web-icon
+        [nombreIcono]="'close-circle-outline'"
+        [estilos]="'h-6 w-6'"
+      ></app-web-icon>
+    </button>
+    }
+  </div>
+
+  @if (fechaSeleccionada()) {
+  <!-- <configuracion-form
+      [configuracionForm]="null"
+    ></configuracion-form> -->
+  }
+</div>

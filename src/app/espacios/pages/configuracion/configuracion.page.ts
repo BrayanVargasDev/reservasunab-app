@@ -20,6 +20,8 @@ import { AppService } from '@app/app.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 import { EspacioGeneralComponent } from '@espacios/components/espacio-general/espacio-general.component';
 import { TablaConfigTipoUsuarioComponent } from '../../components/tabla-config-tipo-usuario/tabla-config-tipo-usuario.component';
+import { ConfigPorFechaComponent } from "../../components/config-por-fecha/config-por-fecha.component";
+import { ConfigBaseComponent } from "../../components/config-base/config-base.component";
 
 @Component({
   selector: 'app-configuracion',
@@ -31,7 +33,9 @@ import { TablaConfigTipoUsuarioComponent } from '../../components/tabla-config-t
     ReactiveFormsModule,
     EspacioGeneralComponent,
     TablaConfigTipoUsuarioComponent,
-  ],
+    ConfigPorFechaComponent,
+    ConfigBaseComponent
+],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },

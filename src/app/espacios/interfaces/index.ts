@@ -1,4 +1,5 @@
 export * from './configuracion.interface';
+export * from './dia-config.interface';
 export * from './espacio-para-config.interface';
 export * from './espacio.interface';
 export * from './form-espacio.interface';

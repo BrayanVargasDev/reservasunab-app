@@ -1,0 +1,225 @@
+<form [formGroup]="configuracionForm()">
+  <div class="my-4 flex flex-col w-full gap-2 md:gap-3">
+    <div
+      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-2"
+    >
+      <label
+        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        for="minutos_uso"
+      >
+        Minutos de uso:
+      </label>
+      <input
+        type="number"
+        id="minutos_uso"
+        formControlName="minutos_uso"
+        placeholder="60"
+        min="15"
+        max="480"
+        step="15"
+        [ngClass]="{
+            'input input-bordered w-full max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+          }"
+      />
+    </div>
+    <div
+      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-2"
+    >
+      <label
+        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        for="dias_previos_apertura"
+      >
+        Dias previos de apertura:
+      </label>
+      <input
+        type="number"
+        id="dias_previos_apertura"
+        formControlName="dias_previos_apertura"
+        placeholder="3"
+        min="1"
+        max="30"
+        [ngClass]="{
+            'input input-bordered w-full max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+          }"
+      />
+    </div>
+    <div
+      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-2"
+    >
+      <label
+        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        for="hora_apertura"
+      >
+        Hora de apertura:
+      </label>
+      <input
+        type="time"
+        id="hora_apertura"
+        formControlName="hora_apertura"
+        [ngClass]="{
+            'input input-bordered w-full max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+          }"
+      />
+    </div>
+    <div
+      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-2"
+    >
+      <label
+        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        for="tiempo_cancelacion"
+      >
+        Tiempo para cancelar:
+      </label>
+      <input
+        type="number"
+        id="tiempo_cancelacion"
+        formControlName="tiempo_cancelacion"
+        placeholder="60"
+        min="30"
+        max="1440"
+        step="30"
+        [ngClass]="{
+            'input input-bordered w-full max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+          }"
+      />
+    </div>
+  </div>
+</form>
+
+<div class="flex w-full items-center">
+  <h3 class="flex h-full text-xl">Franjas Horarias</h3>
+  <button class="btn btn-primary h-8 ml-2" (click)="nuevaFranja()">
+    <app-web-icon
+      [nombreIcono]="'add-outline'"
+      [estilos]="'h-5 w-5 mr-1'"
+    ></app-web-icon>
+    <span>Nueva franja</span>
+  </button>
+</div>
+
+<table
+  responsiveTable
+  #tablaTarifa="responsiveTable"
+  [table]="tablaTarifas()"
+  class="table"
+>
+  <thead class="bg-base-100">
+    @for (headerGroup of tablaTarifas.getHeaderGroups(); track headerGroup.id) {
+    <tr>
+      @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (modoCreacion()) {
+    <tr class="bg-base-100">
+      <td class="p-2">
+        <select [formControl]="horaInicio" class="select select-sm h-9 w-full">
+          <option value="" disabled>Seleccione hora inicio</option>
+          @for (opcion of opcionesTiempo(); track $index) {
+          <option [value]="opcion">{{ opcion }}</option>
+          }
+        </select>
+      </td>
+      <td class="p-2">
+        <select [formControl]="horaFin" class="select select-sm h-9 w-full">
+          <option value="" disabled>Seleccione hora fin</option>
+          @for (opcion of opcionesTiempoFin(); track $index) {
+          <option [value]="opcion">{{ opcion }}</option>
+          }
+        </select>
+      </td>
+      <td class="p-2">
+        <input
+          [formControl]="valor"
+          placeholder="Valor"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="number"
+          min="0"
+          step="1000"
+        />
+      </td>
+      <td></td>
+      <td class="p-2">
+        <acciones-tabla
+          [acciones]="accionesNuevaFranja()"
+          [ngClass]="'flex justify-between'"
+        ></acciones-tabla>
+      </td>
+    </tr>
+    } @if (!tablaTarifas().getRowModel().rows.length && !modoCreacion()) {
+    <tr>
+      <td
+        [attr.colspan]="tablaTarifas().getAllColumns().length"
+        class="text-center text-gray-500 p-2"
+      >
+        <span>No hay franjas horarias configuradas para este día...</span>
+      </td>
+    </tr>
+    } @else { @for (row of tablaTarifas().getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+    @if (row.getIsExpanded()) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+          @if (tablaTarifa.hiddenColumnIds().size !== 0) {
+          <ul>
+            @for (col of tablaTarifas.getAllLeafColumns(); track $index) { @if
+            (tablaTarifa.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span class="font-bold text-base-content">
+                {{ col.columnDef.header }}:
+              </span>
+              <span>
+                <ng-container
+                  *flexRender="
+                    tablaTarifa.getCell(col, row).column.columnDef.cell;
+                    props: tablaTarifa.getCell(col, row).getContext();
+                    let cell
+                  "
+                >
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </span>
+            </li>
+            } }
+          </ul>
+          <div class="divider my-1"></div>
+          }
+        </div>
+      </td>
+    </tr>
+    } } }
+  </tbody>
+</table>

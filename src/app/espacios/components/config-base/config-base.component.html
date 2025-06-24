@@ -1,0 +1,128 @@
+<div class="overflow-y-auto max-h-full">
+  <table
+    responsiveTable
+    #tablaBase="responsiveTable"
+    [table]="tablaConfigs()"
+    class="table w-full rounded-md table-sm sm:table-md"
+  >
+    <thead class="sticky top-0 z-20 bg-base-100 shadow-sm">
+      @for (headerGroup of tablaConfigs.getHeaderGroups(); track headerGroup.id)
+      {
+      <tr>
+        @for (header of headerGroup.headers; track header.id) {
+        <th
+          class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 border-b border-base-300"
+          [colSpan]="header.colSpan"
+        >
+          @if (!header.isPlaceholder) {
+          <ng-container
+            *flexRender="
+              header.column.columnDef.header;
+              props: header.getContext();
+              let header
+            "
+          >
+            <span class="text-left" [innerHTML]="header"></span>
+          </ng-container>
+          }
+        </th>
+        }
+      </tr>
+      }
+    </thead>
+    <tbody></tbody>
+    <tbody>
+      @if (!tablaConfigs().getRowModel().rows.length) {
+      <tr>
+        <td
+          [attr.colspan]="tablaConfigs().getAllColumns().length"
+          class="text-center text-gray-500 p-2"
+        >
+          <span>No hay franjas horarias configuradas...</span>
+        </td>
+      </tr>
+      } @else { @for (row of tablaConfigs.getRowModel().rows; track row.id) {
+      <tr class="bg-base-100">
+        @for (cell of row.getVisibleCells(); track cell.id) {
+        <td class="py-1">
+          <ng-container
+            *flexRender="
+              cell.column.columnDef.cell;
+              props: cell.getContext();
+              let cell
+            "
+          >
+            <div [innerHTML]="cell"></div>
+          </ng-container>
+        </td>
+        }
+      </tr>
+      @if (row.getIsExpanded()) {
+      <tr class="bg-base-300 border-none">
+        <td [attr.colspan]="row.getVisibleCells().length + 1">
+          <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+            @if (tablaBase.hiddenColumnIds().size !== 0) {
+            <ul>
+              @for (col of tablaConfigs.getAllLeafColumns(); track $index) { @if
+              (tablaBase.hiddenColumnIds().has(col.id)) {
+              <li class="flex my-2 flex-row gap-2 items-center">
+                <span class="font-bold text-base-content">
+                  {{ col.columnDef.header }}:
+                </span>
+                <span>
+                  <ng-container
+                    *flexRender="
+                      tablaBase.getCell(col, row).column.columnDef.cell;
+                      props: tablaBase.getCell(col, row).getContext();
+                      let cell
+                    "
+                  >
+                    <div [innerHTML]="cell"></div>
+                  </ng-container>
+                </span>
+              </li>
+              } }
+            </ul>
+            <div class="divider my-1"></div>
+            } @if (getFormPorDiaSafe(row.original.numero); as form) {
+            <configuracion-form
+              [ngClass]="'flex flex-col h-full w-full p-4'"
+              [configuracionForm]="form"
+              [diaNumero]="row.original.numero"
+              (agregarFranja)="agregarFranja($event.dia, $event.franja)"
+              (eliminarFranja)="eliminarFranja($event.dia, $event.index)"
+            ></configuracion-form>
+            } @else {
+            <div class="text-center p-4">
+              <span class="loading loading-spinner loading-md"></span>
+              <p class="text-sm text-gray-500 mt-2">
+                Cargando configuración...
+              </p>
+            </div>
+            }
+
+            <!-- Botón para guardar configuración -->
+            <div class="divider my-2 px-4"></div>
+            <div class="flex justify-end px-4 pb-4">
+              @if (getFormPorDiaSafe(row.original.numero); as form) {
+              <button
+                class="btn btn-primary"
+                [class.btn-loading]="estaGuardando(row.original.numero)"
+                [disabled]="!form.valid || estaGuardando(row.original.numero)"
+                (click)="guardarConfiguracion(row.original.numero)"
+              >
+                @if (estaGuardando(row.original.numero)) {
+                <span>Guardando...</span>
+                } @else {
+                <span>Guardar Configuración</span>
+                }
+              </button>
+              }
+            </div>
+          </div>
+        </td>
+      </tr>
+      } } }
+    </tbody>
+  </table>
+</div>

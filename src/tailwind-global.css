@@ -147,3 +147,17 @@
 .menu {
   --menu-active-bg: var(--color-primary);
 }
+
+/* Para Chrome, Edge, Safari */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1 !important;
+}
+
+/* Para Firefox */
+input[type='date']::-moz-calendar-picker-indicator,
+input[type='time']::-moz-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 1 !important;
+}
