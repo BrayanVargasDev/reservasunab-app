@@ -1,38 +1,25 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { FranjaHoraria } from '../interfaces/franja-horaria.interface';
+import { Configuracion } from '@espacios/interfaces';
+import { getConfigPorFecha } from '../actions/get-config-por-fecha.action';
+import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ConfigPorFechaService {
-  private _nuevasFranjas = signal<FranjaHoraria[] | null>(null);
+  private _fecha = signal<string | null>(null);
+  public fecha = this._fecha.asReadonly();
+  private espacioConfigService = inject(EspaciosConfigService);
 
-  public nuevasFranja = this._nuevasFranjas.asReadonly();
-
-  public setNuevaFranja(franja: FranjaHoraria): void {
-    this._nuevasFranjas.update(franjas => {
-      if (franjas) {
-        return [...franjas, franja];
-      } else {
-        return [franja];
-      }
-    });
+  public setFechaSeleccionada(fecha: string | null) {
+    this._fecha.set(fecha);
   }
 
-  public eliminarFranja(franja: FranjaHoraria): void {
-    this._nuevasFranjas.update(franjas => {
-      if (franjas) {
-        return franjas.filter(f => f.id !== franja.id);
-      }
-      return null;
-    });
-  }
-
-  public limpiarFranjas(): void {
-    this._nuevasFranjas.set(null);
-  }
-
-  public obtenerFranjas(): FranjaHoraria[] {
-    return this._nuevasFranjas() || [];
+  public obtenerConfiguracionPorFecha() {
+    return getConfigPorFecha(
+      this.espacioConfigService.idEspacio(),
+      this._fecha(),
+    );
   }
 }

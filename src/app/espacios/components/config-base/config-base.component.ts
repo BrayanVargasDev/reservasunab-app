@@ -314,7 +314,6 @@ export class ConfigBaseComponent {
         configuracion,
       );
 
-      console.log(`Configuración guardada exitosamente para el día ${dia}`);
     } catch (error) {
       console.error('Error guardando configuración:', error);
     } finally {

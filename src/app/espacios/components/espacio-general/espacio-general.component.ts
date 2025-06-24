@@ -134,11 +134,6 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
       if (!this.espacioConfigService.modoEdicionGeneral()) {
         this.espacioForm.disable();
       }
-
-      console.log(
-        'Formulario actualizado con valores:',
-        this.espacioForm.value,
-      );
     } catch (error) {
       console.error('Error al cargar datos del espacio:', error);
       this.alertaService.error(

@@ -64,7 +64,6 @@ export class EspaciosService {
   private _modoEdicion = signal(false);
   public modoEdicion = this._modoEdicion.asReadonly();
   public abrirModal() {
-    console.log('Abrir modal de espacios');
     this._modalAbierta.set(true);
   }
 
