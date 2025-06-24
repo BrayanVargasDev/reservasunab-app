@@ -1,4 +1,3 @@
-import { PaginationState } from '@tanstack/angular-table';
 import { environment } from '@environments/environment';
 import { type Espacio, type Configuracion } from '../interfaces';
 import { GeneralResponse, Meta } from '@shared/interfaces';
