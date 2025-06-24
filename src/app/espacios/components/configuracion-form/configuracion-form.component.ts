@@ -74,7 +74,6 @@ export class ConfiguracionFormComponent<T> {
 
     this.formChangesSignal();
     const valor = form.get('minutos_uso')?.value || 60;
-    console.log('minutosUsoSignal actualizado:', valor);
     return valor;
   });
 
@@ -84,7 +83,6 @@ export class ConfiguracionFormComponent<T> {
 
     this.formChangesSignal();
     const valor = form.get('hora_apertura')?.value || '08:00';
-    console.log('horaAperturaSignal actualizado:', valor);
     return valor;
   });
 
