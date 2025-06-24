@@ -22,6 +22,7 @@ import { EspacioGeneralComponent } from '@espacios/components/espacio-general/es
 import { TablaConfigTipoUsuarioComponent } from '../../components/tabla-config-tipo-usuario/tabla-config-tipo-usuario.component';
 import { ConfigPorFechaComponent } from "../../components/config-por-fecha/config-por-fecha.component";
 import { ConfigBaseComponent } from "../../components/config-base/config-base.component";
+import { BreadcrumbsComponent } from "../../../shared/components/breadcrumbs/breadcrumbs.component";
 
 @Component({
   selector: 'app-configuracion',
@@ -34,7 +35,8 @@ import { ConfigBaseComponent } from "../../components/config-base/config-base.co
     EspacioGeneralComponent,
     TablaConfigTipoUsuarioComponent,
     ConfigPorFechaComponent,
-    ConfigBaseComponent
+    ConfigBaseComponent,
+    BreadcrumbsComponent
 ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',

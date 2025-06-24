@@ -1,10 +1,12 @@
 <div
   class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
-  <div class="flex items-center">
+  <div class="flex items-center justify-between w-full">
     <h2 class="font-bold text-4xl">
       {{ espacioQuery.data()?.nombre | titlecase }}
     </h2>
+
+    <app-breadcrumbs></app-breadcrumbs>
   </div>
 </div>
 <div class="w-full h-full max-h-full overflow-hidden flex flex-col">

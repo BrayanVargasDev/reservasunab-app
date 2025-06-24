@@ -1,0 +1,26 @@
+<nav class="breadcrumbs text-sm py-2" aria-label="Breadcrumb">
+  <ul>
+    @for (breadcrumb of breadcrumbs(); track breadcrumb.label) {
+    <li>
+      @if (breadcrumb.url && !breadcrumb.isActive) {
+      <button
+        type="button"
+        class="link link-hover text-base-content/70 hover:text-primary transition-colors duration-200"
+        (click)="navigateTo(breadcrumb.url)"
+        [attr.aria-label]="'Ir a ' + breadcrumb.label"
+      >
+        {{ breadcrumb.label }}
+      </button>
+      } @else {
+      <span
+        class="text-base-content font-medium"
+        [class.text-primary]="breadcrumb.isActive"
+        aria-current="page"
+      >
+        {{ breadcrumb.label }}
+      </span>
+      }
+    </li>
+    }
+  </ul>
+</nav>
