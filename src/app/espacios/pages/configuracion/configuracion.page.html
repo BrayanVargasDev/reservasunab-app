@@ -17,7 +17,7 @@
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
       aria-label="General"
-      checked="checked"
+      [checked]="generalChecked()"
       (change)="cambiarPestana('general')"
     />
     <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
@@ -30,6 +30,7 @@
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
       aria-label="Base"
+      [checked]="baseChecked()"
       (change)="cambiarPestana('base')"
     />
     <div
@@ -46,6 +47,7 @@
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
       aria-label="Tipo de Usuario"
+      [checked]="tipoUsuarioChecked()"
       (change)="cambiarPestana('tipoUsuario')"
     />
     <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
@@ -58,6 +60,7 @@
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
       aria-label="Por Fecha"
+      [checked]="fechaChecked()"
       (change)="cambiarPestana('fecha')"
     />
     <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">

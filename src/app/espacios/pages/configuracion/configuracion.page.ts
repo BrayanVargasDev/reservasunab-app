@@ -8,6 +8,7 @@ import {
   effect,
   Injector,
   OnDestroy,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -19,10 +20,10 @@ import { EspaciosService } from '@espacios/services/espacios.service';
 import { AppService } from '@app/app.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 import { EspacioGeneralComponent } from '@espacios/components/espacio-general/espacio-general.component';
-import { TablaConfigTipoUsuarioComponent } from '../../components/tabla-config-tipo-usuario/tabla-config-tipo-usuario.component';
-import { ConfigPorFechaComponent } from "../../components/config-por-fecha/config-por-fecha.component";
-import { ConfigBaseComponent } from "../../components/config-base/config-base.component";
-import { BreadcrumbsComponent } from "../../../shared/components/breadcrumbs/breadcrumbs.component";
+import { TablaConfigTipoUsuarioComponent } from '@espacios/components/tabla-config-tipo-usuario/tabla-config-tipo-usuario.component';
+import { ConfigPorFechaComponent } from '@espacios/components/config-por-fecha/config-por-fecha.component';
+import { ConfigBaseComponent } from '@espacios/components/config-base/config-base.component';
+import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 
 @Component({
   selector: 'app-configuracion',
@@ -36,8 +37,8 @@ import { BreadcrumbsComponent } from "../../../shared/components/breadcrumbs/bre
     TablaConfigTipoUsuarioComponent,
     ConfigPorFechaComponent,
     ConfigBaseComponent,
-    BreadcrumbsComponent
-],
+    BreadcrumbsComponent,
+  ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },
@@ -54,6 +55,19 @@ export class ConfiguracionPage implements OnInit, OnDestroy {
       map(params => params.get('id') ?? ''),
       tap(id => this.espacioConfigService.setIdEspacio(parseInt(id, 10))),
     ),
+  );
+
+  public generalChecked = computed(
+    () => this.espacioConfigService.pestana() === 'general',
+  );
+  public baseChecked = computed(
+    () => this.espacioConfigService.pestana() === 'base',
+  );
+  public tipoUsuarioChecked = computed(
+    () => this.espacioConfigService.pestana() === 'tipoUsuario',
+  );
+  public fechaChecked = computed(
+    () => this.espacioConfigService.pestana() === 'fecha',
   );
 
   public alertaEspacioConfig = viewChild.required('alertaEspacioConfig', {

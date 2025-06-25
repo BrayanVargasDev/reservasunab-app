@@ -53,7 +53,7 @@ export class EspaciosConfigService {
     select: (response: GeneralResponse<EspacioParaConfig>) => {
       return response.data;
     },
-    enabled: this._idEspacio() !== null,
+    enabled: !!this._idEspacio(),
     staleTime: 1000 * 60 * 5,
   }));
 

@@ -58,6 +58,12 @@ export const routes: Routes = [
           import('@espacios/espacios.routes').then(m => m.espaciosRoutes),
         canActivate: [AuthGuard],
       },
+      {
+        path: 'dreservas',
+        loadChildren: () =>
+          import('@dreservas/dreservas.routes').then(m => m.dreservasRoutes),
+        canActivate: [AuthGuard],
+      },
     ],
   },
   {

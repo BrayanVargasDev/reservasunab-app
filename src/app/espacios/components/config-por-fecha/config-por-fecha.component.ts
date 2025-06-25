@@ -101,6 +101,25 @@ export class ConfigPorFechaComponent {
   ngOnInit() {
     this.initializePikaday();
 
+    effect(
+      () => {
+        this.espacioConfigService.pestana();
+
+        this.resetFormulario();
+        this.fecha.setValue('');
+        this.fechaSeleccionada.set('');
+        this.pikaday.setDate(null);
+        this.configuracionCargada.set(false);
+        this.necesitaConfiguracionBase.set(false);
+        this.cargandoConfiguracion.set(false);
+        this.configPorFechaService.setFechaSeleccionada(null);
+        this.espacioConfigService.resetAll();
+      },
+      {
+        injector: this.injector,
+      },
+    );
+
     // Effect que escucha cambios en la fecha del servicio
     effect(
       () => {
@@ -299,6 +318,13 @@ export class ConfigPorFechaComponent {
       );
     } catch (error) {
       console.error('Error guardando configuración:', error);
+    }
+  }
+
+  ngOnDestroy() {
+    // Destruir Pikaday al destruir el componente
+    if (this.pikaday) {
+      this.pikaday.destroy();
     }
   }
 }

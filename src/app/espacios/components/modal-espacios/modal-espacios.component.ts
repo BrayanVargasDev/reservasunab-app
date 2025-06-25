@@ -120,6 +120,8 @@ export class ModalEspaciosComponent implements OnInit {
     }
 
     const espacio = this.espacioForm.value as FormEspacio;
+    if (!espacio.minimoJugadores) espacio.minimoJugadores = 0;
+    if (!espacio.maximoJugadores) espacio.maximoJugadores = 0;
 
     console.log('Formulario enviado:', espacio);
     this.espaciosService

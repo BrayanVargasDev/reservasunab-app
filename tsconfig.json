@@ -17,6 +17,8 @@
       "@shared/*": ["src/app/shared/*"],
       "@usuarios/*": ["src/app/usuarios/*"],
       "@espacios/*": ["src/app/espacios/*"],
+      "@dreservas/*": ["src/app/dreservas/*"],
+      "@reservas/*": ["src/app/reservas/*"],
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

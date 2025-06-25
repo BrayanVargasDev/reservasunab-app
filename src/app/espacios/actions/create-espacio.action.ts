@@ -18,6 +18,10 @@ export const createEspacio = async (
       body: JSON.stringify(params),
     });
 
+    if (!response.ok) {
+      throw await response.json();
+    }
+
     return await response.json();
   } catch (error) {
     console.error('Error in createEspacio action:', error);
