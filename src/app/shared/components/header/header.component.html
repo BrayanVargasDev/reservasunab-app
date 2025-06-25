@@ -7,22 +7,14 @@
       }
     </ion-buttons>
 
-    <ion-buttons
-      class="buttons-end-container"
-      slot="end">
-      <ion-button
-        color="dark"
-        class="btn-header">
-        <ion-icon
-          color="dark"
-          name="notifications-outline"></ion-icon>
+    <ion-buttons class="buttons-end-container" slot="end">
+      <ion-button color="dark" class="btn-header">
+        <ion-icon color="dark" name="notifications-outline"></ion-icon>
       </ion-button>
 
       <div class="user-info">
         <ion-avatar slot="start">
-          <img
-            [src]="fotoUsuario"
-            alt="Avatar" />
+          <img [src]="fotoUsuario" alt="Avatar" />
         </ion-avatar>
         <div class="user-text">
           <ion-label class="ion-hide-sm-down user-name">
@@ -34,31 +26,22 @@
         </div>
       </div>
 
-      <ion-button
-        class="btn-chevron"
-        color="dark"
-        id="user-menu-trigger">
-        <ion-icon
-          color="dark"
-          name="chevron-down-outline">
-        </ion-icon>
+      <ion-button class="btn-chevron" color="dark" id="user-menu-trigger">
+        <ion-icon color="dark" name="chevron-down-outline"> </ion-icon>
       </ion-button>
 
       <ion-popover
         trigger="user-menu-trigger"
         triggerAction="click"
-        [dismissOnSelect]="true">
+        [dismissOnSelect]="true"
+      >
         <ng-template>
           <ion-content>
             <ion-list>
               @if (screenWidth() <= 576) {
-              <ion-item
-                lines="none"
-                class="user-menu-header">
+              <ion-item lines="none" class="user-menu-header">
                 <ion-avatar slot="start">
-                  <img
-                    [src]="fotoUsuario"
-                    alt="Avatar" />
+                  <img [src]="fotoUsuario" alt="Avatar" />
                 </ion-avatar>
                 <div class="user-text-popover">
                   <ion-label class="user-name">{{ nombreUsuario }}</ion-label>
@@ -69,22 +52,12 @@
                 ><ion-label><hr /></ion-label
               ></ion-item>
               }
-              <ion-item
-                button
-                routerLink="/perfil"
-                detail="true">
-                <ion-icon
-                  name="person-outline"
-                  slot="start"></ion-icon>
+              <ion-item button routerLink="/perfil" detail="true">
+                <ion-icon name="person-outline" slot="start"></ion-icon>
                 <ion-label>Visitar Perfil</ion-label>
               </ion-item>
-              <ion-item
-                button
-                (click)="cerrarSesion()"
-                detail="true">
-                <ion-icon
-                  name="log-out-outline"
-                  slot="start"></ion-icon>
+              <ion-item button (click)="cerrarSesion()" detail="true">
+                <ion-icon name="log-out-outline" slot="start"></ion-icon>
                 <ion-label>Cerrar Sesión</ion-label>
               </ion-item>
             </ion-list>
@@ -96,7 +69,7 @@
 </ion-header>
 } @else {
 <div class="flex w-screen">
-  <div class="navbar m-2 shadow-md bg-base-100 rounded-box">
+  <div class="navbar m-2 shadow-md bg-base-100 rounded-box px-4">
     <div class="navbar-start">
       <button class="btn btn-primary btn-soft btn-sm md:hidden">
         <svg
@@ -104,80 +77,50 @@
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          class="inline-block h-5 w-5">
+          class="inline-block h-5 w-5"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M4 6h16M4 12h16M4 18h16"></path>
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
         </svg>
       </button>
       <a
         routerLink="/dashboard"
-        class="text-xl text-primary font-bold ml-3"
+        class="text-xl text-primary font-bold ml-3 lg:ml-0"
         >{{ title() }}</a
       >
     </div>
 
     <div class="navbar-end gap-2">
-      <button class="btn btn-primary btn-soft btn-sm">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </button>
-      <button class="btn btn-primary btn-soft btn-sm">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      </button>
-
       <div class="relative ml-3">
-        <div class="avatar">
-          <div class="w-8 rounded-full">
-            <img
-              src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp" />
-          </div>
-        </div>
-
-        <ul
-          class="menu hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden"
-          role="menu"
-          aria-orientation="vertical"
-          aria-labelledby="user-menu-button"
-          tabindex="-1">
-          <li>
-            <a
-              routerLink="/perfil"
-              tabindex="-1">
-              Perfil
-            </a>
-          </li>
-          <li>
-            <a
-              routerLink="/logout"
-              tabindex="-1">
-              Cerrar Sesión
-            </a>
-          </li>
-        </ul>
+        <details class="dropdown dropdown-end">
+          <summary class="avatar">
+            <div class="w-8 rounded-full">
+              <img
+                src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+              />
+            </div>
+          </summary>
+          <ul
+            class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
+          >
+            <li>
+              <a routerLink="/perfil" tabindex="-1">
+                <app-web-icon nombreIcono="person-outline" estilos="h-4 w-4"></app-web-icon>
+                Perfil
+              </a>
+            </li>
+            <li>
+              <a routerLink="/logout" tabindex="-1">
+                <app-web-icon nombreIcono="log-out-outline" estilos="h-4 w-4"></app-web-icon>
+                Cerrar Sesión
+              </a>
+            </li>
+          </ul>
+        </details>
       </div>
     </div>
   </div>

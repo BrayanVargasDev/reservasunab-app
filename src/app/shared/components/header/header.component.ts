@@ -20,14 +20,15 @@ import {
 } from 'ionicons/icons';
 
 import { AuthService } from '@auth/services/auth.service';
-import { AppService } from 'src/app/app.service';
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from "../web-icon/web-icon.component";
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [IonicModule, RouterLink, CommonModule],
+  imports: [IonicModule, RouterLink, CommonModule, WebIconComponent],
 })
 export class HeaderComponent implements OnInit {
   title = signal('App UNAB');
