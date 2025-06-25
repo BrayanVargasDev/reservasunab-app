@@ -1,77 +1,442 @@
-<ion-content
-  [fullscreen]="true"
-  class="ion-padding">
+@if (!appService.esMovil()) {
+<div class="flex flex-col w-full h-full overflow-hidden relative p-2 md:p-4 lg:p-8">
+  <div class="flex-1 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+      <div class="mb-2 sticky top-0 z-20 bg-base-300">
+        <h1 class="text-3xl font-bold text-base-content mb-2">Mi Perfil</h1>
+        <p class="text-base-content/70">Administra tu información personal</p>
+      </div>
+
+      <!-- Contenido Principal -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <div class="lg:col-span-1">
+          <div class="card bg-base-100 shadow-md">
+            <div class="card-body items-center text-center">
+              <h3 class="text-xl font-semibold">
+                @if (perfilService.usuario(); as usuario) {
+                {{ usuario.nombre }} {{ usuario.apellido }}
+                } @else { Cargando... }
+              </h3>
+              <div class="badge badge-primary">
+                @if (perfilService.usuario(); as usuario) {
+                {{ usuario.rol }}
+                } @else { - }
+              </div>
+              <input
+                #inputAvatar
+                type="file"
+                accept="image/*"
+                class="hidden"
+                (change)="onFileSelected($event)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha - Formulario -->
+        <div class="lg:col-span-2">
+          <div class="card bg-base-100 shadow-md p-6">
+            <h2 class="card-title mb-6">Información Personal</h2>
+
+            <form [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
+              <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="nombre"
+                  >
+                    Nombre <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="nombre"
+                    formControlName="nombre"
+                    placeholder="Nombre"
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'nombre'
+                      )
+                    }"
+                  />
+                  @if (formUtils.esCampoInvalido(perfilForm, 'nombre')) {
+                  <div class="text-sm text-error">
+                    {{ formUtils.obtenerErrorDelCampo(perfilForm, 'nombre') }}
+                  </div>
+                  }
+                </div>
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="apellido"
+                  >
+                    Apellido <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="apellido"
+                    formControlName="apellido"
+                    placeholder="Apellido"
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'apellido'
+                      )
+                    }"
+                  />
+                  @if (formUtils.esCampoInvalido(perfilForm, 'apellido')) {
+                  <div class="text-sm text-error">
+                    {{ formUtils.obtenerErrorDelCampo(perfilForm, 'apellido') }}
+                  </div>
+                  }
+                </div>
+              </div>
+              <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+                <div class="flex flex-col w-full md:w-2/6">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="tipoDocumento"
+                  >
+                    Tipo Doc. <span class="text-error">*</span>
+                  </label>
+                  <select
+                    type="text"
+                    id="tipoDocumento"
+                    formControlName="tipoDocumento"
+                    [ngClass]="{
+                      'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'tipoDocumento'
+                      )
+                    }"
+                  >
+                    <option value="" disabled selected>Seleccione</option>
+                    @for (tipoDoc of appService.tipoDocQuery.data(); track
+                    tipoDoc.id) {
+                    <option [value]="tipoDoc.id">
+                      {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
+                    </option>
+                    }
+                  </select>
+                  @if (formUtils.esCampoInvalido(perfilForm, 'tipoDocumento')) {
+                  <div class="text-sm text-error">
+                    {{
+                      formUtils.obtenerErrorDelCampo(
+                        perfilForm,
+                        'tipoDocumento'
+                      )
+                    }}
+                  </div>
+                  }
+                </div>
+                <div class="flex flex-col w-full md:w-4/6">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="documento"
+                  >
+                    Documento <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="documento"
+                    inputSoloNumeros
+                    inputmode="numeric"
+                    formControlName="documento"
+                    placeholder="123456789"
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'documento'
+                      )
+                    }"
+                  />
+                  @if (formUtils.esCampoInvalido(perfilForm, 'documento')) {
+                  <div class="text-sm text-error">
+                    {{
+                      formUtils.obtenerErrorDelCampo(perfilForm, 'documento')
+                    }}
+                  </div>
+                  }
+                </div>
+              </div>
+              <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="telefono"
+                  >
+                    Teléfono <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    id="telefono"
+                    inputSoloNumeros
+                    formControlName="telefono"
+                    placeholder="1234567890"
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'telefono'
+                      )
+                    }"
+                  />
+                  @if (formUtils.esCampoInvalido(perfilForm, 'telefono')) {
+                  <div class="text-sm text-error">
+                    {{ formUtils.obtenerErrorDelCampo(perfilForm, 'telefono') }}
+                  </div>
+                  }
+                </div>
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label
+                    class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                    for="fechaNacimiento"
+                  >
+                    Fecha de Nacimiento <span class="text-error">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    #fechaNacimientoPicker
+                    id="fechaNacimiento"
+                    formControlName="fechaNacimiento"
+                    [ngClass]="{
+                      'input input-bordered pika-single w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'fechaNacimiento'
+                      )
+                    }"
+                  />
+                  <div #contenedorCalendario class="w-full relative"></div>
+                  @if (formUtils.esCampoInvalido(perfilForm, 'fechaNacimiento'))
+                  {
+                  <div class="text-sm text-error">
+                    {{
+                      formUtils.obtenerErrorDelCampo(
+                        perfilForm,
+                        'fechaNacimiento'
+                      )
+                    }}
+                  </div>
+                  }
+                </div>
+              </div>
+              <div class="my-4 flex flex-col w-full">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                  >Email <span class="text-error">*</span></label
+                >
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  placeholder="micorreo@unab.edu.co"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'email'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'email')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'email') }}
+                </div>
+                }
+              </div>
+              <div class="my-4 flex flex-col w-full">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                  >Dirección <span class="text-error">*</span></label
+                >
+                <input
+                  type="text"
+                  id="direccion"
+                  formControlName="direccion"
+                  placeholder="Calle X # 123A-45"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'direccion'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'direccion')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'direccion') }}
+                </div>
+                }
+              </div>
+
+              <div class="card-actions justify-end">
+                <button
+                  type="submit"
+                  [disabled]="perfilForm.invalid || perfilService.cargando()"
+                  class="btn btn-primary"
+                >
+                  @if (perfilService.cargando()) {
+                  <span class="loading loading-spinner loading-sm"></span>
+                  Guardando... } @else { Guardar Cambios }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #alertaPerfil></ng-template>
+} @else {
+<ion-content [fullscreen]="true" class="sm:hidden ion-padding">
   <div class="perfil-container">
     <div class="perfil-header">
-      <ion-avatar class="perfil-avatar">
-        <img
-          src="https://ionicframework.com/docs/img/demos/avatar.svg"
-          alt="Foto de perfil" />
-      </ion-avatar>
+      <div class="avatar-container" (click)="cambiarAvatar()">
+        <ion-avatar class="perfil-avatar">
+          <img [src]="avatarUrl()" alt="Foto de perfil" />
+        </ion-avatar>
+        <div class="avatar-overlay">
+          <ion-icon name="camera-outline"></ion-icon>
+        </div>
+      </div>
       <h2>Mi Perfil</h2>
       <p>Administra tu información personal</p>
+      <input
+        #inputAvatar
+        type="file"
+        accept="image/*"
+        class="hidden"
+        (change)="onFileSelected($event)"
+      />
     </div>
 
     <ion-card>
       <ion-card-content>
-        <form
-          [formGroup]="perfilForm"
-          (ngSubmit)="guardarCambios()">
+        <form [formGroup]="perfilForm" (ngSubmit)="guardarCambios()">
           <ion-item
-            [class.ion-invalid]="esCampoInvalido('nombre')"
-            [class.ion-valid]="!esCampoInvalido('nombre') && perfilForm.get('nombre')?.touched">
-            <ion-label position="stacked">Nombre completo</ion-label>
+            [class.ion-invalid]="
+              formUtils.esCampoInvalido(perfilForm, 'nombre')
+            "
+            [class.ion-valid]="
+              !formUtils.esCampoInvalido(perfilForm, 'nombre') &&
+              perfilForm.get('nombre')?.touched
+            "
+          >
+            <ion-label position="stacked"
+              >Nombre <span class="text-red-500">*</span></ion-label
+            >
             <ion-input
               formControlName="nombre"
-              placeholder="Ingresa tu nombre"></ion-input>
+              placeholder="Ingresa tu nombre"
+            ></ion-input>
             <ion-note
               slot="error"
-              *ngIf="esCampoInvalido('nombre')">
-              El nombre es requerido
+              *ngIf="formUtils.esCampoInvalido(perfilForm, 'nombre')"
+            >
+              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'nombre') }}
             </ion-note>
           </ion-item>
 
           <ion-item
-            [class.ion-invalid]="esCampoInvalido('email')"
-            [class.ion-valid]="!esCampoInvalido('email') && perfilForm.get('email')?.touched">
-            <ion-label position="stacked">Correo electrónico</ion-label>
+            [class.ion-invalid]="
+              formUtils.esCampoInvalido(perfilForm, 'apellido')
+            "
+            [class.ion-valid]="
+              !formUtils.esCampoInvalido(perfilForm, 'apellido') &&
+              perfilForm.get('apellido')?.touched
+            "
+          >
+            <ion-label position="stacked"
+              >Apellido <span class="text-red-500">*</span></ion-label
+            >
+            <ion-input
+              formControlName="apellido"
+              placeholder="Ingresa tu apellido"
+            ></ion-input>
+            <ion-note
+              slot="error"
+              *ngIf="formUtils.esCampoInvalido(perfilForm, 'apellido')"
+            >
+              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'apellido') }}
+            </ion-note>
+          </ion-item>
+
+          <ion-item
+            [class.ion-invalid]="formUtils.esCampoInvalido(perfilForm, 'email')"
+            [class.ion-valid]="
+              !formUtils.esCampoInvalido(perfilForm, 'email') &&
+              perfilForm.get('email')?.touched
+            "
+          >
+            <ion-label position="stacked"
+              >Correo electrónico <span class="text-red-500">*</span></ion-label
+            >
             <ion-input
               type="email"
               formControlName="email"
-              placeholder="Ingresa tu correo"></ion-input>
+              placeholder="Ingresa tu correo"
+            ></ion-input>
             <ion-note
               slot="error"
-              *ngIf="esCampoInvalido('email')">
-              Ingresa un correo electrónico válido
+              *ngIf="formUtils.esCampoInvalido(perfilForm, 'email')"
+            >
+              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'email') }}
             </ion-note>
           </ion-item>
 
           <ion-item
-            [class.ion-invalid]="esCampoInvalido('telefono')"
-            [class.ion-valid]="!esCampoInvalido('telefono') && perfilForm.get('telefono')?.touched">
-            <ion-label position="stacked">Teléfono</ion-label>
+            [class.ion-invalid]="
+              formUtils.esCampoInvalido(perfilForm, 'telefono')
+            "
+            [class.ion-valid]="
+              !formUtils.esCampoInvalido(perfilForm, 'telefono') &&
+              perfilForm.get('telefono')?.touched
+            "
+          >
+            <ion-label position="stacked"
+              >Teléfono <span class="text-red-500">*</span></ion-label
+            >
             <ion-input
               type="tel"
               formControlName="telefono"
-              placeholder="Ingresa tu teléfono"></ion-input>
+              placeholder="Ingresa tu teléfono"
+            ></ion-input>
             <ion-note
               slot="error"
-              *ngIf="esCampoInvalido('telefono')">
-              El teléfono es requerido
+              *ngIf="formUtils.esCampoInvalido(perfilForm, 'telefono')"
+            >
+              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'telefono') }}
             </ion-note>
           </ion-item>
 
           <ion-item
-            [class.ion-invalid]="esCampoInvalido('direccion')"
-            [class.ion-valid]="!esCampoInvalido('direccion') && perfilForm.get('direccion')?.touched">
-            <ion-label position="stacked">Dirección</ion-label>
+            [class.ion-invalid]="
+              formUtils.esCampoInvalido(perfilForm, 'direccion')
+            "
+            [class.ion-valid]="
+              !formUtils.esCampoInvalido(perfilForm, 'direccion') &&
+              perfilForm.get('direccion')?.touched
+            "
+          >
+            <ion-label position="stacked"
+              >Dirección <span class="text-red-500">*</span></ion-label
+            >
             <ion-input
               formControlName="direccion"
-              placeholder="Ingresa tu dirección"></ion-input>
+              placeholder="Ingresa tu dirección"
+            ></ion-input>
             <ion-note
               slot="error"
-              *ngIf="esCampoInvalido('direccion')">
-              La dirección es requerida
+              *ngIf="formUtils.esCampoInvalido(perfilForm, 'direccion')"
+            >
+              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'direccion') }}
             </ion-note>
           </ion-item>
 
@@ -79,8 +444,11 @@
             <ion-button
               type="submit"
               expand="block"
-              [disabled]="perfilForm.invalid">
-              Guardar Cambios
+              [disabled]="perfilForm.invalid || perfilService.cargando()"
+            >
+              @if (perfilService.cargando()) {
+              <ion-spinner name="crescent" slot="start"></ion-spinner>
+              Guardando... } @else { Guardar Cambios }
             </ion-button>
           </div>
         </form>
@@ -88,3 +456,4 @@
     </ion-card>
   </div>
 </ion-content>
+}
