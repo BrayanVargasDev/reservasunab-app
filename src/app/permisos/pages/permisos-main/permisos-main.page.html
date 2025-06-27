@@ -119,17 +119,35 @@
 <div
   class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
-  <div class="flex items-center">
+  <div class="flex items-center gap-2">
     <h2 class="font-bold text-4xl">Roles y permisos</h2>
+    @if (permisosService.filtroTexto() && permisosService.pestana() ===
+    'permiso') {
+    <div class="badge badge-secondary h-6 badge-sm my-auto text-base">
+      Filtrando: "{{ permisosService.filtroTexto() }}"
+      <button
+        class="btn h-5 w-5 btn-circle btn-secondary ml-1"
+        (click)="limpiarFiltro()"
+        title="Limpiar filtro"
+      >
+        <app-web-icon
+          estilos="h-4 w-4"
+          nombreIcono="close-circle-outline"
+        ></app-web-icon>
+      </button>
+    </div>
+    }
   </div>
   <div class="flex flex-col md:flex-row gap-2">
+    @if (permisosService.pestana() === 'permiso') {
     <input
       type="text"
-      [disabled]="permisosService.modoCreacion() || appService.editando()"
       placeholder="Buscar por nombre, email o rol..."
-      class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
-      [(ngModel)]="filtroTexto"
+      class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm"
+      [value]="permisosService.filtroTexto()"
+      (input)="aplicarFiltro($any($event.target).value)"
     />
+    }
     <button
       [disabled]="appService.editando() || tabPermiso.checked"
       class="btn btn-primary h-11 rounded-box"

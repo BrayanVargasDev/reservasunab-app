@@ -18,6 +18,7 @@ import { PermisosService } from '@permisos/services/permisos.service';
 import { Rol } from '@permisos/interfaces';
 import { TablaRolesComponent } from '@permisos/components/tabla-roles/tabla-roles.component';
 import { TablaPermisosComponent } from '@permisos/components/tabla-permisos/tabla-permisos.component';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-permisos-main',
@@ -41,7 +42,8 @@ export class PermisosMainPage implements OnInit {
   public appService = inject(AppService);
   public permisosService = inject(PermisosService);
 
-  filtroTexto = signal('');
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   roles: Rol[] = [];
   rolSeleccionado: Rol | null = null;
@@ -53,6 +55,12 @@ export class PermisosMainPage implements OnInit {
       shield,
       addOutline,
     });
+
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((texto: string) => {
+        this.permisosService.setFiltroTexto(texto);
+      });
   }
 
   get permisosQuery() {
@@ -63,10 +71,10 @@ export class PermisosMainPage implements OnInit {
     return this.appService.rolesQuery;
   }
 
-  cambiarPestana(pestaña: 'rol' | 'permiso') {
+  cambiarPestana(pestana: 'rol' | 'permiso') {
     this.appService.setEditando(false);
     this.permisosService.setModoCreacion(false);
-    this.permisosService.setBotonARenderizar(pestaña);
+    this.permisosService.setPestana(pestana);
   }
 
   seleccionarRol(rol: Rol) {
@@ -95,8 +103,21 @@ export class PermisosMainPage implements OnInit {
     // Aquí iría la llamada al servicio para guardar los cambios
   }
 
+  limpiarFiltro() {
+    this.permisosService.limpiarFiltro();
+  }
+
+  aplicarFiltro(texto: string) {
+    this.searchSubject.next(texto);
+  }
+
   crearRol() {
     this.appService.setEditando(true);
     this.permisosService.setModoCreacion(true);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

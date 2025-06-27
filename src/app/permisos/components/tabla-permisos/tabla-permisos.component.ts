@@ -158,7 +158,7 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
   ngOnInit() {
     effect(
       () => {
-        this.permisosService.botonArenderizar();
+        this.permisosService.pestana();
         this.permisosService.paginacion();
         this.tableState.update(state => ({
           ...state,

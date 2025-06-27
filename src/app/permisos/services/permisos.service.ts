@@ -20,7 +20,7 @@ export class PermisosService {
   private appService = inject(AppService);
   private queryClient = inject(QueryClient);
   private _appService = inject(AppService);
-  private _botonARenderizar = signal<'rol' | 'permiso'>('permiso');
+  private _pestana = signal<'rol' | 'permiso'>('permiso');
   private _estadoModal = signal({
     titulo: '',
     edicion: false,
@@ -48,7 +48,7 @@ export class PermisosService {
   public paginacionRoles = computed(() => this._paginacionRoles());
   public datosPaginador = computed(() => this._datosPaginador());
   public datosPaginadorRoles = computed(() => this._datosPaginadorRoles());
-  public botonArenderizar = computed(() => this._botonARenderizar());
+  public pestana = computed(() => this._pestana());
   public estadoModal = computed(() => this._estadoModal());
   public modoCreacion = computed(() => this._modoCreacion());
   public filaPermisosEditando = computed(() => this._filaPermisosEditando());
@@ -60,15 +60,15 @@ export class PermisosService {
     this._permisosUsuarioEditando(),
   );
 
-  public setBotonARenderizar(value: 'rol' | 'permiso') {
-    this._botonARenderizar.set(value);
+  public setPestana(value: 'rol' | 'permiso') {
+    this._pestana.set(value);
   }
 
   public permisosQuery = injectQuery(() => ({
     queryKey: ['permisos', this.paginacion(), this._filtroTexto()],
     queryFn: () => {
       const params = this.paginacion();
-      return getPermisos(params);
+      return getPermisos({ ...params, search: this._filtroTexto() });
     },
     select: (response: PaginatedResponse<PermisosUsuario>) => {
       this._datosPaginador.set(response.meta);
@@ -77,7 +77,7 @@ export class PermisosService {
   }));
 
   public rolesPermisosQuery = injectQuery(() => ({
-    queryKey: ['roles-permisos', this.paginacion(), this._filtroTexto()],
+    queryKey: ['roles-permisos', this.paginacion()],
     queryFn: () => {
       const params = this.paginacion();
       return getRolesPermisos(params);

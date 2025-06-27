@@ -196,7 +196,7 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
   ngOnInit() {
     effect(
       () => {
-        this.permisosService.botonArenderizar();
+        this.permisosService.pestana();
         this.permisosService.paginacionRoles();
         this.tableState.update(state => ({
           ...state,
