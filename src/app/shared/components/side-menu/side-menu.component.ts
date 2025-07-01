@@ -7,7 +7,7 @@ import {
   signal,
   computed,
 } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -44,6 +44,7 @@ import { Pantalla } from '../../interfaces/pantalla.interface';
 })
 export class SideMenuComponent {
   private authServicio = inject(AuthService);
+  private router = inject(Router);
 
   public appService = inject(AppService);
 
@@ -120,6 +121,16 @@ export class SideMenuComponent {
    */
   logout() {
     this.closeMenu();
-    this.authServicio.logout();
+    this.authServicio.logout().then(
+      () => {
+        this.authServicio.setToken(null);
+        this.authServicio.setUser(null);
+        this.authServicio.setLoading(false);
+        this.router.navigate(['/auth/login']);
+      },
+      error => {
+        console.error('Error al cerrar sesión:', error);
+      }
+    );
   }
 }

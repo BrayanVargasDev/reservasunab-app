@@ -30,15 +30,6 @@ export class AuthService {
 
   constructor() {
     this.checkStoredToken();
-
-    effect(() => {
-      const usuario = this._usuario();
-      if (usuario) {
-        this._estadoAutenticacion.set('autenticado');
-      } else if (this._estadoAutenticacion() !== 'chequeando') {
-        this._estadoAutenticacion.set('noAutenticado');
-      }
-    });
   }
 
   estadoAutenticacion = computed<EstadoAutenticacion>(() => {

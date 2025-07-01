@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import moment from 'moment-timezone';
 
 import { AppService } from './app.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -16,13 +17,22 @@ import { AppService } from './app.service';
 })
 export class AppComponent implements OnInit {
   momentL = moment;
+  private router = inject(Router);
 
   appService = inject(AppService);
+  authService = inject(AuthService);
 
   showMenu = signal(false);
 
-  constructor(private router: Router) {
+  constructor() {
     this.momentL.tz.setDefault('America/Bogota');
+
+    effect(() => {
+      const isAuthenticated = this.authService.estaAutenticado();
+      if (!isAuthenticated) {
+        this.router.navigate(['/auth/login']);
+      }
+    });
   }
 
   ngOnInit() {

@@ -19,9 +19,7 @@ export class NoAuthGuard implements CanActivate {
   ): boolean {
     const estadoAuth = this.authService.estadoAutenticacion();
 
-    // Si está chequeando, permitir acceso temporal y esperar resolución
     if (estadoAuth === 'chequeando') {
-      // Programar una verificación después de un breve delay para dar tiempo a la resolución
       setTimeout(() => {
         const nuevoEstado = this.authService.estadoAutenticacion();
         if (nuevoEstado === 'autenticado') {
@@ -31,13 +29,11 @@ export class NoAuthGuard implements CanActivate {
       return true;
     }
 
-    // Si está autenticado, redirigir al dashboard
     if (estadoAuth === 'autenticado') {
       this.router.navigate(['/dashboard']);
       return false;
     }
 
-    // Si no está autenticado, permitir acceso a login/registro
     return true;
   }
 }
