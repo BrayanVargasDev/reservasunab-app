@@ -109,13 +109,19 @@
           >
             <li>
               <a routerLink="/perfil" tabindex="-1">
-                <app-web-icon nombreIcono="person-outline" estilos="h-4 w-4"></app-web-icon>
+                <app-web-icon
+                  nombreIcono="person-outline"
+                  estilos="h-4 w-4"
+                ></app-web-icon>
                 Perfil
               </a>
             </li>
             <li>
-              <a routerLink="/logout" tabindex="-1">
-                <app-web-icon nombreIcono="log-out-outline" estilos="h-4 w-4"></app-web-icon>
+              <a (click)="cerrarSesion()" tabindex="-1">
+                <app-web-icon
+                  nombreIcono="log-out-outline"
+                  estilos="h-4 w-4"
+                ></app-web-icon>
                 Cerrar Sesión
               </a>
             </li>

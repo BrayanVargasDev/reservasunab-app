@@ -28,6 +28,19 @@ export class AuthService {
   private _token = signal<string | null>(null);
   private _isLoading = signal<boolean>(false);
 
+  constructor() {
+    this.checkStoredToken();
+
+    effect(() => {
+      const usuario = this._usuario();
+      if (usuario) {
+        this._estadoAutenticacion.set('autenticado');
+      } else if (this._estadoAutenticacion() !== 'chequeando') {
+        this._estadoAutenticacion.set('noAutenticado');
+      }
+    });
+  }
+
   estadoAutenticacion = computed<EstadoAutenticacion>(() => {
     this._usuario();
     if (this._estadoAutenticacion() === 'chequeando') return 'chequeando';
@@ -110,7 +123,9 @@ export class AuthService {
     return loginAction(this.http, { email, password });
   }
 
-  logout(): void {}
+  logout() {
+    return logoutAction(this.http);
+  }
 
   isAuthenticated(): boolean {
     return this.estadoAutenticacion() === 'autenticado';
@@ -126,5 +141,16 @@ export class AuthService {
 
   public registro(params: Registro) {
     return registroAction(this.http, params);
+  }
+
+  private checkStoredToken(): void {
+    const token = this.getToken();
+    if (token) {
+      this._token.set(token);
+      // Si hay token, el userQuery se ejecutará automáticamente
+      // y actualizará el estado cuando se resuelva
+    } else {
+      this._estadoAutenticacion.set('noAutenticado');
+    }
   }
 }

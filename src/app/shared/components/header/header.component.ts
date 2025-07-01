@@ -7,7 +7,7 @@ import {
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { IonicModule, Platform } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit {
 
   private authServicio = inject(AuthService);
   private plataforma = inject(Platform);
+  private router = inject(Router);
 
   usuario = this.authServicio.usuario();
   isMobile = signal(false);
@@ -98,7 +99,18 @@ export class HeaderComponent implements OnInit {
   }
 
   cerrarSesion() {
-    this.authServicio.logout();
+    this.authServicio.logout().then(
+      () => {
+        this.authServicio.setToken(null);
+        this.authServicio.setUser(null);
+        this.authServicio.setLoading(false);
+        this.router.navigate(['/auth/login']);
+      },
+      error => {
+        console.error('Error al cerrar sesión:', error);
+        this.authServicio.setLoading(false);
+      },
+    );
   }
 
   toggleMenu() {
