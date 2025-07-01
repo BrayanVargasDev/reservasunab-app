@@ -1,3 +1,5 @@
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type FormEspacio, type Espacio } from '../interfaces';
 import { GeneralResponse } from '@shared/interfaces';
@@ -5,6 +7,7 @@ import { GeneralResponse } from '@shared/interfaces';
 const BASE_URL = environment.apiUrl;
 
 export const updateGeneralEspacio = async (
+  http: HttpClient,
   params: FormEspacio,
   idEspacio: number,
 ): Promise<GeneralResponse<Espacio>> => {
@@ -19,19 +22,7 @@ export const updateGeneralEspacio = async (
   formData.append('_method', 'PATCH');
   formData.append('payload', JSON.stringify(params));
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw await response.json();
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in updateGeneralEspacio action:', error);
-    throw error;
-  }
+  return firstValueFrom(
+    http.post<GeneralResponse<Espacio>>(url, formData)
+  );
 };

@@ -1,10 +1,8 @@
+import { Rol } from '@permisos/interfaces';
+import { UsuarioLogueado } from './usuario-logueado.interface';
+
 export interface LoginResponse {
   status: 'success' | 'error';
   message?: string;
-  token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
+  user?: UsuarioLogueado;
 }

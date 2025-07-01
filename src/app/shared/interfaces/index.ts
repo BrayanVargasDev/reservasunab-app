@@ -2,6 +2,7 @@ export * from './boton-acciones.interface';
 export * from './categoria.interface';
 export * from './creado-por.interface';
 export * from './general-response.interface';
+export * from './grupo.interface';
 export * from './menu.interface';
 export * from './paginatd-response.interface';
 export * from './pantalla.interface';

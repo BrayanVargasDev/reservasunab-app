@@ -5,20 +5,16 @@ import {
   FormGroup,
   ValidationErrors,
 } from '@angular/forms';
-
-async function sleep() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(true);
-    }, 2500);
-  });
-}
+import { timer, switchMap, map, of, from, catchError } from 'rxjs';
 
 export class FormUtils {
   static patronNombre = '([a-zA-Z]+) ([a-zA-Z]+)';
   static patronEmail = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
   static patronSoloAlfanumerico = '^[a-zA-Z0-9]+$';
   static patronSoloNumeros = '^[0-9]+$';
+  static patronCelular = '^3[0-9]{9}$';
+  static patronContrasena =
+    '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!#-_%*?&.]+$';
 
   static obtenerTextoDelError(errors: ValidationErrors) {
     const opcionesErrerores: { [key: string]: any } = {
@@ -89,20 +85,31 @@ export class FormUtils {
     };
   }
 
-  static async validarRespuestaServidor(
-    control: AbstractControl,
-  ): Promise<ValidationErrors | null> {
+  static validarRespuestaServidor(control: AbstractControl) {
     const valorFormulario = control.value;
 
-    const estaDisponible = await validarEmailTomado(valorFormulario.trim());
-
-    if (!estaDisponible) {
-      return {
-        emailTomado: true,
-      };
+    if (!valorFormulario || valorFormulario.trim() === '') {
+      return of(null);
     }
 
-    return null;
+    return timer(400).pipe(
+      switchMap(() => {
+        return from(validarEmailTomado(valorFormulario.trim())).pipe(
+          map((estaDisponible: boolean) => {
+            if (!estaDisponible) {
+              return {
+                emailTomado: true,
+              };
+            }
+            return null;
+          }),
+          catchError(error => {
+            console.error('Error al validar email:', error);
+            return of(null);
+          }),
+        );
+      }),
+    );
   }
 
   static obtenerMensajePatron(patron: any) {
@@ -115,6 +122,8 @@ export class FormUtils {
         return 'El campo solo puede contener letras y números';
       case FormUtils.patronSoloNumeros:
         return 'El campo solo puede contener números';
+      case FormUtils.patronContrasena:
+        return 'La contraseña debe contener al menos una mayúscula, un número y un carácter especial (@$!.%*?&)';
       default:
         return 'El valor ingresado no es válido';
     }

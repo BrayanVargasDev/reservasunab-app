@@ -54,8 +54,8 @@ export class ModalEspaciosComponent implements OnInit {
     sede: ['', [Validators.required]],
     permitirJugadores: [false],
     permitirExternos: [false],
-    minimoJugadores: [''],
-    maximoJugadores: [''],
+    minimoJugadores: [0],
+    maximoJugadores: [0],
   });
 
   public modalEspacios =
@@ -122,6 +122,8 @@ export class ModalEspaciosComponent implements OnInit {
     const espacio = this.espacioForm.value as FormEspacio;
     if (!espacio.minimoJugadores) espacio.minimoJugadores = 0;
     if (!espacio.maximoJugadores) espacio.maximoJugadores = 0;
+    espacio.permitirJugadores = espacio.permitirJugadores || false;
+    espacio.permitirExternos = espacio.permitirExternos || false;
 
     console.log('Formulario enviado:', espacio);
     this.espaciosService

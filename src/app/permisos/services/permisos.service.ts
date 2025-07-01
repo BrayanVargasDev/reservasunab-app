@@ -1,5 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
+import { HttpClient } from '@angular/common/http';
 
 import { PaginationState } from '@tanstack/angular-table';
 
@@ -17,6 +18,7 @@ import { actualizarPermisosUsuario } from '../actions/actualizar-permisos-usuari
   providedIn: 'root',
 })
 export class PermisosService {
+  private http = inject(HttpClient);
   private appService = inject(AppService);
   private queryClient = inject(QueryClient);
   private _appService = inject(AppService);
@@ -68,7 +70,7 @@ export class PermisosService {
     queryKey: ['permisos', this.paginacion(), this._filtroTexto()],
     queryFn: () => {
       const params = this.paginacion();
-      return getPermisos({ ...params, search: this._filtroTexto() });
+      return getPermisos(this.http, { ...params, search: this._filtroTexto() });
     },
     select: (response: PaginatedResponse<PermisosUsuario>) => {
       this._datosPaginador.set(response.meta);
@@ -80,7 +82,7 @@ export class PermisosService {
     queryKey: ['roles-permisos', this.paginacion()],
     queryFn: () => {
       const params = this.paginacion();
-      return getRolesPermisos(params);
+      return getRolesPermisos(this.http, params);
     },
     select: (response: PaginatedResponse<RolPermisos>) => {
       this._datosPaginadorRoles.set(response.meta);
@@ -148,7 +150,7 @@ export class PermisosService {
     this.queryClient.prefetchQuery({
       queryKey: ['permisos', state, this._filtroTexto()],
       queryFn: () =>
-        getPermisos({
+        getPermisos(this.http, {
           ...state,
           search: this._filtroTexto(),
         }),
@@ -160,7 +162,7 @@ export class PermisosService {
     this.queryClient.prefetchQuery({
       queryKey: ['roles-permisos', state, this._filtroTexto()],
       queryFn: () =>
-        getPermisos({
+        getPermisos(this.http, {
           ...state,
           search: this._filtroTexto(),
         }),
@@ -223,18 +225,18 @@ export class PermisosService {
     userId: number,
     permisos: Permiso[],
   ): Promise<PermisosUsuario> {
-    return actualizarPermisosUsuario(userId, permisos);
+    return actualizarPermisosUsuario(this.http, userId, permisos);
   }
 
   public async crearRolAsync(rol: CreateRolRequest): Promise<RolPermisos> {
-    return crearRol(rol);
+    return crearRol(this.http, rol);
   }
 
   public async actualizarRolAsync(
     id: number,
     rol: CreateRolRequest,
   ): Promise<RolPermisos> {
-    return actualizarRol(id, rol);
+    return actualizarRol(this.http, id, rol);
   }
 
   resetAllexceptPaginacion() {

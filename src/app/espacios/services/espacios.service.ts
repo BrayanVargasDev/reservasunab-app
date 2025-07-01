@@ -1,4 +1,5 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
@@ -16,6 +17,7 @@ import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
   providedIn: 'root',
 })
 export class EspaciosService {
+  private http = inject(HttpClient);
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -30,7 +32,7 @@ export class EspaciosService {
   public espaciosQuery = injectQuery(() => ({
     queryKey: ['espacios', this.paginacion(), this._filtroTexto()],
     queryFn: () =>
-      getEspacios({
+      getEspacios(this.http, {
         ...this.paginacion(),
         search: this._filtroTexto(),
       }),
@@ -90,13 +92,13 @@ export class EspaciosService {
   }
 
   public guardarEsapacio(espacio: FormEspacio) {
-    return createEspacio(espacio);
+    return createEspacio(this.http, espacio);
   }
 
   public async cambiarEstadoEspacio(
     espacioId: number,
     nuevoEstado: string,
   ): Promise<Espacio> {
-    return updateEspacioEstado(espacioId, nuevoEstado);
+    return updateEspacioEstado(this.http, espacioId, nuevoEstado);
   }
 }

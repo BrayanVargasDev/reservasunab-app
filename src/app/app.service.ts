@@ -4,15 +4,26 @@ import { Platform } from '@ionic/angular';
 import { environment } from '@environments/environment';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 
-import { getTiposDocumentos, getPantallas } from '@shared/actions';
+import { getTiposDocumentos, getPantallas, getGrupos } from '@shared/actions';
 import { getRoles } from '@permisos/actions';
 import { getSedes, getCategorias } from '@shared/actions';
+import {
+  GeneralResponse,
+  Grupo,
+  TipoDocumento,
+  Sede,
+} from '@shared/interfaces';
+import { HttpClient } from '@angular/common/http';
+import { Rol } from '@permisos/interfaces';
+import { AuthService } from '@auth/services/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppService {
   private platform = inject(Platform);
+  private authService = inject(AuthService);
+  private http = inject(HttpClient);
   private _esMovil = signal(false);
   private _apiUrl = signal(environment.apiUrl || 'https://api.example.com');
   private _samlUrl = signal(
@@ -46,27 +57,44 @@ export class AppService {
 
   public tipoDocQuery = injectQuery(() => ({
     queryKey: ['tipoDocumento'],
-    queryFn: () => getTiposDocumentos(),
+    queryFn: () => getTiposDocumentos(this.http),
+    select: (response: GeneralResponse<TipoDocumento[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
   }));
 
   public pantallasQuery = injectQuery(() => ({
     queryKey: ['pantallas'],
-    queryFn: () => getPantallas(),
+    queryFn: () => getPantallas(this.http),
+    enabled: this.authService.estaAutenticado(),
   }));
 
   public rolesQuery = injectQuery(() => ({
     queryKey: ['roles'],
-    queryFn: () => getRoles(),
+    queryFn: () => getRoles(this.http),
+    select: (response: GeneralResponse<Rol[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
   }));
 
   public sedesQuery = injectQuery(() => ({
     queryKey: ['sedes'],
-    queryFn: () => getSedes(),
+    queryFn: () => getSedes(this.http),
+    select: (response: GeneralResponse<Sede[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
   }));
 
   public categoriasQuery = injectQuery(() => ({
     queryKey: ['categorias'],
-    queryFn: () => getCategorias(),
+    queryFn: () => getCategorias(this.http),
+    select: (response: GeneralResponse<{ id: number; nombre: string }[]>) =>
+      response.data,
+    enabled: this.authService.estaAutenticado(),
+  }));
+
+  public gruposQuery = injectQuery(() => ({
+    queryKey: ['grupos'],
+    queryFn: () => getGrupos(this.http),
+    select: (response: GeneralResponse<Grupo[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
   }));
 
   private _editando = signal(false);

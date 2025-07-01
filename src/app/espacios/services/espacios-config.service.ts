@@ -5,6 +5,7 @@ import {
   ViewContainerRef,
   computed,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
@@ -26,6 +27,7 @@ import {
   providedIn: 'root',
 })
 export class EspaciosConfigService {
+  private http = inject(HttpClient);
   private _idEspacio = signal<number | null>(null);
   private _queryClient = inject(QueryClient);
   private _pestana = signal<'general' | 'base' | 'tipoUsuario' | 'fecha'>(
@@ -49,7 +51,7 @@ export class EspaciosConfigService {
   public idEspacio = this._idEspacio.asReadonly();
   public espacioQuery = injectQuery(() => ({
     queryKey: ['espacio', this._idEspacio()],
-    queryFn: () => getEspacioPorId(this._idEspacio() ?? 0),
+    queryFn: () => getEspacioPorId(this.http, this._idEspacio() ?? 0),
     select: (response: GeneralResponse<EspacioParaConfig>) => {
       return response.data;
     },
@@ -93,30 +95,30 @@ export class EspaciosConfigService {
   public prefetchEspacio(id: number) {
     this._queryClient.prefetchQuery({
       queryKey: ['espacio', id],
-      queryFn: () => getEspacioPorId(id ?? 0),
+      queryFn: () => getEspacioPorId(this.http, id ?? 0),
       staleTime: 1000 * 60 * 5,
     });
   }
 
   public actualizarGeneral(espacio: FormEspacio, idEspacio: number) {
-    return updateGeneralEspacio(espacio, idEspacio);
+    return updateGeneralEspacio(this.http, espacio, idEspacio);
   }
 
   public async crearTipoUsuarioCofig(
     tipoUsuarioConfig: Partial<TipoUsuarioConfig>,
   ) {
-    return createTipoUsuarioConfig(tipoUsuarioConfig);
+    return createTipoUsuarioConfig(this.http, tipoUsuarioConfig);
   }
 
   public async actualizarTipoUsuarioConfig(
     id: number,
     tipoUsurioConfig: TipoUsuarioConfig,
   ) {
-    return updateTipoUsuarioConfig(tipoUsurioConfig, id);
+    return updateTipoUsuarioConfig(this.http, tipoUsurioConfig, id);
   }
 
   public cambiarEstadoTipoConfig(id: number, estado: string) {
-    return updateEstadoTipoConfig(id, estado);
+    return updateEstadoTipoConfig(this.http, id, estado);
   }
 
   public resetAll() {

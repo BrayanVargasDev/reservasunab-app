@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import {
   injectQuery,
   injectMutation,
@@ -14,19 +15,21 @@ import { EspaciosConfigService } from '@espacios/services/espacios-config.servic
   providedIn: 'root',
 })
 export class ConfigBaseService {
+  private http = inject(HttpClient);
   private queryClient = inject(QueryClient);
   private espacioConfigService = inject(EspaciosConfigService);
 
   configsQuery = injectQuery(() => ({
     queryKey: ['config-base', this.espacioConfigService.idEspacio()],
-    queryFn: () => getConfigsBase(this.espacioConfigService.idEspacio()),
+    queryFn: () =>
+      getConfigsBase(this.http, this.espacioConfigService.idEspacio()),
     select: (response: GeneralResponse<Configuracion[]>) => response.data,
   }));
 
   saveConfigMutation = injectMutation(() => ({
-    mutationFn: (configuracion: Configuracion) => saveConfigBase(configuracion),
+    mutationFn: (configuracion: Configuracion) =>
+      saveConfigBase(this.http, configuracion),
     onSuccess: () => {
-      // Invalidar la query para refrescar los datos
       this.queryClient.invalidateQueries({ queryKey: ['config-base'] });
     },
   }));

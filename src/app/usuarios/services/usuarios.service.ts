@@ -9,11 +9,13 @@ import { AlertasService } from '@shared/services/alertas.service';
 import { Meta, PaginatedResponse } from '@shared/interfaces';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { updateUsuarioRol, updateUsuarioEstado } from '../actions';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UsuariosService {
+  private http = inject(HttpClient);
   private alertaService = inject(AlertasService);
   private queryClient = inject(QueryClient);
   private _paginacion = signal<PaginationState>({
@@ -30,7 +32,7 @@ export class UsuariosService {
   queryUsuarios = injectQuery(() => ({
     queryKey: ['usuarios', this.paginacion(), this._filtroTexto()],
     queryFn: () =>
-      getUsuarios({
+      getUsuarios(this.http, {
         ...this.paginacion(),
         search: this._filtroTexto(),
       }),
@@ -76,25 +78,25 @@ export class UsuariosService {
   });
 
   public guardarUsuario(usuario: Usuario) {
-    return saveUsuario(usuario, this._modoEdicion(), true);
+    return saveUsuario(this.http, usuario, this._modoEdicion(), true);
   }
 
   public async activarUsuario(usuarioId: number): Promise<Usuario> {
-    return updateUsuarioEstado(usuarioId, 'activo');
+    return updateUsuarioEstado(this.http, usuarioId, 'activo');
   }
 
   public async cambiarRolUsuario(
     usuarioId: number,
     nuevoRol: number,
   ): Promise<Usuario> {
-    return updateUsuarioRol(usuarioId, nuevoRol);
+    return updateUsuarioRol(this.http, usuarioId, nuevoRol);
   }
 
   public async cambiarEstadoUsuario(
     usuarioId: number,
     nuevoEstado: string,
   ): Promise<Usuario> {
-    return updateUsuarioEstado(usuarioId, nuevoEstado);
+    return updateUsuarioEstado(this.http, usuarioId, nuevoEstado);
   }
 
   public setPaginacion(paginacion: PaginationState) {
@@ -116,7 +118,7 @@ export class UsuariosService {
 
   public setDatosPaginador(datos: Partial<Meta>) {
     this._datosPaginador.update(
-      (state) =>
+      state =>
         ({
           ...state,
           ...datos,
@@ -128,7 +130,7 @@ export class UsuariosService {
     this.queryClient.prefetchQuery({
       queryKey: ['usuarios', state, this._filtroTexto()],
       queryFn: () =>
-        getUsuarios({
+        getUsuarios(this.http, {
           ...state,
           search: this._filtroTexto(),
         }),

@@ -1,4 +1,6 @@
 import { PaginationState } from '@tanstack/angular-table';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type Usuario, GetUsuariosParams } from '../intefaces';
 import {
@@ -9,6 +11,7 @@ import {
 const BASE_URL = environment.apiUrl;
 
 export const getUsuarios = async (
+  http: HttpClient,
   params: PaginationState & GetUsuariosParams,
 ): Promise<PaginatedResponse<Usuario>> => {
   const queryParams = new URLSearchParams({
@@ -19,17 +22,7 @@ export const getUsuarios = async (
 
   const url = `${BASE_URL}/usuarios?${queryParams.toString()}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getUsuarios action:', error);
-    throw error;
-  }
+  return firstValueFrom(
+    http.get<PaginatedResponse<Usuario>>(url)
+  );
 };

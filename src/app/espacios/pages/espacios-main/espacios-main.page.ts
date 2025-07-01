@@ -39,7 +39,7 @@ export class EspaciosMainPage implements OnInit {
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
 
-  public alertaEspacio = viewChild.required('alertaEspacio', {
+  public alertaEspacio = viewChild.required('alertaEspacios', {
     read: ViewContainerRef,
   });
 
@@ -60,14 +60,14 @@ export class EspaciosMainPage implements OnInit {
       'fixed flex p-4 transition-all ease-in-out bottom-4 right-4';
     if (event) {
       this.alertaService.success(
-        'Usuario guardado exitosamente.',
+        'Espacio guardado exitosamente.',
         50000,
         this.alertaEspacio(),
         estilosAlerta,
       );
     } else {
       this.alertaService.error(
-        'Error al guardar el usuario. Por favor, inténtalo de nuevo.',
+        'Error al guardar el espacio. Por favor, inténtalo de nuevo.',
         50000,
         this.alertaEspacio(),
         estilosAlerta,

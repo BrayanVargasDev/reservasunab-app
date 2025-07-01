@@ -21,7 +21,7 @@ import {
 
 import { AuthService } from '@auth/services/auth.service';
 import { AppService } from '@app/app.service';
-import { WebIconComponent } from "../web-icon/web-icon.component";
+import { WebIconComponent } from '../web-icon/web-icon.component';
 
 @Component({
   selector: 'app-header',
@@ -87,12 +87,12 @@ export class HeaderComponent implements OnInit {
   }
 
   get tipoUsuario(): string {
-    return this.authServicio.usuario()?.tipo || 'Usuario';
+    return this.authServicio.usuario()?.rol.nombre || 'Usuario';
   }
 
   get fotoUsuario(): string {
     return (
-      this.authServicio.usuario()?.avatar ||
+      this.authServicio.usuario()?.nombre ||
       'https://ionicframework.com/docs/img/demos/avatar.svg'
     );
   }

@@ -1,4 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  viewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -19,7 +26,7 @@ import {
   IonText,
   IonIcon,
 } from '@ionic/angular/standalone';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   keyOutline,
@@ -31,6 +38,9 @@ import { ActionButtonComponent } from '@shared/components/action-button/action-b
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { AuthService } from '@auth/services/auth.service';
+import { Registro } from '@auth/interfaces';
+import { AlertasService } from '@shared/services/alertas.service';
 
 @Component({
   selector: 'app-registro',
@@ -55,10 +65,20 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
   ],
 })
 export class RegistroPage implements OnInit {
-  registroForm!: FormGroup;
-  formUtils = FormUtils;
+  private router = inject(Router);
+  private estilosAlerta = signal(
+    'flex justify-center p-4 transition-all ease-in-out w-full',
+  ).asReadonly();
+  public registroForm!: FormGroup;
+  public formUtils = FormUtils;
 
-  appService = inject(AppService);
+  public appService = inject(AppService);
+  public authService = inject(AuthService);
+  public alertaService = inject(AlertasService);
+
+  public alertaRegistro = viewChild.required('alertaRegistro', {
+    read: ViewContainerRef,
+  });
 
   constructor(private fb: FormBuilder) {
     addIcons({
@@ -72,19 +92,41 @@ export class RegistroPage implements OnInit {
   ngOnInit() {
     this.registroForm = this.fb.group(
       {
-        nombre: ['', [Validators.required]],
-        telefono: ['', [Validators.required]],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
+        nombre: [
+          '',
+          [Validators.required, Validators.pattern(FormUtils.patronNombre)],
+        ],
+        telefono: [
+          '',
+          [
+            Validators.required,
+            Validators.pattern(FormUtils.patronSoloNumeros),
+            Validators.pattern(FormUtils.patronCelular),
+            Validators.minLength(10),
+            Validators.maxLength(10),
+          ],
+        ],
+        email: [
+          '',
+          [Validators.required, Validators.email],
+          [FormUtils.validarRespuestaServidor],
+        ],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(6),
+            Validators.pattern(FormUtils.patronContrasena),
+          ],
+        ],
         confirmPassword: ['', [Validators.required]],
       },
       {
         validators: [FormUtils.sonCamposIguales('password', 'confirmPassword')],
-      }
+      },
     );
   }
 
-  // Métodos para controlar las validaciones usando FormUtils
   isFieldInvalid(fieldName: string): boolean {
     return !!this.formUtils.esCampoInvalido(this.registroForm, fieldName);
   }
@@ -107,7 +149,6 @@ export class RegistroPage implements OnInit {
     return 'dark';
   }
 
-  // Método específico para confirmar contraseña
   isConfirmPasswordInvalid(): boolean {
     return (
       this.isFieldInvalid('confirmPassword') ||
@@ -138,20 +179,17 @@ export class RegistroPage implements OnInit {
     return 'dark';
   }
 
-  // Obtener mensajes de error usando FormUtils
   getErrorMessage(fieldName: string): string[] {
     const messages: string[] = [];
 
-    // Usar FormUtils para obtener el mensaje de error principal
     const errorMessage = this.formUtils.obtenerErrorDelCampo(
       this.registroForm,
-      fieldName
+      fieldName,
     );
     if (errorMessage) {
       messages.push(errorMessage);
     }
 
-    // Manejar el caso especial de confirmPassword
     if (
       fieldName === 'confirmPassword' &&
       this.registroForm.hasError('camposNoIguales')
@@ -163,12 +201,50 @@ export class RegistroPage implements OnInit {
   }
 
   onRegistro() {
-    if (this.registroForm.valid) {
-      console.log('Datos de registro válidos:', this.registroForm.value);
-      // Aquí iría la lógica para registrar al usuario
-    } else {
-      console.log('Formulario inválido');
-      this.registroForm.markAllAsTouched();
+    this.registroForm.markAllAsTouched();
+    if (this.registroForm.invalid) {
+      return;
     }
+
+    const nombre = this.registroForm.get('nombre')?.value.trim().split(' ');
+
+    if (nombre.length < 2) {
+      this.alertaService.error(
+        'Debe ingresar al menos un nombre y un apellido.',
+        5000,
+        this.alertaRegistro(),
+        this.estilosAlerta(),
+      );
+      return;
+    }
+
+    const formData: Registro = {
+      nombre: nombre[0]?.charAt(0).toUpperCase() + nombre[0]?.slice(1) || '',
+      apellido: nombre[1]?.charAt(0).toUpperCase() + nombre[1]?.slice(1) || '',
+      celular: this.registroForm.get('telefono')?.value.trim(),
+      email: this.registroForm.get('email')?.value.trim(),
+      password: this.registroForm.get('password')?.value.trim(),
+    };
+
+    this.authService.registro(formData).then(
+      response => {
+        this.alertaService.success(
+          'Registro exitoso. Por favor, inicia sesión.',
+          3000,
+          this.alertaRegistro(),
+          this.estilosAlerta(),
+        );
+        this.registroForm.reset();
+      },
+      error => {
+        console.error('Error en el registro:', error);
+        this.alertaService.error(
+          'Error al registrar usuario. Inténtalo de nuevo más tarde.',
+          5000,
+          this.alertaRegistro(),
+          this.estilosAlerta(),
+        );
+      },
+    );
   }
 }

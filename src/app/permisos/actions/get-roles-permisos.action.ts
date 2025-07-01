@@ -1,3 +1,5 @@
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type RolPermisos } from '../interfaces';
 
@@ -7,6 +9,7 @@ import { PaginatedResponse } from '@shared/interfaces';
 const BASE_URL = environment.apiUrl;
 
 export const getRolesPermisos = async (
+  http: HttpClient,
   params: PaginationState & { search?: string },
 ): Promise<PaginatedResponse<RolPermisos>> => {
   const queryParams = new URLSearchParams({
@@ -17,17 +20,7 @@ export const getRolesPermisos = async (
 
   const url = `${BASE_URL}/roles/permisos?${queryParams.toString()}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getRoles action:', error);
-    throw error;
-  }
+  return firstValueFrom(
+    http.get<PaginatedResponse<RolPermisos>>(url)
+  );
 };

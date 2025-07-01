@@ -1,3 +1,5 @@
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type Espacio, type Configuracion } from '../interfaces';
 import { GeneralResponse, Meta } from '@shared/interfaces';
@@ -5,6 +7,7 @@ import { GeneralResponse, Meta } from '@shared/interfaces';
 const BASE_URL = environment.apiUrl;
 
 export const getConfigPorFecha = async (
+  http: HttpClient,
   idEspacio: number | null,
   fecha: string | null = null,
 ): Promise<GeneralResponse<Configuracion>> => {
@@ -12,21 +15,7 @@ export const getConfigPorFecha = async (
     idEspacio ? `?id_espacio=${idEspacio}` : ''
   }${fecha ? `&fecha=${fecha}` : ''}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw await response.json();
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getConfigPorFecha action:', error);
-    throw error;
-  }
+  return firstValueFrom(
+    http.get<GeneralResponse<Configuracion>>(url)
+  );
 };

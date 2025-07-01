@@ -26,7 +26,7 @@ import {
   IonCol,
   IonText,
 } from '@ionic/angular/standalone';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   mailOutline,
@@ -68,6 +68,7 @@ import { AlertasService } from '@shared/services/alertas.service';
   ],
 })
 export class LoginPage {
+  private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private alertaService = inject(AlertasService);
   public appService = inject(AppService);
@@ -131,19 +132,14 @@ export class LoginPage {
     this.authService.setLoading(true);
     this.authService
       .login(email, password)
-      .then(() => {
+      .then(response => {
         this.authService.setLoading(false);
+        this.authService.setUser(response.data);
+        this.authService.setToken(response.data?.token || null);
+        this.router.navigate(['/']);
       })
       .catch(error => {
         this.authService.setLoading(false);
-        this.loginForm.enable();
-        this.alertaService.error(
-          `Error al iniciar sesión ${
-            error || ' inténtelo de nuevo más tarde.'
-          }`,
-          5000,
-          this.alertaLogin(),
-        );
       });
   }
 }

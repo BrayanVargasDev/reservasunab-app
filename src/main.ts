@@ -12,7 +12,8 @@ import {
 } from '@ionic/angular/standalone';
 import {
   provideHttpClient,
-  withInterceptorsFromDi,
+  withXsrfConfiguration,
+  withInterceptors,
 } from '@angular/common/http';
 
 import {
@@ -21,12 +22,27 @@ import {
   withDevtools,
 } from '@tanstack/angular-query-experimental';
 
-import { routes } from './app/app.routes';
-import { AppComponent } from './app/app.component';
-import { authInterceptorProvider } from './app/auth/interceptors/auth.interceptor';
+import { routes } from '@app/app.routes';
+import { AppComponent } from '@app/app.component';
+import { autenticarInterceptor } from '@auth/interceptors/autenticar.interceptor';
+import { errorInterceptor } from '@shared/interceptors/error.interceptor';
+import { csrfInterceptor } from '@auth/interceptors/csrf.interceptor';
+import { xsrfHeaderInterceptor } from './app/auth/interceptors/xsrf-header.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideHttpClient(
+      withXsrfConfiguration({
+        cookieName: 'XSRF-TOKEN',
+        headerName: 'X-XSRF-TOKEN',
+      }),
+      withInterceptors([
+        xsrfHeaderInterceptor,
+        csrfInterceptor,
+        autenticarInterceptor,
+        errorInterceptor,
+      ]),
+    ),
     provideTanStackQuery(
       new QueryClient(),
       withDevtools(() => ({ loadDevtools: 'auto' })),
@@ -35,7 +51,5 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideHttpClient(withInterceptorsFromDi()),
-    authInterceptorProvider,
   ],
 });

@@ -56,3 +56,12 @@ body {
   // border: 1px solid red;
   scrollbar-width: thin !important;
 }
+
+
+ion-toast.toast-error {
+  --border-radius: 16px !important;
+  font-weight: semibold;
+  font-size: 1rem;
+
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}

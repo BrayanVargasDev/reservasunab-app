@@ -20,7 +20,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
-        path: 'dashboard',
+        path: 'home',
         loadChildren: () =>
           import('@dashboard/dashboard.routes').then(m => m.dashboardRoutes),
         canActivate: [AuthGuard],
@@ -59,9 +59,9 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'dreservas',
+        path: 'reservas',
         loadChildren: () =>
-          import('@dreservas/dreservas.routes').then(m => m.dreservasRoutes),
+          import('@reservas/reservas.routes').then(m => m.dreservasRoutes),
         canActivate: [AuthGuard],
       },
     ],

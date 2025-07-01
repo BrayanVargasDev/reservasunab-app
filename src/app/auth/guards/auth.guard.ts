@@ -17,22 +17,20 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): boolean {
-    // const requiredPermission = route.data['permission'] as string;
+    const estadoAuth = this.authService.estadoAutenticacion();
 
-    // if (!this.authService.isAuthenticated()) {
-    //   this.router.navigate(['/auth/login'], {
-    //     queryParams: { returnUrl: state.url },
-    //   });
-    //   return false;
-    // }
+    // Si está chequeando, permitir (la verificación se hará automáticamente)
+    if (estadoAuth === 'chequeando') {
+      return true;
+    }
 
-    // if (
-    //   requiredPermission &&
-    //   !this.authService.hasPermission(requiredPermission)
-    // ) {
-    //   this.router.navigate(['/acceso-denegado']);
-    //   return false;
-    // }
+    // Si no está autenticado, redirigir al login
+    if (estadoAuth === 'noAutenticado') {
+      this.router.navigate(['/auth/login'], {
+        queryParams: { returnUrl: state.url },
+      });
+      return false;
+    }
 
     return true;
   }

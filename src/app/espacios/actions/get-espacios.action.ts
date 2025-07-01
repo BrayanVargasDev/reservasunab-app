@@ -1,4 +1,6 @@
 import { PaginationState } from '@tanstack/angular-table';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type Espacio } from '../interfaces';
 import {
@@ -9,6 +11,7 @@ import {
 const BASE_URL = environment.apiUrl;
 
 export const getEspacios = async (
+  http: HttpClient,
   params: PaginationState & { search?: string },
 ): Promise<PaginatedResponse<Espacio>> => {
   const queryParams = new URLSearchParams({
@@ -19,17 +22,7 @@ export const getEspacios = async (
 
   const url = `${BASE_URL}/espacios?${queryParams.toString()}`;
 
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getEspacios action:', error);
-    throw error;
-  }
+  return firstValueFrom(
+    http.get<PaginatedResponse<Espacio>>(url)
+  );
 };
