@@ -37,6 +37,7 @@ import { AccionesTablaComponent } from '@shared/components/acciones-tabla/accion
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { TipoUsuario } from '@shared/enums';
 import { createTipoUsuarioConfig } from '@espacios/actions';
+import { AuthService } from '@auth/services/auth.service';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -62,7 +63,7 @@ export class TablaConfigTipoUsuarioComponent {
   private alertasService = inject(AlertasService);
   public espaciosConfigService = inject(EspaciosConfigService);
   private alertaService = inject(AlertasService);
-
+  public authService = inject(AuthService);
   private tipoUsrConfigEnEdicion = signal<TipoUsuarioConfig | null>(null);
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
@@ -152,7 +153,8 @@ export class TablaConfigTipoUsuarioComponent {
                   this.onGuardarEdicion(context.row),
               },
             ]
-          : [
+          : this.authService.tienePermisos('ESP000011')
+          ? [
               {
                 tooltip: 'Editar',
                 icono: 'pencil-outline',
@@ -160,7 +162,8 @@ export class TablaConfigTipoUsuarioComponent {
                 disabled: this.appService.editando(),
                 eventoClick: (event: Event) => this.iniciarEdicion(context.row),
               },
-            ];
+            ]
+          : [];
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -310,7 +313,9 @@ export class TablaConfigTipoUsuarioComponent {
 
     // Cargar los valores actuales en los controles
     this.tipo_usuario.setValue(tipoUsuarioConfig.tipo_usuario);
-    this.porcentaje_descuento.setValue(tipoUsuarioConfig.porcentaje_descuento.toString());
+    this.porcentaje_descuento.setValue(
+      tipoUsuarioConfig.porcentaje_descuento.toString(),
+    );
     this.minutos_retraso.setValue(tipoUsuarioConfig.retraso_reserva.toString());
   }
 

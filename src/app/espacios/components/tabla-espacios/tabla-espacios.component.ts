@@ -35,6 +35,7 @@ import { TableExpansorComponent } from '@shared/components/table-expansor/table-
 import { AlertasService } from '@shared/services/alertas.service';
 import { BotonAcciones } from '@shared/interfaces';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
+import { AuthService } from '@auth/services/auth.service';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -57,6 +58,7 @@ interface Util {
 export class TablaEspaciosComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  public authService = inject(AuthService);
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
   public alertaService = inject(AlertasService);
@@ -101,18 +103,25 @@ export class TablaEspaciosComponent implements OnInit {
       id: 'acciones',
       header: 'Acciones',
       cell: context => {
-        const acciones: BotonAcciones[] = [
-          {
-            tooltip: 'Configurar',
-            icono: 'construct-outline',
-            color: 'secondary',
-            disabled: this.appService.editando(),
-            eventoClick: () =>
-              this.router.navigate(['configuracion', context.row.original.id], {
-                relativeTo: this.route,
-              }),
-          },
-        ];
+        const acciones: BotonAcciones[] = this.authService.tienePermisos(
+          'ESP000002',
+        )
+          ? [
+              {
+                tooltip: 'Configurar',
+                icono: 'construct-outline',
+                color: 'secondary',
+                disabled: this.appService.editando(),
+                eventoClick: () =>
+                  this.router.navigate(
+                    ['configuracion', context.row.original.id],
+                    {
+                      relativeTo: this.route,
+                    },
+                  ),
+              },
+            ]
+          : [];
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {

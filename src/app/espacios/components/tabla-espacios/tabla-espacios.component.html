@@ -6,7 +6,11 @@
         'badge-success': context.getValue() === 'activo',
         'badge-error': context.getValue() === 'inactivo',
     }"
-    (click)="cambiarEstadoEspacio(context.row.original)"
+    (click)="
+      authService.tienePermisos('ESP000003')
+        ? cambiarEstadoEspacio(context.row.original)
+        : null
+    "
   >
     {{ context.getValue() | titlecase }}
   </div>

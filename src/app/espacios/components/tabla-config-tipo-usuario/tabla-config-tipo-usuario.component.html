@@ -8,7 +8,11 @@
       'opacity-50 pointer-events-none badge-ghost': appService.editando()
     }"
     (click)="
-      appService.editando() ? null : cambiarEstadoConfig(context.row.original)
+      authService.tienePermisos('ESP000012')
+        ? appService.editando()
+          ? null
+          : cambiarEstadoConfig(context.row.original)
+        : null
     "
   >
     {{ (context.getValue() === null ? 'activo' : 'inactivo') | titlecase }}
@@ -16,6 +20,7 @@
 </ng-template>
 
 <div class="flex w-full mb-3">
+  @if (authService.tienePermisos('ESP000010')) {
   <button
     class="btn btn-primary h-8"
     (click)="crearTipoConfig()"
@@ -27,6 +32,7 @@
     ></app-web-icon>
     <span>Nueva config.</span>
   </button>
+  }
 </div>
 
 <table

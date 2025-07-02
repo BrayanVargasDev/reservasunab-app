@@ -13,6 +13,8 @@
       [value]="espaciosService.filtroTexto()"
       (input)="aplicarFiltro($any($event.target).value)"
     />
+
+    @if (authService.tienePermisos('ESP000001')) {
     <button
       [disabled]="appService.editando()"
       class="btn btn-primary h-11 rounded-box"
@@ -21,11 +23,16 @@
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
       Nuevo espacio
     </button>
+    }
   </div>
 </div>
 
-<div class="w-full h-full max-h-[calc(100vh_-_12.75rem)] overflow-hidden flex flex-col">
-  <tabla-espacios [ngClass]="'flex flex-col h-full overflow-y-auto'"></tabla-espacios>
+<div
+  class="w-full h-full max-h-[calc(100vh_-_12.75rem)] overflow-hidden flex flex-col"
+>
+  <tabla-espacios
+    [ngClass]="'flex flex-col h-full overflow-y-auto'"
+  ></tabla-espacios>
 </div>
 
 <ng-template #alertaEspacios></ng-template>

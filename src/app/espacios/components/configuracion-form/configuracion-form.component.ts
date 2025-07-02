@@ -39,6 +39,7 @@ import { AccionesTablaComponent } from '@shared/components/acciones-tabla/accion
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'configuracion-form',
@@ -58,10 +59,13 @@ export class ConfiguracionFormComponent<T> {
   private injector = inject(Injector);
   configuracionForm = input.required<FormGroup>();
   diaNumero = input.required<number>();
+  permisoFranjas = input.required<boolean>();
+  permisoEliminarFranja = input.required<boolean>();
 
   agregarFranja = output<{ dia: number; franja: any }>();
   eliminarFranja = output<{ dia: number; index: number }>();
 
+  public authService = inject(AuthService);
   public horaInicio = new FormControl('', [Validators.required]);
   public horaFin = new FormControl('', [Validators.required]);
   public valor = new FormControl('', [Validators.required, Validators.min(0)]);
@@ -219,15 +223,17 @@ export class ConfiguracionFormComponent<T> {
       header: 'Acciones',
       cell: context => {
         const franja = context.row.original;
-        const acciones: BotonAcciones[] = [
-          {
-            tooltip: 'Eliminar',
-            icono: 'remove-circle-outline',
-            color: 'error',
-            eventoClick: (event: Event) =>
-              this.eliminarFranjaLocal(franja, context.row.index),
-          },
-        ];
+        const acciones: BotonAcciones[] = this.permisoEliminarFranja()
+          ? [
+              {
+                tooltip: 'Eliminar',
+                icono: 'remove-circle-outline',
+                color: 'error',
+                eventoClick: (event: Event) =>
+                  this.eliminarFranjaLocal(franja, context.row.index),
+              },
+            ]
+          : [];
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {

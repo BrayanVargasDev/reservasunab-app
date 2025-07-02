@@ -18,6 +18,7 @@ import { EspaciosService } from '@espacios/services/espacios.service';
 import { Espacio } from '@espacios/interfaces';
 import { ModalEspaciosComponent } from '@espacios/components/modal-espacios/modal-espacios.component';
 import { AlertasService } from '@shared/services/alertas.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-espacios-main',
@@ -38,6 +39,7 @@ import { AlertasService } from '@shared/services/alertas.service';
 })
 export class EspaciosMainPage implements OnInit, OnDestroy {
   private alertaService = inject(AlertasService);
+  public authService = inject(AuthService)
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
 

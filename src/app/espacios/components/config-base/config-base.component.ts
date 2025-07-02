@@ -34,6 +34,7 @@ import { AppService } from '@app/app.service';
 import { ConfigBaseService } from '@espacios/services/config-base.service';
 import { ConfiguracionFormComponent } from '../configuracion-form/configuracion-form.component';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'config-base',
@@ -56,7 +57,7 @@ export class ConfigBaseComponent {
   private espacioConfigService = inject(EspaciosConfigService);
   private configuracionService = inject(ConfigBaseService);
   public appService = inject(AppService);
-
+  public authService = inject(AuthService);
   readonly dias = signal<DiaConfig[]>([
     { nombre: 'Lunes', numero: 1 },
     { nombre: 'Martes', numero: 2 },

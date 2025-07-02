@@ -91,6 +91,8 @@
               [diaNumero]="row.original.numero"
               (agregarFranja)="agregarFranja($event.dia, $event.franja)"
               (eliminarFranja)="eliminarFranja($event.dia, $event.index)"
+              [permisoFranjas]="authService.tienePermisos('ESP000006')"
+              [permisoEliminarFranja]="authService.tienePermisos('ESP000007')"
             ></configuracion-form>
             } @else {
             <div class="text-center p-4">
@@ -102,6 +104,7 @@
             }
 
             <!-- Botón para guardar configuración -->
+            @if (authService.tienePermisos('ESP000005')){
             <div class="divider my-2 px-4"></div>
             <div class="flex justify-end px-4 pb-4">
               @if (getFormPorDiaSafe(row.original.numero); as form) {
@@ -119,6 +122,7 @@
               </button>
               }
             </div>
+            }
           </div>
         </td>
       </tr>

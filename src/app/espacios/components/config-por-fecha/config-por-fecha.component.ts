@@ -48,6 +48,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ConfiguracionFormComponent } from '../configuracion-form/configuracion-form.component';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { ConfigBaseService } from '@espacios/services/config-base.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'config-por-fecha',
@@ -69,6 +70,7 @@ export class ConfigPorFechaComponent {
   private alertasService = inject(AlertasService);
   private injector = inject(Injector);
 
+  public authService = inject(AuthService);
   public fecha = new FormControl('');
   public fechaSeleccionada = signal<string>('');
   public pikaday!: Pikaday;

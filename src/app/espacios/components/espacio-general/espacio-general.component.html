@@ -230,7 +230,7 @@
     >
       Actualizar
     </button>
-    } @else {
+    } @if (authService.tienePermisos('ESP000004')) {
     <button
       type="button"
       [class]="`btn btn-secondary btn-soft h-11 rounded-md`"

@@ -29,6 +29,7 @@ import { GeneralResponse } from '@shared/interfaces';
 import { AppService } from '@app/app.service';
 import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'espacio-general',
@@ -48,6 +49,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
   private file = signal<File | null>(null);
   private enviroment = environment;
 
+  public authService = inject(AuthService);
   public espaciosService = inject(EspaciosService);
   public espacioConfigService = inject(EspaciosConfigService);
   public appService = inject(AppService);
