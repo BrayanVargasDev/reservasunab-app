@@ -15,6 +15,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import {
   IonButton,
   IonContent,
@@ -141,6 +143,15 @@ export class LoginPage {
       })
       .catch(error => {
         this.authService.setLoading(false);
+        this.alertaService.error(
+          `Error al iniciar sesión. ${
+            (error as HttpErrorResponse)?.error?.message ||
+            'Por favor, inténtalo de nuevo.'
+          }`,
+          500000,
+          this.alertaLogin(),
+          'w-full block my-2'
+        );
       });
   }
 }
