@@ -21,7 +21,7 @@
               </h3>
               <div class="badge badge-primary">
                 @if (perfilService.usuario(); as usuario) {
-                {{ usuario.rol }}
+                {{ usuario.tipoUsuario | titlecase }}
                 } @else { - }
               </div>
             </div>
