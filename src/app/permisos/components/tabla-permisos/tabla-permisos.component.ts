@@ -10,8 +10,10 @@ import {
   effect,
   Injector,
   ViewContainerRef,
+  computed,
 } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import {
   ColumnDef,
@@ -24,6 +26,8 @@ import {
   flexRenderComponent,
   CellContext,
   ExpandedState,
+  Row,
+  PaginationState,
 } from '@tanstack/angular-table';
 import moment from 'moment';
 
@@ -35,16 +39,15 @@ import { type BotonAcciones } from '@shared/interfaces/boton-acciones.interface'
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
-import { computed } from '@angular/core';
 import { PermisosUsuario } from '@permisos/interfaces/permisos-usuario.interface';
 import { Pantalla } from '@shared/interfaces/pantalla.interface';
 import { ListaPermisosPantallaComponent } from '../lista-permisos-pantalla/lista-permisos-pantalla.component';
-import { Row, PaginationState } from '@tanstack/angular-table';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 import { AlertasService } from '@shared/services/alertas.service';
 import { UsuariosService } from '@usuarios/services/usuarios.service';
 import { Usuario } from '@usuarios/intefaces';
 import { Rol } from '@permisos/interfaces';
+import { AuthService } from '@auth/services/auth.service';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -67,6 +70,7 @@ interface Util {
   standalone: true,
 })
 export class TablaPermisosComponent implements OnDestroy, OnInit {
+  public authService = inject(AuthService);
   private injector = inject(Injector);
   private alertaService = inject(AlertasService);
   public usuariosService = inject(UsuariosService);
@@ -128,7 +132,8 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
                 eventoClick: () => this.onGuardarEdicionUsuario(context.row),
               },
             ]
-          : [
+          : this.authService.tienePermisos('PER000003')
+          ? [
               {
                 tooltip: 'Editar',
                 icono: 'pencil-outline',
@@ -138,7 +143,8 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
                   this.permisosService.modoCreacion(),
                 eventoClick: () => this.iniciarEdicionUsuario(context.row),
               },
-            ];
+            ]
+          : [];
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -300,11 +306,6 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     const permisosSeleccionados =
       this.permisosService.getPermisosUsuarioEditando(userId);
 
-    console.log('Guardando permisos de usuario:', {
-      userId,
-      permisos: permisosSeleccionados,
-    });
-
     try {
       await this.permisosService.actualizarPermisosUsuarioAsync(
         userId,
@@ -330,7 +331,9 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
     } catch (error) {
       console.error('Error al actualizar permisos de usuario:', error);
       this.alertaService.error(
-        'Error al actualizar los permisos del usuario. Por favor, inténtalo de nuevo.',
+        `Error al actualizar los permisos del usuario. ${
+          (error as HttpErrorResponse).error.message
+        }.`,
         5000,
         this.alertaPermisos(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',

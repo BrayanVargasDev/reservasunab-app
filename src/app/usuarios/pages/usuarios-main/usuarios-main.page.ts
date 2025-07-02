@@ -60,6 +60,7 @@ import { ModalUsuariosComponent } from '@usuarios/components/modal-usuarios/moda
 import { AlertasService } from '@shared/services/alertas.service';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 import { Rol } from '@permisos/interfaces/rol.interface';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -85,6 +86,7 @@ import { Rol } from '@permisos/interfaces/rol.interface';
 })
 export class UsuariosMainPage implements OnInit, OnDestroy {
   private alertaService = inject(AlertasService);
+  public authService = inject(AuthService);
   public usuariosService = inject(UsuariosService);
   public appService = inject(AppService);
 

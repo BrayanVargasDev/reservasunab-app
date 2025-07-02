@@ -19,6 +19,7 @@ import { Rol } from '@permisos/interfaces';
 import { TablaRolesComponent } from '@permisos/components/tabla-roles/tabla-roles.component';
 import { TablaPermisosComponent } from '@permisos/components/tabla-permisos/tabla-permisos.component';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-permisos-main',
@@ -39,6 +40,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
   },
 })
 export class PermisosMainPage implements OnInit {
+  public authService = inject(AuthService);
   public appService = inject(AppService);
   public permisosService = inject(PermisosService);
 
@@ -81,26 +83,8 @@ export class PermisosMainPage implements OnInit {
     this.rolSeleccionado = rol;
   }
 
-  tienePermiso(permisoId: string): boolean {
-    // return this.rolSeleccionado?.permisos.includes(permisoId) || false;
-    return false; // Placeholder, implement actual logic
-  }
-
-  togglePermiso(permisoId: string) {
-    // if (!this.rolSeleccionado) return;
-    // const index = this.rolSeleccionado.permisos.indexOf(permisoId);
-    // if (index !== -1) {
-    //   // Eliminar permiso
-    //   this.rolSeleccionado.permisos.splice(index, 1);
-    // } else {
-    //   // Agregar permiso
-    //   this.rolSeleccionado.permisos.push(permisoId);
-    // }
-  }
-
   guardarCambios() {
     console.log('Guardando cambios del rol:', this.rolSeleccionado);
-    // Aquí iría la llamada al servicio para guardar los cambios
   }
 
   limpiarFiltro() {

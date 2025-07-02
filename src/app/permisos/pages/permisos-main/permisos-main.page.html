@@ -147,7 +147,7 @@
       [value]="permisosService.filtroTexto()"
       (input)="aplicarFiltro($any($event.target).value)"
     />
-    }
+    } @if (authService.tienePermisos('PER000001')) {
     <button
       [disabled]="appService.editando() || tabPermiso.checked"
       class="btn btn-primary h-11 rounded-box"
@@ -156,6 +156,7 @@
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
       Nuevo Rol
     </button>
+    }
   </div>
 </div>
 <div class="w-full h-full max-h-full overflow-hidden flex flex-col">
@@ -170,7 +171,7 @@
       (change)="cambiarPestana('permiso')"
     />
     <div
-      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+      class="tab-content border-base-300 bg-base-100 p-3 md:p-6 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
     >
       @if (permisosQuery.isPending()) {
       <div class="flex justify-center items-center py-8">
@@ -201,7 +202,9 @@
       aria-label="Roles"
       (change)="cambiarPestana('rol')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-6">
+    <div
+      class="tab-content border-base-300 bg-base-100 p-3 md:p-6 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
       @if (rolesQuery.isPending()) {
       <div class="flex justify-center items-center py-8">
         <span class="loading loading-spinner loading-lg text-primary"></span>

@@ -4,12 +4,12 @@ import { inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { QueryClient } from '@tanstack/angular-query-experimental';
 
-export const csrfInterceptor: HttpInterceptorFn = (req, next) =>
-  next(req).pipe(
-    catchError(err => {
-      const http = inject(HttpClient);
-      const qc = inject(QueryClient);
+export const csrfInterceptor: HttpInterceptorFn = (req, next) => {
+  const http = inject(HttpClient);
+  const qc = inject(QueryClient);
 
+  return next(req).pipe(
+    catchError(err => {
       if (err.status === 419) {
         return http
           .get('/sanctum/csrf-cookie', { withCredentials: true })
@@ -22,3 +22,4 @@ export const csrfInterceptor: HttpInterceptorFn = (req, next) =>
       return throwError(() => err);
     }),
   );
+};

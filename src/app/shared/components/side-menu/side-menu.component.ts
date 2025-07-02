@@ -48,13 +48,31 @@ export class SideMenuComponent {
 
   public appService = inject(AppService);
 
-  menuItems = computed<Pantalla[]>(
-    () =>
-      this.appService.pantallasQuery
-        .data()
-        ?.filter(pantalla => pantalla.visible)
-        .sort((a, b) => a.orden - b.orden) ?? [],
-  );
+  menuItems = computed<Pantalla[]>(() => {
+    const pantallas = this.appService.pantallasQuery.data();
+    const usuario = this.usuarioActual;
+
+    if (!pantallas) return [];
+
+    let pantallasVisibles = pantallas.filter(pantalla => pantalla.visible);
+
+    if (!usuario || !usuario.rol) {
+      return [];
+    }
+
+    if (usuario.rol.nombre?.toLowerCase() === 'administrador') {
+      return pantallasVisibles.sort((a, b) => a.orden - b.orden);
+    }
+
+    const permisosUsuario = usuario.permisos || [];
+    const pantallaPermitidas = new Set(
+      permisosUsuario.map(permiso => permiso.id_pantalla),
+    );
+
+    return pantallasVisibles
+      .filter(pantalla => pantallaPermitidas.has(pantalla.id_pantalla))
+      .sort((a, b) => a.orden - b.orden);
+  });
   isMenuOpen = signal(false);
   usuarioActual = this.authServicio.usuario();
 
@@ -97,26 +115,6 @@ export class SideMenuComponent {
   }
 
   /**
-   * Verifica si el usuario tiene los permisos requeridos
-   */
-  tienePermisos(permissions?: string[]): boolean {
-    // if (!permissions || permissions.length === 0) {
-    //   return true;
-    // }
-
-    // // Utiliza el servicio de autenticación para verificar permisos
-    // if (permissions.includes('admin') && this.currentUser?.rol === 'admin') {
-    //   return true;
-    // }
-
-    // // Verifica si tiene al menos uno de los permisos requeridos
-    // return permissions.some((permission) =>
-    //   this.currentUser?.permisos?.includes(permission),
-    // );
-    return true;
-  }
-
-  /**
    * Cierra sesión y cierra el menú si está abierto
    */
   logout() {
@@ -130,7 +128,7 @@ export class SideMenuComponent {
       },
       error => {
         console.error('Error al cerrar sesión:', error);
-      }
+      },
     );
   }
 }

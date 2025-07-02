@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import {
   flexRenderComponent,
@@ -28,6 +29,7 @@ import {
   Row,
   ExpandedState,
   CellContext,
+  PaginationState,
 } from '@tanstack/angular-table';
 import moment from 'moment';
 
@@ -40,10 +42,10 @@ import { AppService } from '@app/app.service';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { RolPermisos } from '../../interfaces/rol-permisos.interface';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
-import { WebIconComponent } from '../../../shared/components/web-icon/web-icon.component';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { ListaPermisosPantallaComponent } from '../lista-permisos-pantalla/lista-permisos-pantalla.component';
-import { PaginationState } from '@tanstack/angular-table';
 import { AlertasService } from '@shared/services/alertas.service';
+import { AuthService } from '@auth/services/auth.service';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -73,6 +75,7 @@ interface Util {
 export class TablaRolesComponent implements OnDestroy, OnInit {
   private injector = inject(Injector);
   private alertasService = inject(AlertasService);
+  private authService = inject(AuthService);
   public permisosService = inject(PermisosService);
 
   public modoCreacion = input<boolean>(false);
@@ -172,7 +175,8 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
                   this.onGuardarEdicion(context.row),
               },
             ]
-          : [
+          : this.authService.tienePermisos('PER000002')
+          ? [
               {
                 tooltip: 'Editar',
                 icono: 'pencil-outline',
@@ -180,9 +184,13 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
                 disabled:
                   this.appService.editando() ||
                   this.permisosService.modoCreacion(),
-                eventoClick: (event: Event) => this.iniciarEdicion(context.row),
+                eventoClick: (event: Event) =>
+                  this.authService.tienePermisos('PER000002')
+                    ? this.iniciarEdicion(context.row)
+                    : null,
               },
-            ];
+            ]
+          : [];
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -353,9 +361,11 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
 
       this.rolesQuery.refetch();
     } catch (error) {
-      console.error('Error al actualizar rol:', error);
+      console.error('Error al actualizar rol HOLA:', error);
       this.alertasService.error(
-        'Error al actualizar el rol. Por favor, inténtalo de nuevo.',
+        `Error al actualizar el rol. ${
+          (error as HttpErrorResponse).error.message
+        }.`,
         5000,
         this.alertaRoles(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
@@ -400,7 +410,7 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     } catch (error) {
       console.error('Error al crear rol:', error);
       this.alertasService.error(
-        'Error al crear el rol. Por favor, inténtalo de nuevo.',
+        `Error al crear el rol. ${(error as HttpErrorResponse).error.message}.`,
         5000,
         this.alertaRoles(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',

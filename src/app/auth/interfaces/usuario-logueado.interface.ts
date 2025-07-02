@@ -1,4 +1,4 @@
-import { Rol } from '@permisos/interfaces';
+import { Rol, Permiso } from '@permisos/interfaces';
 
 export interface UsuarioLogueado {
   id: number;
@@ -7,4 +7,5 @@ export interface UsuarioLogueado {
   email: string;
   rol: Rol;
   token: string;
+  permisos: Permiso[];
 }

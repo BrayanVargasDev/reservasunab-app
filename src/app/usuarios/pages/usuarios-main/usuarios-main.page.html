@@ -18,7 +18,11 @@
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
-    (click)="cambiarEstadoUsuario(context.row.original)"
+    (click)="
+      authService.tienePermisos('USR000003')
+        ? cambiarEstadoUsuario(context.row.original)
+        : null
+    "
   >
     {{ context.getValue() }}
   </div>
@@ -27,6 +31,8 @@
 <ng-template #celdaNombre let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="min-w-20">{{ context.getValue() }}</span>
+
+    @if (authService.tienePermisos('USR000002')) {
     <button
       class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
       (click)="editarUsuario(context.row.original)"
@@ -34,12 +40,14 @@
     >
       <app-web-icon estilos="h-4 w-4" nombreIcono="open-outline"></app-web-icon>
     </button>
+    }
   </div>
 </ng-template>
 
 <ng-template #celdaRol let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="capitalize">{{ context.getValue() }}</span>
+    @if (authService.tienePermisos('USR000004')) {
     <div class="dropdown lg:dropdown-left">
       <button
         role="button"
@@ -70,6 +78,7 @@
         }
       </ul>
     </div>
+    }
   </div>
 </ng-template>
 
@@ -102,10 +111,12 @@
       [value]="usuariosService.filtroTexto()"
       (input)="aplicarFiltro($any($event.target).value)"
     />
+    @if(authService.tienePermisos('USR000001')) {
     <button (click)="crearUsuario()" class="btn btn-primary h-11 rounded-box">
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
       Nuevo Usuario
     </button>
+    }
   </div>
 </div>
 

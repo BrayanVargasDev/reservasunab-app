@@ -144,4 +144,17 @@ export class AuthService {
       this._estadoAutenticacion.set('noAutenticado');
     }
   }
+
+  public tienePermisos(codigo: string): boolean {
+    const usuario = this._usuario();
+    if (!usuario || !usuario.permisos) {
+      return false;
+    }
+
+    if (usuario.rol.nombre?.toLowerCase() === 'administrador') {
+      return true;
+    }
+
+    return usuario.permisos.some(permiso => permiso.codigo === codigo);
+  }
 }
