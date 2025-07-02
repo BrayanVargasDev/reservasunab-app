@@ -50,7 +50,7 @@ export class SideMenuComponent {
 
   menuItems = computed<Pantalla[]>(() => {
     const pantallas = this.appService.pantallasQuery.data();
-    const usuario = this.usuarioActual;
+    const usuario = this.authServicio.usuario();
 
     if (!pantallas) return [];
 
@@ -74,7 +74,7 @@ export class SideMenuComponent {
       .sort((a, b) => a.orden - b.orden);
   });
   isMenuOpen = signal(false);
-  usuarioActual = this.authServicio.usuario();
+  usuarioActual = computed(() => this.authServicio.usuario());
 
   private toggleMenuSubscription?: () => void;
 
