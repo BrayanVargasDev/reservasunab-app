@@ -6,9 +6,12 @@ import {
   viewChild,
   ElementRef,
   Injector,
+  inject,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import Pikaday from 'pikaday';
 import moment from 'moment';
@@ -16,25 +19,38 @@ import moment from 'moment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { EspacioParaConfig, Espacio } from '@espacios/interfaces';
-import { inject, ChangeDetectionStrategy } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+
 import { AppService } from '@app/app.service';
+import { EspacioBookingItemComponent } from '@reservas/components/espacio-booking-item/espacio-booking-item.component';
+import { environment } from '@environments/environment';
+import { Imagen } from '@espacios/interfaces/imagen.interface';
+import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
+import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/tabla-dreservas.component';
 
 @Component({
   selector: 'app-dreservas-main',
   templateUrl: './dreservas-main.page.html',
   styleUrls: ['./dreservas-main.page.scss'],
   standalone: true,
-  imports: [CommonModule, WebIconComponent, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    WebIconComponent,
+    ReactiveFormsModule,
+    EspacioBookingItemComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex flex-col grow w-full sm:pl-3 relative',
+  },
 })
 export default class DreservasMainPage implements OnInit {
   private injector = inject(Injector);
   private dreservasService = inject(DreservasService);
   private espacioConfigService = inject(EspaciosConfigService);
 
+  public environment = environment;
   public appService = inject(AppService);
   public fecha = new FormControl('');
   public sede = new FormControl('');
@@ -84,6 +100,14 @@ export default class DreservasMainPage implements OnInit {
   public limpiarCategoria() {
     this.categoriaSeleccionada.set(null);
     this.categoria.setValue('');
+  }
+
+  public getImagenUrl(imagen: Imagen | null): string {
+    if (!imagen || !imagen.ubicacion) {
+      return 'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp';
+    }
+
+    return `${environment.apiUrl}${imagen?.ubicacion}`;
   }
 
   public ngOnDestroy() {

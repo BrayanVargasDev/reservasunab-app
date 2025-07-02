@@ -22,6 +22,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       );
       const esUserCall = req.url.endsWith('/me');
 
+      if (error.status === 401) {
+        router.navigate(['/auth/login']);
+        return throwError(() => error);
+      }
+
       if (esRutaPublica && esUserCall) {
         return throwError(() => error);
       }

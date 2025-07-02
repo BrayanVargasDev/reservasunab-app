@@ -42,7 +42,8 @@ import { EspaciosConfigService } from '@espacios/services/espacios-config.servic
     ReactiveFormsModule,
     ResponsiveTableDirective,
     FlexRenderDirective,
-    TableExpansorComponent,
+    // @ts-ignore
+    // TableExpansorComponent,
     ConfiguracionFormComponent,
   ],
   templateUrl: './config-base.component.html',
@@ -86,6 +87,7 @@ export class ConfigBaseComponent {
         this.actualizarFormulariosConDatos(configuraciones);
       }
     });
+
   }
 
   private inicializarFormulariosVacios() {

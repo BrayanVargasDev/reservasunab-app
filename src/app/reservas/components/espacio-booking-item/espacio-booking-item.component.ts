@@ -1,8 +1,9 @@
-import { Component, input } from '@angular/core';
+import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '@environments/environment';
 
 @Component({
-  selector: 'app-espacio-booking-item',
+  selector: 'espacio-booking-item',
   imports: [CommonModule],
   templateUrl: './espacio-booking-item.component.html',
   styleUrl: './espacio-booking-item.component.scss',
@@ -12,4 +13,5 @@ export class EspacioBookingItemComponent {
   calificacion = input<number>();
   ubicacion = input<string>();
   titulo = input<string>();
+  env = environment;
 }
