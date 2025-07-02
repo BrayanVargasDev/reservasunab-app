@@ -8,8 +8,10 @@
     <input
       type="text"
       [disabled]="appService.editando()"
-      placeholder="Buscar por nombre, email o rol..."
+      placeholder="Buscar por nombre o categoria"
       class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+      [value]="espaciosService.filtroTexto()"
+      (input)="aplicarFiltro($any($event.target).value)"
     />
     <button
       [disabled]="appService.editando()"

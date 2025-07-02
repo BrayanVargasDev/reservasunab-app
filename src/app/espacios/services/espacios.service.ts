@@ -20,7 +20,7 @@ export class EspaciosService {
   private http = inject(HttpClient);
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   private _datosPaginador = signal<Meta | null>(null);
   private _filtroTexto = signal<string>('');
@@ -53,6 +53,10 @@ export class EspaciosService {
       ...this._paginacion(),
       pageIndex: 0,
     });
+  }
+
+  public limpiarFiltro() {
+    this._filtroTexto.set('');
   }
 
   private _espacioAEditar = signal<Espacio | null>(null);

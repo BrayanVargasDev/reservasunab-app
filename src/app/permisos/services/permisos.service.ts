@@ -36,11 +36,11 @@ export class PermisosService {
 
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   private _paginacionRoles = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   private _datosPaginador = signal<Meta | null>(null);
   private _datosPaginadorRoles = signal<Meta | null>(null);

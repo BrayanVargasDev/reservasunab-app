@@ -26,14 +26,14 @@ import { inject } from '@angular/core';
 export class PaginadorComponent {
   private injector = inject(Injector);
 
-  valorSelect = new FormControl(5);
+  valorSelect = new FormControl(10);
 
   paginacion = input<Meta | null>(null);
   estado = input.required<PaginationState>();
   mostrarSelectorTamano = input(true);
   mostrarInfo = input(true);
   mostrarExtremos = input(true);
-  opcionesTamano = input<number[]>([5, 10, 25, 50, 100]);
+  opcionesTamano = input<number[]>([10, 25, 50, 100]);
   deshabilitado = input(false);
   prefetchFunction = output<PaginationState>();
 

@@ -5,9 +5,11 @@ import {
   inject,
   ViewContainerRef,
   viewChild,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -34,7 +36,7 @@ import { AlertasService } from '@shared/services/alertas.service';
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EspaciosMainPage implements OnInit {
+export class EspaciosMainPage implements OnInit, OnDestroy {
   private alertaService = inject(AlertasService);
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
@@ -43,7 +45,16 @@ export class EspaciosMainPage implements OnInit {
     read: ViewContainerRef,
   });
 
-  ngOnInit() {}
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
+
+  ngOnInit() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((texto: string) => {
+        this.espaciosService.setFiltroTexto(texto);
+      });
+  }
 
   public crearEspacio() {
     this.espaciosService.abrirModal();
@@ -73,5 +84,18 @@ export class EspaciosMainPage implements OnInit {
         estilosAlerta,
       );
     }
+  }
+
+  aplicarFiltro(texto: string) {
+    this.searchSubject.next(texto);
+  }
+
+  limpiarFiltro() {
+    this.espaciosService.limpiarFiltro();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

@@ -59,7 +59,7 @@ import { UsuariosService } from '@app/usuarios/services/usuarios.service';
 import { ModalUsuariosComponent } from '@usuarios/components/modal-usuarios/modal-usuarios.component';
 import { AlertasService } from '@shared/services/alertas.service';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
-import { Rol } from '../../../permisos/interfaces/rol.interface';
+import { Rol } from '@permisos/interfaces/rol.interface';
 
 @Component({
   selector: 'app-usuarios-main',

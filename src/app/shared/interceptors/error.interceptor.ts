@@ -14,7 +14,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastController = inject(ToastController);
   const router = inject(Router);
   const url = router.url;
-  const esPublica = RUTAS_PUBLICAS.some(ruta => url.includes(ruta))
+  const esPublica = RUTAS_PUBLICAS.some(ruta => url.includes(ruta));
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       console.log('href', window.location.href);
@@ -40,17 +40,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           ? Object.values(error.error.errors).join(', ')
           : error.error?.message || 'Error desconocido';
       }
-
-      toastController
-        .create({
-          message: errorMessage,
-          duration: 4000,
-          color: 'danger',
-          position: 'bottom',
-          buttons: [{ text: 'Cerrar', role: 'cancel' }],
-          cssClass: 'toast-error',
-        })
-        .then(t => t.present());
 
       return throwError(() => error);
     }),
