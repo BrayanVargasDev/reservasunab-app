@@ -1,4 +1,11 @@
-import { Component, inject, OnInit, signal, effect } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  effect,
+  computed,
+} from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -19,6 +26,16 @@ export class AppComponent implements OnInit {
   momentL = moment;
   private router = inject(Router);
 
+  private esRutaPublica = computed(() => {
+    const url = this.router.url;
+    const rutasPublicas = [
+      '/auth/login',
+      '/auth/registro',
+      '/auth/reset-password',
+    ];
+    return rutasPublicas.some(ruta => url.includes(ruta));
+  });
+
   appService = inject(AppService);
   authService = inject(AuthService);
 
@@ -29,7 +46,7 @@ export class AppComponent implements OnInit {
 
     effect(() => {
       const isAuthenticated = this.authService.estaAutenticado();
-      if (!isAuthenticated) {
+      if (!isAuthenticated && !this.esRutaPublica()) {
         this.router.navigate(['/auth/login']);
       }
     });

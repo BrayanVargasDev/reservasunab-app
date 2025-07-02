@@ -13,7 +13,8 @@ const RUTAS_PUBLICAS = [
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastController = inject(ToastController);
   const router = inject(Router);
-
+  const url = router.url;
+  const esPublica = RUTAS_PUBLICAS.some(ruta => url.includes(ruta))
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       console.log('href', window.location.href);
@@ -22,7 +23,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       );
       const esUserCall = req.url.endsWith('/me');
 
-      if (error.status === 401) {
+      if (error.status === 401 && !esRutaPublica) {
         router.navigate(['/auth/login']);
         return throwError(() => error);
       }

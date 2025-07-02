@@ -219,8 +219,7 @@ export class RegistroPage implements OnInit {
     }
 
     const formData: Registro = {
-      nombre: nombre[0]?.charAt(0).toUpperCase() + nombre[0]?.slice(1) || '',
-      apellido: nombre[1]?.charAt(0).toUpperCase() + nombre[1]?.slice(1) || '',
+      nombre: this.registroForm.get('nombre')?.value.trim(),
       celular: this.registroForm.get('telefono')?.value.trim(),
       email: this.registroForm.get('email')?.value.trim(),
       password: this.registroForm.get('password')?.value.trim(),

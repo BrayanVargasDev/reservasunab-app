@@ -8,7 +8,7 @@ import {
 import { timer, switchMap, map, of, from, catchError } from 'rxjs';
 
 export class FormUtils {
-  static patronNombre = '([a-zA-Z]+) ([a-zA-Z]+)';
+  static patronNombre = new RegExp('^\\p{L}+(?:\\s+\\p{L}+)+$', 'u');
   static patronEmail = '^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$';
   static patronSoloAlfanumerico = '^[a-zA-Z0-9]+$';
   static patronSoloNumeros = '^[0-9]+$';
