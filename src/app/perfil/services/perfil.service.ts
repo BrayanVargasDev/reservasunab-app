@@ -1,116 +1,97 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { QueryClient } from '@tanstack/angular-query-experimental';
+import {
+  QueryClient,
+  injectQuery,
+  injectMutation,
+} from '@tanstack/angular-query-experimental';
+import { HttpClient } from '@angular/common/http';
 import { Usuario } from '@usuarios/intefaces';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AlertasService } from '@shared/services/alertas.service';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
+import { getPerfil } from '../actions/get-perfil.action';
+import { AuthService } from '@auth/services/auth.service';
+import { saveUsuario } from '@usuarios/actions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PerfilService {
+  private http = inject(HttpClient);
   private alertaService = inject(AlertasService);
   private queryClient = inject(QueryClient);
+  private authService = inject(AuthService);
 
-  private _usuario = signal<Usuario | null>(null);
-  private _cargando = signal(false);
   private _i18nDatePicker = signal(i18nDatePicker);
-
-  public usuario = this._usuario.asReadonly();
-  public cargando = this._cargando.asReadonly();
   public i18nDatePicker = this._i18nDatePicker.asReadonly();
 
-  public setUsuario(usuario: Usuario | null) {
-    this._usuario.set(usuario);
-  }
+  public perfilQuery = injectQuery(() => ({
+    queryKey: ['perfil', this.authService.usuario()?.id],
+    queryFn: async () => {
+      const userId = this.authService.usuario()?.id;
+      if (!userId) {
+        throw new Error('Usuario no autenticado');
+      }
 
-  public setCargando(estado: boolean) {
-    this._cargando.set(estado);
-  }
+      const { data: usuario } = await getPerfil(this.http, userId);
+      if (!usuario) {
+        throw new Error('No se pudo obtener el perfil del usuario');
+      }
 
-  // Simular obtener datos del usuario actual desde localStorage o API
+      return usuario;
+    },
+    enabled: computed(() => !!this.authService.usuario()?.id),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  }));
+
+  public actualizarPerfilMutation = injectMutation(() => ({
+    mutationFn: async (datosUsuario: Usuario) => {
+      return await saveUsuario(this.http, datosUsuario, true, true);
+    },
+    onSuccess: (data, variables) => {
+      this.queryClient.invalidateQueries({ queryKey: ['perfil'] });
+      this.queryClient.setQueryData(['perfil', variables.id], variables);
+      console.log('Perfil actualizado correctamente');
+    },
+    onError: error => {
+      console.error('Error al actualizar el perfil:', error);
+    },
+  }));
+
+  public usuario = computed(() => this.perfilQuery.data());
+  public cargando = computed(
+    () =>
+      this.perfilQuery.isLoading() || this.actualizarPerfilMutation.isPending(),
+  );
+  public error = computed(() => this.perfilQuery.error());
+
   public async obtenerPerfilUsuario(): Promise<Usuario | null> {
-    this._cargando.set(true);
-
     try {
-      // Aquí iría la llamada real a la API
-      // Por ahora simulamos con datos de ejemplo
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const usuarioEjemplo: Usuario = {
-        id: 1,
-        avatar: 'https://ionicframework.com/docs/img/demos/avatar.svg',
-        email: 'usuario@unab.edu.co',
-        tipoUsuario: 'externo' as any,
-        telefono: '3001234567',
-        rol: 'Usuario',
-        tipoDocumento: 1,
-        documento: '12345678',
-        nombre: 'Juan Carlos',
-        apellido: 'Pérez González',
-        ultimoAcceso: new Date().toISOString(),
-        estado: 'activo' as any,
-        fechaCreacion: new Date().toISOString(),
-        direccion: 'Calle 45 # 123-45, Bucaramanga',
-        fechaNacimiento: '1990-05-15',
-      };
-
-      this._usuario.set(usuarioEjemplo);
-      return usuarioEjemplo;
+      await this.perfilQuery.refetch();
+      return this.perfilQuery.data() || null;
     } catch (error) {
       console.error('Error al obtener el perfil:', error);
       return null;
-    } finally {
-      this._cargando.set(false);
     }
   }
 
-  public async actualizarPerfil(datosUsuario: Partial<Usuario>): Promise<boolean> {
-    this._cargando.set(true);
-
+  public async actualizarPerfil(datosUsuario: Usuario): Promise<boolean> {
     try {
-      // Aquí iría la llamada real a la API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Simular actualización exitosa
-      const usuarioActualizado = {
-        ...this._usuario(),
-        ...datosUsuario,
-      } as Usuario;
-
-      this._usuario.set(usuarioActualizado);
+      await this.actualizarPerfilMutation.mutateAsync(datosUsuario);
       return true;
     } catch (error) {
       console.error('Error al actualizar el perfil:', error);
       return false;
-    } finally {
-      this._cargando.set(false);
     }
   }
 
-  public async subirAvatar(archivo: File): Promise<string | null> {
-    this._cargando.set(true);
+  // Métodos para invalidar y refrescar datos
+  public invalidarPerfil() {
+    this.queryClient.invalidateQueries({ queryKey: ['perfil'] });
+  }
 
-    try {
-      // Aquí iría la llamada real a la API para subir la imagen
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Simular URL de la imagen subida
-      const urlImagen = URL.createObjectURL(archivo);
-
-      if (this._usuario()) {
-        this._usuario.update(usuario => ({
-          ...usuario!,
-          avatar: urlImagen,
-        }));
-      }
-
-      return urlImagen;
-    } catch (error) {
-      console.error('Error al subir el avatar:', error);
-      return null;
-    } finally {
-      this._cargando.set(false);
-    }
+  public async refrescarPerfil() {
+    return await this.perfilQuery.refetch();
   }
 }

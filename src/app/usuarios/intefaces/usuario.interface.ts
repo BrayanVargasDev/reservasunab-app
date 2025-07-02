@@ -3,7 +3,6 @@ import { Estado } from '@shared/enums/usuarios.enum';
 
 export interface Usuario {
   id: number;
-  avatar: string;
   email: string;
   tipoUsuario: TipoUsuario;
   telefono: string;

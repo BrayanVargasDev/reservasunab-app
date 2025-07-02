@@ -8,6 +8,8 @@ import {
   ViewContainerRef,
   AfterViewInit,
   signal,
+  effect,
+  Injector,
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
@@ -44,6 +46,7 @@ import { InputSoloNumerosDirective } from '@shared/directives/input-solo-numeros
 })
 export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private fb = inject(FormBuilder);
+  private injector = inject(Injector);
   private destroy$ = new Subject<void>();
   private alertaService = inject(AlertasService);
   private pikaday!: Pikaday;
@@ -94,7 +97,17 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     viewChild.required<ElementRef<HTMLInputElement>>('inputAvatar');
 
   ngOnInit() {
-    this.cargarDatosUsuario();
+    effect(
+      () => {
+        const usuario = this.perfilService.usuario();
+        if (usuario) {
+          this.cargarDatosEnFormulario(usuario);
+        }
+      },
+      {
+        injector: this.injector,
+      },
+    );
   }
 
   ngAfterViewInit() {
@@ -126,34 +139,37 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  private async cargarDatosUsuario() {
-    const usuario = await this.perfilService.obtenerPerfilUsuario();
+  private cargarDatosEnFormulario(usuario: any) {
+    let fechaFormateada = '';
+    if (usuario.fechaNacimiento) {
+      const fechaTmp = usuario.fechaNacimiento.split('T')[0];
+      fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format('DD/MM/YYYY');
+    }
 
-    if (usuario) {
-      this.avatarUrl.set(usuario.avatar);
+    this.perfilForm.patchValue({
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      email: usuario.email,
+      telefono: usuario.telefono,
+      direccion: usuario.direccion,
+      documento: usuario.documento,
+      tipoDocumento: usuario.tipoDocumento,
+      fechaNacimiento: fechaFormateada,
+    });
 
-      let fechaFormateada = '';
-      if (usuario.fechaNacimiento) {
-        const fechaTmp = usuario.fechaNacimiento.split('T')[0];
-        fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format('DD/MM/YYYY');
-      }
+    this.perfilForm.controls['email'].disable();
 
-      this.perfilForm.patchValue({
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        telefono: usuario.telefono,
-        direccion: usuario.direccion,
-        documento: usuario.documento,
-        tipoDocumento: usuario.tipoDocumento,
-        fechaNacimiento: fechaFormateada,
-      });
+    if (usuario.documento) {
+      this.perfilForm.controls['documento'].disable();
+    }
 
-      // Sincronizar la fecha con Pikaday si está disponible
-      if (this.pikaday && fechaFormateada) {
-        const date = moment(fechaFormateada, 'DD/MM/YYYY');
-        this.pikaday.setMoment(date, true);
-      }
+    if (usuario.tipoDocumento) {
+      this.perfilForm.controls['tipoDocumento'].disable();
+    }
+
+    if (this.pikaday && fechaFormateada) {
+      const date = moment(fechaFormateada, 'DD/MM/YYYY');
+      this.pikaday.setMoment(date, true);
     }
   }
 
@@ -170,30 +186,22 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       : '';
 
     const datosActualizados = {
+      ...this.perfilService.usuario(),
       ...this.perfilForm.value,
       fechaNacimiento,
     };
 
     try {
-      const exito = await this.perfilService.actualizarPerfil(
+      await this.perfilService.actualizarPerfilMutation.mutateAsync(
         datosActualizados,
       );
 
-      if (exito) {
-        this.alertaService.success(
-          'Perfil actualizado exitosamente.',
-          5000,
-          this.alertaPerfil(),
-          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-        );
-      } else {
-        this.alertaService.error(
-          'Error al actualizar el perfil. Por favor, inténtalo de nuevo.',
-          5000,
-          this.alertaPerfil(),
-          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-        );
-      }
+      this.alertaService.success(
+        'Perfil actualizado exitosamente.',
+        5000,
+        this.alertaPerfil(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
     } catch (error) {
       console.error('Error al guardar cambios:', error);
       this.alertaService.error(
@@ -203,38 +211,6 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
     }
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.subirAvatar(file);
-    }
-  }
-
-  async subirAvatar(archivo: File) {
-    const urlImagen = await this.perfilService.subirAvatar(archivo);
-
-    if (urlImagen) {
-      this.avatarUrl.set(urlImagen);
-      this.alertaService.success(
-        'Avatar actualizado exitosamente.',
-        3000,
-        this.alertaPerfil(),
-        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-      );
-    } else {
-      this.alertaService.error(
-        'Error al subir el avatar. Por favor, inténtalo de nuevo.',
-        3000,
-        this.alertaPerfil(),
-        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
-      );
-    }
-  }
-
-  cambiarAvatar() {
-    this.inputAvatar().nativeElement.click();
   }
 
   ngOnDestroy() {
