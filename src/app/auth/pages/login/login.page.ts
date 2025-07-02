@@ -136,6 +136,7 @@ export class LoginPage {
         this.authService.setLoading(false);
         this.authService.setUser(response.data);
         this.authService.setToken(response.data?.token || null);
+        this.authService.userQuery.refetch();
         this.router.navigate(['/']);
       })
       .catch(error => {

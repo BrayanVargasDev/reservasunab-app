@@ -8,11 +8,14 @@ import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/stan
   templateUrl: './reservas-main.page.html',
   styleUrls: ['./reservas-main.page.scss'],
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule]
-})
-export default class ReservasMainPage implements OnInit {
-
-  constructor() { }
+  imports: [IonContent, IonContentITit cenToolbar, virmnmModule uService = tpblic sede = new FormControl('');
+  public categoria = new FormControl('');
+  public fechaSeleccionada = signal<string>('');
+  public sedeSeleccionada = signal<number | null>(null);
+  public categoriaSeleccionada = signal<number | null>(null);
+  public pikaday!: Pikaday;
+  public fechaPicker =
+    viewChild.required<ElementRef<HTMLInputElement>>('fechaPicker');
 
   ngOnInit() {
   }
