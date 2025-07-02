@@ -18,12 +18,14 @@
   [table]="tablaEspacios()"
   class="table w-full rounded-box table-sm sm:table-md"
 >
-  <thead class="sticky top-0 z-20 bg-base-100">
+  <thead class="sticky top-0 z-20 bg-base-300">
     @for (headerGroup of tablaEspacios.getHeaderGroups(); track headerGroup.id)
     {
-    <tr>
+    <tr class="bg-base-300 z-20 rounded-t-box">
       @if (tabla.hiddenColumnIds().size !== 0) {
-      <th class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"></th>
+      <th
+        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+      ></th>
       } @for (header of headerGroup.headers; track header.id) {
       <th
         class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
@@ -111,10 +113,12 @@
   "
   [estado]="espaciosService.paginacion()"
   [paginacion]="espaciosService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
   [mostrarInfo]="true"
   [mostrarSelectorTamano]="true"
   [mostrarExtremos]="true"
   [deshabilitado]="espaciosQuery.isFetching()"
+  (prefetchFunction)="espaciosService.prefetchEspacios($event)"
 >
 </app-paginador>
 

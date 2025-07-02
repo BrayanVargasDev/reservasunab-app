@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
 
 import { type Meta, PaginatedResponse } from '@shared/interfaces';
@@ -18,6 +18,7 @@ import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 })
 export class EspaciosService {
   private http = inject(HttpClient);
+  private queryClient = inject(QueryClient);
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -104,5 +105,17 @@ export class EspaciosService {
     nuevoEstado: string,
   ): Promise<Espacio> {
     return updateEspacioEstado(this.http, espacioId, nuevoEstado);
+  }
+
+  public prefetchEspacios(state: PaginationState) {
+    this.queryClient.prefetchQuery({
+      queryKey: ['espacios', state, this._filtroTexto()],
+      queryFn: () =>
+        getEspacios(this.http, {
+          ...state,
+          search: this._filtroTexto(),
+        }),
+      staleTime: 1000 * 60 * 5,
+    });
   }
 }

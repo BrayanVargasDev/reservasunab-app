@@ -23,6 +23,7 @@ import {
   getExpandedRowModel,
   Row,
   CellContext,
+  PaginationState,
 } from '@tanstack/angular-table';
 
 import { AppService } from '@app/app.service';
@@ -87,7 +88,8 @@ export class TablaEspaciosComponent implements OnInit {
       id: 'tipoEspacio',
       accessorKey: 'tipoEspacio',
       header: 'Tipo de Espacio',
-      cell: info => `<span class="uppercase font-semibold">${info.getValue()}</span>`,
+      cell: info =>
+        `<span class="uppercase font-semibold">${info.getValue()}</span>`,
     },
     {
       id: 'estado',
@@ -233,5 +235,9 @@ export class TablaEspaciosComponent implements OnInit {
             });
         }
       });
+  }
+
+  onPageChange(estado: PaginationState): void {
+    this.espaciosService.setPaginacion(estado);
   }
 }
