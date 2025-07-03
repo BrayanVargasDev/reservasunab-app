@@ -95,6 +95,13 @@
     </div>
 
     <div class="navbar-end gap-2">
+      <div class="flex flex-col">
+        <span
+          class="font-semibold"
+          >{{ `${usuario()?.nombre} ${usuario()?.apellido}` }}</span
+        >
+        <span class="text-xs text-gray-500">{{ usuario()?.rol?.nombre }}</span>
+      </div>
       <div class="relative ml-3">
         <div class="dropdown dropdown-end">
           <div tabindex="0" role="button" class="btn btn-sm btn-circle m-1">

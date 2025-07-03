@@ -15,8 +15,8 @@
           alt="Avatar de usuario"
         />
       </ion-avatar>
-      <h2>{{ usuarioActual?.nombre || 'Usuario' }}</h2>
-      <p>{{ usuarioActual?.email || 'usuario@ejemplo.com' }}</p>
+      <h2>{{ `${usuarioActual()?.nombre} ${usuarioActual()?.apellido}` }}</h2>
+      <p>{{ usuarioActual()?.email }}</p>
     </div>
 
     <ion-list>

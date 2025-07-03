@@ -5,6 +5,7 @@ import {
   signal,
   OnInit,
   HostListener,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
@@ -31,7 +32,7 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
   imports: [IonicModule, RouterLink, CommonModule, WebIconComponent],
 })
 export class HeaderComponent implements OnInit {
-  title = signal('App UNAB');
+  title = signal('Reservas UNAB');
 
   appService = inject(AppService);
 
@@ -39,7 +40,7 @@ export class HeaderComponent implements OnInit {
   private plataforma = inject(Platform);
   private router = inject(Router);
 
-  usuario = this.authServicio.usuario();
+  usuario = computed(() => this.authServicio.usuario());
   isMobile = signal(false);
   screenWidth = signal(window.innerWidth);
 
