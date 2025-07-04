@@ -1,6 +1,7 @@
 <div
-  class="relative rounded-xl overflow-hidden shadow-md bg-cover bg-center h-60 w-44"
+  class="relative rounded-xl overflow-hidden shadow-md bg-cover bg-center h-60 w-44 cursor-pointer"
   [ngStyle]="{ 'background-image': 'url(' + imagenUrl() + ')' }"
+  (click)="abrirEspacio()"
 >
   <div
     class="absolute top-2 left-2 bg-black/60 text-white text-sm px-2 py-1 rounded-full flex items-center gap-1"

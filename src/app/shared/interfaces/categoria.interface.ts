@@ -1,3 +1,4 @@
+import { Grupo } from './grupo.interface';
 export interface Categoria {
   id: number;
   nombre: string;
@@ -10,4 +11,5 @@ export interface Categoria {
   eliminado_en: number | null;
   direccion?: string;
   telefono?: string;
+  grupo?: Grupo;
 }

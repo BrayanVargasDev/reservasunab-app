@@ -229,6 +229,7 @@
       [ubicacion]="espacio.sede"
       [titulo]="espacio.nombre"
       [imagenUrl]="getImagenUrl(espacio.imagen_url)"
+      (abrirEspacioEvent)="abrirEspacio(espacio.id)"
     >
     </espacio-booking-item>
     } } @else {
@@ -250,3 +251,5 @@
     }
   </div>
 </div>
+
+<modal-dreservas></modal-dreservas>

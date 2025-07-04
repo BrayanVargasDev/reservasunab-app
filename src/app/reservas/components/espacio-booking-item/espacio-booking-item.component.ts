@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, output } from '@angular/core';
 import { CommonModule, TitleCasePipe } from '@angular/common';
 import { environment } from '@environments/environment';
 
@@ -14,4 +14,10 @@ export class EspacioBookingItemComponent {
   ubicacion = input<string>();
   titulo = input<string>();
   env = environment;
+
+  abrirEspacioEvent = output();
+
+  public abrirEspacio() {
+    this.abrirEspacioEvent.emit();
+  }
 }

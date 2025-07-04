@@ -1,10 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { injectQuery } from '@tanstack/angular-query-experimental';
-import { getEspaciosAll } from '../actions/get-espacios-all.action';
+import { getEspaciosAll, getEspacioDetalles } from '@reservas/actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Espacio } from '@espacios/interfaces';
-import { EspacioReservas } from '../interfaces';
+import { EspacioReservas, ReservaEspaciosDetalles } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +16,10 @@ export class DreservasService {
   private _idGrupo = signal<number | null>(null);
   private _idSede = signal<number | null>(null);
   private _idCategoria = signal<number | null>(null);
+  private _idEspacio = signal<number | null>(null);
+  private _modalAbierta = signal(false);
+
+  public modalAbierta = this._modalAbierta.asReadonly();
 
   allEspaciosQuery = injectQuery(() => ({
     queryKey: [
@@ -34,6 +38,15 @@ export class DreservasService {
         idCategoria: this._idCategoria(),
       }),
     select: (response: GeneralResponse<EspacioReservas[]>) => response.data,
+  }));
+
+  espacioDetallesQuery = injectQuery(() => ({
+    queryKey: ['rvespacio', 'detalles', this._idEspacio(), this._fecha()],
+    queryFn: () =>
+      getEspacioDetalles(this.http, this._idEspacio(), this._fecha()),
+    select: (response: GeneralResponse<ReservaEspaciosDetalles>) =>
+      response.data,
+    disabled: !this._idEspacio(),
   }));
 
   public setFecha(fecha: string | null) {
@@ -61,7 +74,8 @@ export class DreservasService {
     if (filtros.fecha !== undefined) this._fecha.set(filtros.fecha);
     if (filtros.idGrupo !== undefined) this._idGrupo.set(filtros.idGrupo);
     if (filtros.idSede !== undefined) this._idSede.set(filtros.idSede);
-    if (filtros.idCategoria !== undefined) this._idCategoria.set(filtros.idCategoria);
+    if (filtros.idCategoria !== undefined)
+      this._idCategoria.set(filtros.idCategoria);
   }
 
   public limpiarFiltros() {
@@ -85,5 +99,18 @@ export class DreservasService {
 
   public limpiarGrupo() {
     this._idGrupo.set(null);
+  }
+
+  public setIdEspacio(idEspacio: number | null) {
+    this._idEspacio.set(idEspacio);
+  }
+
+  public abrirModal() {
+    this._modalAbierta.set(true);
+  }
+
+  public cerrarModal() {
+    this._modalAbierta.set(false);
+    this._idEspacio.set(null);
   }
 }

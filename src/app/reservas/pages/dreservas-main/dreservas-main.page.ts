@@ -44,7 +44,8 @@ import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/ta
     WebIconComponent,
     ReactiveFormsModule,
     EspacioBookingItemComponent,
-  ],
+    ModalDreservasComponent
+],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
@@ -190,6 +191,12 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
 
   public trackByEspacioId(index: number, espacio: any): number {
     return espacio.id;
+  }
+
+  public abrirEspacio(espacioId: number): void {
+    console.log('Abrir espacio:', espacioId);
+    this.dreservasService.abrirModal();
+    this.dreservasService.setIdEspacio(espacioId);
   }
 
   public ngOnDestroy(): void {
