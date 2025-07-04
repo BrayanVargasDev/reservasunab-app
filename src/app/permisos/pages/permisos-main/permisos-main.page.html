@@ -120,7 +120,7 @@
   class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
   <div class="flex items-center gap-2">
-    <h2 class="font-bold text-4xl">Roles y permisos</h2>
+    <h2 class="font-bold text-4xl mb-2 md:mb-0">Roles y permisos</h2>
     @if (permisosService.filtroTexto() && permisosService.pestana() ===
     'permiso') {
     <div class="badge badge-secondary h-6 badge-sm my-auto text-base">
@@ -149,7 +149,7 @@
     />
     } @if (authService.tienePermisos('PER000001')) {
     <button
-      [disabled]="appService.editando() || tabPermiso.checked"
+      [disabled]="appService.editando()"
       class="btn btn-primary h-11 rounded-box"
       (click)="crearRol()"
     >
@@ -160,72 +160,29 @@
   </div>
 </div>
 <div class="w-full h-full max-h-full overflow-hidden flex flex-col">
-  <div class="tabs tabs-lift overflow-y-auto">
-    <input
-      #tabPermiso
-      type="radio"
-      name="my_tabs_2"
-      class="tab font-semibold text-[1.125rem]"
-      aria-label="Permisos"
-      checked="checked"
-      (change)="cambiarPestana('permiso')"
-    />
-    <div
-      class="tab-content border-base-300 bg-base-100 p-3 md:p-6 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
-    >
-      @if (permisosQuery.isPending()) {
-      <div class="flex justify-center items-center py-8">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-        <span class="ml-2 text-base-content">Cargando permisos...</span>
-      </div>
-      } @else if (permisosQuery.isError()) {
-      <div class="alert alert-error mb-4">
-        <app-web-icon
-          estilos="h-6 w-6"
-          nombreIcono="alert-circle-outline"
-        ></app-web-icon>
-        <span>Error al cargar los usuarios. </span>
-        <button class="btn btn-sm btn-outline">Reintentar</button>
-      </div>
-      } @else {
-      <tabla-permisos
-        [ngClass]="'flex flex-col h-full overflow-y-auto'"
-      ></tabla-permisos>
-      }
+  <div
+    class="w-full h-full max-h-[calc(100vh_-_12.75rem)] overflow-hidden flex flex-col"
+  >
+    @if (rolesQuery.isPending()) {
+    <div class="flex justify-center items-center py-8">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+      <span class="ml-2 text-base-content">Cargando roles...</span>
     </div>
-
-    <input
-      #tabRol
-      type="radio"
-      name="my_tabs_2"
-      class="tab font-semibold text-[1.125rem]"
-      aria-label="Roles"
-      (change)="cambiarPestana('rol')"
-    />
-    <div
-      class="tab-content border-base-300 bg-base-100 p-3 md:p-6 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
-    >
-      @if (rolesQuery.isPending()) {
-      <div class="flex justify-center items-center py-8">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-        <span class="ml-2 text-base-content">Cargando roles...</span>
-      </div>
-      } @else if (rolesQuery.isError()) {
-      <div class="alert alert-error mb-4">
-        <app-web-icon
-          estilos="h-6 w-6"
-          nombreIcono="alert-circle-outline"
-        ></app-web-icon>
-        <span>Error al cargar los roles. </span>
-        <button class="btn btn-sm btn-outline">Reintentar</button>
-      </div>
-      } @else {
-      <tabla-roles
-        [ngClass]="'flex flex-col h-full overflow-y-auto'"
-        [modoCreacion]="permisosService.modoCreacion()"
-      ></tabla-roles>
-      }
+    } @else if (rolesQuery.isError()) {
+    <div class="alert alert-error mb-4">
+      <app-web-icon
+        estilos="h-6 w-6"
+        nombreIcono="alert-circle-outline"
+      ></app-web-icon>
+      <span>Error al cargar los roles. </span>
+      <button class="btn btn-sm btn-outline">Reintentar</button>
     </div>
+    } @else {
+    <tabla-roles
+      [ngClass]="'flex flex-col h-full overflow-y-auto'"
+      [modoCreacion]="permisosService.modoCreacion()"
+    ></tabla-roles>
+    }
   </div>
 </div>
 }

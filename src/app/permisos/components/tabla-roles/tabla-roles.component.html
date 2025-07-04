@@ -9,7 +9,7 @@
     <tr>
       @for (header of headerGroup.headers; track header.id) {
       <th
-        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
         [colSpan]="header.colSpan"
       >
         @if (!header.isPlaceholder) {
@@ -93,7 +93,7 @@
               }
             </div>
             <lista-permisos-pantalla
-              [ngClass]="'w-full'"
+              [ngClass]="'w-full lg:max-h-[20rem] lg:overflow-hidden'"
               [permisos]="obtenerPermisosNuevoRol()"
               (permisoToggle)="onPermisoToggle($event, -1)"
             ></lista-permisos-pantalla>
@@ -177,7 +177,7 @@
               }
             </div>
             <lista-permisos-pantalla
-              [ngClass]="'w-full'"
+              [ngClass]="'w-full lg:max-h-[20rem] lg:overflow-hidden'"
               [permisos]="obtenerPermisos(row.original)"
               (permisoToggle)="onPermisoToggle($event, row.original.id)"
             ></lista-permisos-pantalla>
