@@ -1,0 +1,89 @@
+<!-- DaisyUI Drawer para móvil - Solo visible en pantallas pequeñas -->
+<div class="drawer md:hidden">
+  <input id="mobile-drawer-toggle" type="checkbox" class="drawer-toggle" />
+
+  <!-- Contenido del drawer -->
+  <div class="drawer-side z-[9999]">
+    <label
+      for="mobile-drawer-toggle"
+      class="drawer-overlay"
+      (click)="onOverlayClick($event)"
+    ></label>
+
+    <aside class="min-h-full w-80 bg-base-200 flex flex-col shadow-xl">
+      <!-- Header del drawer con información del usuario -->
+      <div class="p-4">
+        <div class="flex items-center">
+          <div class="avatar mr-2">
+            <div class="w-16 h-16 rounded-full bg-base-100">
+              <img
+                src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
+                alt="Avatar"
+                class="w-full h-full object-cover rounded-full"
+              />
+            </div>
+          </div>
+          <div class="flex-1">
+            @if (usuarioActual(); as usuario) {
+            <h3 class="font-bold text-lg text-base-content">
+              {{ usuario.nombre }} {{ usuario.apellido }}
+            </h3>
+            <p class="text-sm opacity-90 text-base-content">
+              {{ usuario.email }}
+            </p>
+            <p class="text-xs opacity-80 text-base-content">
+              {{ usuario.rol.nombre }}
+            </p>
+            }
+          </div>
+          <button
+            class="btn btn-info btn-sm btn-soft btn-circle"
+            (click)="closeDrawer()"
+            title="Cerrar menú"
+          >
+            <app-web-icon
+              nombreIcono="close-circle-outline"
+              estilos="w-6 h-6"
+            ></app-web-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Menú de navegación -->
+      <div class="flex-1 overflow-y-auto">
+        <ul class="menu menu-lg p-4 space-y-2 w-full">
+          @for (item of menuItems(); track item.nombre) {
+          <li>
+            <a
+              [routerLink]="[item.ruta]"
+              routerLinkActive="menu-active"
+              class="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-base-300 transition-all duration-200"
+              (click)="navigateAndClose(item.ruta)"
+            >
+              <app-web-icon
+                [nombreIcono]="item.icono"
+                estilos="w-6 h-6"
+              ></app-web-icon>
+              <span class="font-medium">{{ item.nombre }}</span>
+            </a>
+          </li>
+          }
+        </ul>
+      </div>
+
+      <!-- Footer del drawer con botón de cerrar sesión -->
+      <div class="px-4 pb-4">
+        <button
+          class="btn btn-outline btn-error w-full"
+          (click)="logout()"
+        >
+          <app-web-icon
+            nombreIcono="log-out-outline"
+            estilos="w-5 h-5"
+          ></app-web-icon>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+</div>

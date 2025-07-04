@@ -4,6 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { RouterOutlet } from '@angular/router';
 import { SideMenuComponent } from '../components/side-menu/side-menu.component';
 import { HeaderComponent } from '../components/header/header.component';
+import { MobileDrawerComponent } from '../components/mobile-drawer/mobile-drawer.component';
 import { AppService } from '@app/app.service';
 
 @Component({
@@ -13,6 +14,7 @@ import { AppService } from '@app/app.service';
     CommonModule,
     SideMenuComponent,
     HeaderComponent,
+    MobileDrawerComponent,
     RouterOutlet,
   ],
   templateUrl: './main-layout.component.html',

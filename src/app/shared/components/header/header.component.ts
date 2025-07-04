@@ -118,4 +118,9 @@ export class HeaderComponent implements OnInit {
     const event = new CustomEvent('toggle-menu', { bubbles: true });
     document.dispatchEvent(event);
   }
+
+  toggleMobileDrawer() {
+    const event = new CustomEvent('toggle-mobile-drawer', { bubbles: true });
+    document.dispatchEvent(event);
+  }
 }
