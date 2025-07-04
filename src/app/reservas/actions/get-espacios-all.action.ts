@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { GeneralResponse } from '@shared/interfaces';
@@ -17,22 +17,33 @@ export const getEspaciosAll = async (
 ): Promise<GeneralResponse<EspacioReservas[]>> => {
   const url = `${BASE_URL}/dreservas/espacios`;
 
-  const queryParams = new URLSearchParams();
+  let httpParams = new HttpParams();
+
   if (params.fecha) {
-    queryParams.append('fecha', params.fecha);
+    httpParams = httpParams.append('fecha', params.fecha);
   }
 
   if (params.idGrupo) {
-    queryParams.append('id_grupo', params.idGrupo.toString());
+    httpParams = httpParams.append('id_grupo', params.idGrupo.toString());
   }
 
   if (params.idSede) {
-    queryParams.append('id_sede', params.idSede.toString());
+    httpParams = httpParams.append('id_sede', params.idSede.toString());
   }
 
   if (params.idCategoria) {
-    queryParams.append('id_categoria', params.idCategoria.toString());
+    httpParams = httpParams.append(
+      'id_categoria',
+      params.idCategoria.toString(),
+    );
   }
 
-  return firstValueFrom(http.get<GeneralResponse<EspacioReservas[]>>(url));
+  return firstValueFrom(
+    http.get<GeneralResponse<EspacioReservas[]>>(url, {
+      params: httpParams,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }),
+  );
 };

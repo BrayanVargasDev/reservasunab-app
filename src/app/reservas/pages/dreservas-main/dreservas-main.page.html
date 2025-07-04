@@ -1,9 +1,11 @@
-<div class="flex flex-col gap-2 md:pl-4">
+<div
+  class="flex flex-col gap-2 md:pl-4 w-full h-full max-h-[calc(100vh_-_7rem)]"
+>
   <div
     class="flex flex-col sm:flex-row justify-start items-center flex-wrap gap-x-4 gap-y-2"
   >
-    <div class="flex w-full justify-between mb-2">
-      <div>
+    <div class="flex flex-col md:flex-row w-full justify-between mb-2">
+      <div class="">
         <h1
           class="font-bold text-4xl text-center md:text-left text-base-content mb-2"
         >
@@ -13,19 +15,38 @@
           Seleccione una fecha para consultar la disponibilidad.
         </p>
       </div>
-      <div>
+      <div class="flex gap-2">
+        @if (hasFilters()) {
+        <button
+          class="btn btn-warning btn-soft btn-sm mt-2"
+          (click)="limpiarTodosFiltros()"
+          [attr.title]="'Limpiar filtros: ' + filtrosActivos().join(', ')"
+        >
+          <app-web-icon
+            [nombreIcono]="'close-circle-outline'"
+            [estilos]="'h-5 w-5 mr-1'"
+          >
+          </app-web-icon>
+          Limpiar filtros
+        </button>
+        }
+
         <button class="btn btn-primary btn-soft btn-sm mt-2">
           <app-web-icon
             [nombreIcono]="'file-tray-full-outline'"
             [estilos]="'h-5 w-5 mr-2'"
-          ></app-web-icon>
+          >
+          </app-web-icon>
           Historial de reservas
         </button>
       </div>
     </div>
 
-    <div class="flex w-full flex-row">
-      <div class="flex flex-col items-center w-full sm:max-w-56">
+    <form
+      [formGroup]="filtrosForm"
+      class="flex w-full flex-row gap-4 flex-wrap"
+    >
+      <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
           class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
           for="fecha"
@@ -35,12 +56,12 @@
         <div class="flex items-center w-full px-1">
           <label
             class="input input-bordered w-full h-11 rounded-box"
-            [ngClass]="{ 'text-gray-400': !fechaSeleccionada() }"
+            [ngClass]="{ 'text-gray-400': !filtrosForm.value.fecha }"
           >
             <input
               id="fecha"
               name="fecha"
-              [formControl]="fecha"
+              formControlName="fecha"
               type="text"
               #fechaPicker
               placeholder="dd/mm/yyyy"
@@ -49,10 +70,11 @@
             <app-web-icon
               [nombreIcono]="'calendar-outline'"
               [estilos]="'h-5 w-5'"
-            ></app-web-icon>
+            >
+            </app-web-icon>
           </label>
 
-          @if (fechaSeleccionada()) {
+          @if (filtrosForm.value.fecha) {
           <button
             class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
             data-tip="Limpiar fecha"
@@ -61,13 +83,14 @@
             <app-web-icon
               [nombreIcono]="'close-circle-outline'"
               [estilos]="'h-6 w-6'"
-            ></app-web-icon>
+            >
+            </app-web-icon>
           </button>
           }
         </div>
       </div>
 
-      <div class="flex flex-col items-center w-full sm:max-w-56">
+      <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
           class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
           for="sede"
@@ -76,23 +99,20 @@
         </label>
         <div class="flex items-center w-full px-1">
           <select
-            type="text"
             id="sede"
             name="sede"
-            [formControl]="sede"
-            [ngClass]="{
-            'select grow input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+            formControlName="sede"
+            class="select grow input-bordered w-full h-11 rounded-box"
           >
-            <option value="" disabled selected>Seleccione</option>
+            <option value="" disabled>Seleccione</option>
             @for (sede of appService.sedesQuery.data(); track sede.id) {
             <option [value]="sede.id">
-              {{ `${sede.nombre}` | titlecase }}
+              {{ sede.nombre | titlecase }}
             </option>
             }
           </select>
 
-          @if (sedeSeleccionada()) {
+          @if (filtrosForm.value.sede) {
           <button
             class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
             data-tip="Limpiar ubicación"
@@ -101,80 +121,75 @@
             <app-web-icon
               [nombreIcono]="'close-circle-outline'"
               [estilos]="'h-6 w-6'"
-            ></app-web-icon>
+            >
+            </app-web-icon>
           </button>
           }
         </div>
       </div>
 
-      <div class="flex flex-col items-center w-full sm:max-w-56">
+      <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
           class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
-          for="sede"
+          for="grupo"
         >
           Grupo:
         </label>
         <div class="flex items-center w-full px-1">
           <select
-            type="text"
-            id="sede"
-            name="sede"
-            [formControl]="sede"
-            [ngClass]="{
-            'select grow input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+            id="grupo"
+            name="grupo"
+            formControlName="grupo"
+            class="select grow input-bordered w-full h-11 rounded-box"
           >
-            <option value="" disabled selected>Seleccione</option>
-            @for (sede of appService.gruposQuery.data(); track sede.id) {
-            <option [value]="sede.id">
-              {{ `${sede.nombre}` | titlecase }}
+            <option value="" disabled>Seleccione</option>
+            @for (grupo of appService.gruposQuery.data(); track grupo.id) {
+            <option [value]="grupo.id">
+              {{ grupo.nombre | titlecase }}
             </option>
             }
           </select>
 
-          @if (sedeSeleccionada()) {
+          @if (filtrosForm.value.grupo) {
           <button
             class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
             data-tip="Limpiar grupo"
-            (click)="limpiarUbicacion()"
+            (click)="limpiarGrupo()"
           >
             <app-web-icon
               [nombreIcono]="'close-circle-outline'"
               [estilos]="'h-6 w-6'"
-            ></app-web-icon>
+            >
+            </app-web-icon>
           </button>
           }
         </div>
       </div>
 
-      <div class="flex flex-col items-center w-full sm:max-w-56">
+      <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
           class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
           for="categoria"
         >
           Categoría:
         </label>
-
         <div class="flex items-center w-full px-1">
           <select
-            type="text"
             id="categoria"
             name="categoria"
-            [formControl]="categoria"
-            [ngClass]="{
-              'select grow input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-            }"
+            formControlName="categoria"
+            class="select grow input-bordered w-full h-11 rounded-box"
           >
-            <option value="" disabled selected>Seleccione</option>
+            <option value="" disabled>Seleccione</option>
             @for (categoria of appService.categoriasQuery.data(); track
             categoria.id) {
             <option [value]="categoria.id">
-              {{ `${categoria.nombre}` | titlecase }}
+              {{ categoria.nombre | titlecase }}
             </option>
             }
           </select>
 
-          @if (categoriaSeleccionada()) {
+          @if (filtrosForm.value.categoria) {
           <button
             class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
             data-tip="Limpiar tipo de espacio"
@@ -183,24 +198,55 @@
             <app-web-icon
               [nombreIcono]="'close-circle-outline'"
               [estilos]="'h-6 w-6'"
-            ></app-web-icon>
+            >
+            </app-web-icon>
           </button>
           }
         </div>
       </div>
-    </div>
+    </form>
   </div>
 
   <div
-    class="w-full flex flex-col sm:flex-row justify-start items-center gap-2 mt-4"
+    class="grid w-full h-full justify-center sm:justify-start auto-rows-[15rem] grid-cols-[repeat(auto-fit,11rem)] overflow-y-auto gap-4 mt-2 place-items-center"
   >
-    @for (item of espacios; track $index) {
+    @if (isLoadingEspacios()) {
+    <div
+      class="flex flex-col items-center justify-center w-full py-16 text-center"
+    >
+      <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
+      <h3 class="text-lg font-semibold text-base-content/70 mb-2">
+        Cargando espacios...
+      </h3>
+      <p class="text-base-content/50">
+        Por favor espere mientras consultamos la disponibilidad.
+      </p>
+    </div>
+    } @else if (espacios().length > 0) { @for (espacio of espacios(); track
+    trackByEspacioId($index, espacio)) {
     <espacio-booking-item
       [calificacion]="5"
-      [ubicacion]="item.sede.nombre"
-      [titulo]="item.nombre"
-      [imagenUrl]="getImagenUrl(item.imagen)"
-    ></espacio-booking-item>
+      [ubicacion]="espacio.sede"
+      [titulo]="espacio.categoria"
+      [imagenUrl]="getImagenUrl(espacio.imagen_url)"
+    >
+    </espacio-booking-item>
+    } } @else {
+    <div
+      class="flex flex-col items-center justify-center w-full py-12 text-center"
+    >
+      <app-web-icon
+        [nombreIcono]="'search-outline'"
+        [estilos]="'h-16 w-16 text-base-content/30 mb-4'"
+      >
+      </app-web-icon>
+      <h3 class="text-lg font-semibold text-base-content/70 mb-2">
+        No se encontraron espacios
+      </h3>
+      <p class="text-base-content/50">
+        Intenta ajustar los filtros para encontrar espacios disponibles.
+      </p>
+    </div>
     }
   </div>
 </div>

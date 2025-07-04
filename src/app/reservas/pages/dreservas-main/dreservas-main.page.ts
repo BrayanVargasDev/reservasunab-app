@@ -1,17 +1,22 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   signal,
   effect,
   viewChild,
+  computed,
   ElementRef,
   Injector,
   inject,
   ChangeDetectionStrategy,
+  DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest, startWith, debounceTime } from 'rxjs';
 
 import Pikaday from 'pikaday';
 import moment from 'moment';
@@ -45,74 +50,149 @@ import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/ta
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },
 })
-export default class DreservasMainPage implements OnInit {
-  private injector = inject(Injector);
-  private dreservasService = inject(DreservasService);
-  private espacioConfigService = inject(EspaciosConfigService);
+export default class DreservasMainPage implements OnInit, OnDestroy {
+  private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly dreservasService = inject(DreservasService);
+  private readonly espacioConfigService = inject(EspaciosConfigService);
+  public readonly appService = inject(AppService);
 
-  public environment = environment;
-  public appService = inject(AppService);
-  public fecha = new FormControl('');
-  public sede = new FormControl('');
-  public categoria = new FormControl('');
-  public fechaSeleccionada = signal<string>('');
-  public sedeSeleccionada = signal<number | null>(null);
-  public categoriaSeleccionada = signal<number | null>(null);
-  public pikaday!: Pikaday;
-  public fechaPicker =
+  public readonly environment = environment;
+  private readonly DEFAULT_IMAGE =
+    'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp';
+
+  public readonly filtrosForm = new FormGroup({
+    fecha: new FormControl<string>(''),
+    sede: new FormControl<string>(''),
+    grupo: new FormControl<string>(''),
+    categoria: new FormControl<string>(''),
+  });
+
+  public readonly filtros = toSignal(
+    this.filtrosForm.valueChanges.pipe(
+      startWith(this.filtrosForm.value),
+      debounceTime(300),
+    ),
+    {
+      initialValue: this.filtrosForm.value,
+      equal: (a, b) => {
+        return JSON.stringify(a) === JSON.stringify(b);
+      },
+    },
+  );
+
+  private pikaday?: Pikaday;
+  public readonly fechaPicker =
     viewChild.required<ElementRef<HTMLInputElement>>('fechaPicker');
 
-  ngOnInit() {
+  public readonly espacios = computed(
+    () => this.dreservasService.allEspaciosQuery.data() ?? [],
+  );
+
+  public readonly isLoadingEspacios = computed(() =>
+    this.dreservasService.allEspaciosQuery.isPending(),
+  );
+
+  public readonly espacioFull = computed(
+    () => this.espacioConfigService.espacioQuery.data() ?? null,
+  );
+
+  public readonly hasFilters = computed(() => {
+    const filtros = this.filtros();
+    return !!(
+      filtros?.fecha ||
+      filtros?.sede ||
+      filtros?.grupo ||
+      filtros?.categoria
+    );
+  });
+
+  public readonly filtrosActivos = computed(() => {
+    const filtros = this.filtros();
+    const activos = [];
+    if (filtros?.fecha) activos.push('Fecha');
+    if (filtros?.sede) activos.push('Sede');
+    if (filtros?.grupo) activos.push('Grupo');
+    if (filtros?.categoria) activos.push('Categoría');
+    return activos;
+  });
+
+  ngOnInit(): void {
     this.initializePikaday();
+    this.setupFiltersEffect();
   }
 
-  public get espacios() {
-    return this.dreservasService.allEspaciosQuery.data() || [];
+  private setupFiltersEffect(): void {
+    effect(
+      () => {
+        const filtros = this.filtros();
+
+        this.dreservasService.setFiltros({
+          fecha: filtros?.fecha
+            ? moment(filtros.fecha, 'DD/MM/YYYY').format('YYYY-MM-DD')
+            : null,
+          idGrupo: filtros?.grupo ? Number(filtros.grupo) : null,
+          idSede: filtros?.sede ? Number(filtros.sede) : null,
+          idCategoria: filtros?.categoria ? Number(filtros.categoria) : null,
+        });
+      },
+      {
+        injector: this.injector,
+        allowSignalWrites: true,
+      },
+    );
   }
 
-  public get espacioFull() {
-    return this.espacioConfigService.espacioQuery.data() || null;
-  }
-
-  private initializePikaday() {
+  private initializePikaday(): void {
     this.pikaday = new Pikaday({
       field: this.fechaPicker()?.nativeElement,
+      minDate: moment().toDate(),
       i18n: i18nDatePicker,
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
-        this.fechaSeleccionada.set(moment(date).format('YYYY-MM-DD'));
-        this.fecha.setValue(moment(date).format('DD/MM/YYYY'));
+        this.filtrosForm.controls.fecha.setValue(
+          moment(date).format('DD/MM/YYYY'),
+        );
       },
     });
   }
 
-  public limpiarFecha() {
-    this.fechaSeleccionada.set('');
-    this.pikaday.setDate(null);
-    this.fecha.setValue('');
+  public limpiarFecha(): void {
+    this.pikaday?.setDate(null);
+    this.filtrosForm.controls.fecha.setValue('');
   }
 
-  public limpiarUbicacion() {
-    this.sedeSeleccionada.set(null);
-    this.sede.setValue('');
+  public limpiarUbicacion(): void {
+    this.filtrosForm.controls.sede.setValue('');
   }
 
-  public limpiarCategoria() {
-    this.categoriaSeleccionada.set(null);
-    this.categoria.setValue('');
+  public limpiarCategoria(): void {
+    this.filtrosForm.controls.categoria.setValue('');
   }
 
-  public getImagenUrl(imagen: Imagen | null): string {
-    if (!imagen || !imagen.ubicacion) {
-      return 'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp';
-    }
-
-    return `${environment.apiUrl}${imagen?.ubicacion}`;
+  public limpiarGrupo(): void {
+    this.filtrosForm.controls.grupo.setValue('');
   }
 
-  public ngOnDestroy() {
-    if (this.pikaday) {
-      this.pikaday.destroy();
-    }
+  public limpiarTodosFiltros(): void {
+    this.pikaday?.setDate(null);
+    this.filtrosForm.patchValue({
+      fecha: '',
+      sede: '',
+      categoria: '',
+      grupo: '',
+    });
+  }
+
+  public getImagenUrl(imagen: string | null): string {
+    return imagen ? `${environment.apiUrl}${imagen}` : this.DEFAULT_IMAGE;
+  }
+
+  public trackByEspacioId(index: number, espacio: any): number {
+    return espacio.id;
+  }
+
+  public ngOnDestroy(): void {
+    this.pikaday?.destroy();
   }
 }

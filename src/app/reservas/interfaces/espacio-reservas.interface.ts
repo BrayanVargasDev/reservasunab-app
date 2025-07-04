@@ -6,10 +6,10 @@ export interface EspacioReservas {
   id: number;
   nombre: string;
   descripcion: string;
-  imagen: Imagen | null;
+  imagen_url: string | null;
   id_sede: string;
   id_categoria: string;
-  sede: Sede;
-  categoria: Categoria;
+  sede: string;
+  categoria: string;
   configuraciones: Configuracion[];
 }
