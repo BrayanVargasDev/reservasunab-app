@@ -17,7 +17,6 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
 import { PermisosService } from '@permisos/services/permisos.service';
 import { Rol } from '@permisos/interfaces';
 import { TablaRolesComponent } from '@permisos/components/tabla-roles/tabla-roles.component';
-import { TablaPermisosComponent } from '@permisos/components/tabla-permisos/tabla-permisos.component';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { AuthService } from '@auth/services/auth.service';
 
@@ -32,7 +31,6 @@ import { AuthService } from '@auth/services/auth.service';
     FormsModule,
     WebIconComponent,
     TablaRolesComponent,
-    TablaPermisosComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
