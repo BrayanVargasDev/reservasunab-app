@@ -99,8 +99,6 @@ export class ConfiguracionFormComponent<T> {
     return franjasFormArray?.value || [];
   });
 
-  // Señal bandera para detectar cambios de cada formulario
-  // y actualizar las opciones de tiempo
   private formChangesSignal = signal(0);
 
   private horaInicioSignal = toSignal(this.horaInicio.valueChanges, {
@@ -110,6 +108,7 @@ export class ConfiguracionFormComponent<T> {
   public opcionesTiempo = computed(() => {
     const minutosUso = +this.minutosUsoSignal();
     const apertura24 = this.horaAperturaSignal();
+    const franjasExistentes = this.franjasHorariasSignal();
 
     if (!apertura24 || !minutosUso || minutosUso <= 0) return [];
 
@@ -120,20 +119,23 @@ export class ConfiguracionFormComponent<T> {
 
       if (h0 < 0 || h0 > 23 || m0 < 0 || m0 > 59) return [];
 
-      const opciones: string[] = [];
+      const todasLasOpciones: string[] = [];
       let totalMinutos = h0 * 60 + m0;
       const maxMinutos = 24 * 60;
 
       while (totalMinutos < maxMinutos) {
         const horas = Math.floor(totalMinutos / 60);
         const minutos = totalMinutos % 60;
-        opciones.push(
+        todasLasOpciones.push(
           moment({ hour: horas, minute: minutos }).format('hh:mm A'),
         );
         totalMinutos += minutosUso;
       }
 
-      return opciones;
+      return todasLasOpciones.filter(opcion => {
+        const hora24 = this.convertirHoraA24(opcion);
+        return !this.estaHoraOcupada(hora24, franjasExistentes);
+      });
     } catch (error) {
       console.error('Error generando opciones de tiempo:', error);
       return [];
@@ -147,26 +149,37 @@ export class ConfiguracionFormComponent<T> {
     if (!inicio24) return [];
 
     const minutosUso = +this.minutosUsoSignal();
+    const franjasExistentes = this.franjasHorariasSignal();
 
     try {
       const [h, m] = inicio24.split(':').map(n => parseInt(n, 10));
 
       if (h < 0 || h > 23 || m < 0 || m > 59) return [];
 
-      const opciones: string[] = [];
+      const todasLasOpciones: string[] = [];
       let totalMinutos = h * 60 + m + minutosUso;
       const maxMinutos = 24 * 60;
 
-      while (totalMinutos < maxMinutos) {
+      while (totalMinutos <= maxMinutos) {
         const horas = Math.floor(totalMinutos / 60);
         const minutos = totalMinutos % 60;
-        opciones.push(
+
+        if (horas >= 24) break;
+
+        todasLasOpciones.push(
           moment({ hour: horas, minute: minutos }).format('hh:mm A'),
         );
         totalMinutos += minutosUso;
       }
 
-      return opciones;
+      return todasLasOpciones.filter(opcion => {
+        const horaFin24 = this.convertirHoraA24(opcion);
+        return !this.validarSolapamientoRango(
+          inicio24,
+          horaFin24,
+          franjasExistentes,
+        );
+      });
     } catch (error) {
       console.error('Error generando opciones de tiempo:', error);
       return [];
@@ -269,7 +282,6 @@ export class ConfiguracionFormComponent<T> {
       });
     }
 
-    // Suscripción a los cambios del formulario
     form.get('minutos_uso')?.valueChanges.subscribe(() => {
       this.formChangesSignal.update(val => val + 1);
     });
@@ -317,7 +329,6 @@ export class ConfiguracionFormComponent<T> {
     );
   }
 
-  // Método para gatillar la actualización de franjas
   public actualizarFranjasSignal() {
     this.formChangesSignal.update(val => val + 1);
   }
@@ -348,9 +359,11 @@ export class ConfiguracionFormComponent<T> {
         activa: true,
       };
 
-      const solapamiento = this.validarSolapamiento(
+      const franjasExistentes = this.franjasHorariasSignal();
+      const solapamiento = this.validarSolapamientoRango(
         nuevaFranja.hora_inicio,
         nuevaFranja.hora_fin,
+        franjasExistentes,
       );
 
       if (solapamiento) {
@@ -373,8 +386,28 @@ export class ConfiguracionFormComponent<T> {
     return moment(hora12, 'hh:mm A').format('HH:mm');
   }
 
-  private validarSolapamiento(horaInicio: string, horaFin: string): boolean {
-    const franjasExistentes = this.franjasHorariasSignal();
+  private estaHoraOcupada(
+    hora24: string,
+    franjasExistentes: FranjaHoraria[],
+  ): boolean {
+    const horaMoment = moment(hora24, 'HH:mm');
+
+    return franjasExistentes.some((franja: FranjaHoraria) => {
+      const inicioExistente = moment(franja.hora_inicio, 'HH:mm');
+      const finExistente = moment(franja.hora_fin, 'HH:mm');
+
+      return (
+        horaMoment.isSameOrAfter(inicioExistente) &&
+        horaMoment.isBefore(finExistente)
+      );
+    });
+  }
+
+  private validarSolapamientoRango(
+    horaInicio: string,
+    horaFin: string,
+    franjasExistentes: FranjaHoraria[],
+  ): boolean {
     const inicioNueva = moment(horaInicio, 'HH:mm');
     const finNueva = moment(horaFin, 'HH:mm');
 
