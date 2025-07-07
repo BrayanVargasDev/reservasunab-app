@@ -30,9 +30,9 @@ export class EspaciosConfigService {
   private http = inject(HttpClient);
   private _idEspacio = signal<number | null>(null);
   private _queryClient = inject(QueryClient);
-  private _pestana = signal<'general' | 'base' | 'tipoUsuario' | 'fecha'>(
-    'general',
-  );
+  private _pestana = signal<
+    'general' | 'base' | 'tipoUsuario' | 'fecha' | 'novedades'
+  >('general');
   private _alertaEspacioConfigRef = signal<ViewContainerRef | null>(null);
   private _modoEdicionGeneral = signal<boolean>(false);
   private _imagen = signal<string>('');
@@ -63,7 +63,9 @@ export class EspaciosConfigService {
     this._idEspacio.set(id);
   }
 
-  public setPestana(pestana: 'general' | 'base' | 'tipoUsuario' | 'fecha') {
+  public setPestana(
+    pestana: 'general' | 'base' | 'tipoUsuario' | 'fecha' | 'novedades',
+  ) {
     this._pestana.set(pestana);
   }
 

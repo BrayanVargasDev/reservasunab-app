@@ -96,7 +96,7 @@ export class ConfiguracionPage implements OnInit, OnDestroy {
     return this.espacioConfigService.espacioQuery;
   }
 
-  cambiarPestana(pestaña: 'general' | 'base' | 'tipoUsuario' | 'fecha') {
+  cambiarPestana(pestaña: 'general' | 'base' | 'tipoUsuario' | 'fecha' | 'novedades') {
     this.appService.setEditando(false);
     this.espacioConfigService.setPestana(pestaña);
   }

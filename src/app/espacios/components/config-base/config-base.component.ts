@@ -180,15 +180,22 @@ export class ConfigBaseComponent {
         }
 
         const tieneConfig = this.tieneConfiguracionGuardada(dia);
+        const tieneFranjas = this.tieneFranjasConfiguradas(dia);
         const estaGuardando = this.estaGuardando(dia);
 
         if (estaGuardando) {
           return '<span class="badge badge-warning">Guardando...</span>';
         }
 
-        return tieneConfig
-          ? '<span class="badge badge-success">Configurado</span>'
-          : '<span class="badge badge-ghost">Sin configurar</span>';
+        if (!tieneConfig) {
+          return '<span class="badge badge-ghost">Sin configurar</span>';
+        }
+
+        if (!tieneFranjas) {
+          return '<span class="badge badge-error">Sin franjas</span>';
+        }
+
+        return '<span class="badge badge-success">Configurado</span>';
       },
     },
   ]);
@@ -335,5 +342,11 @@ export class ConfigBaseComponent {
   public tieneConfiguracionGuardada(dia: number): boolean {
     const configuraciones = this.configuracionesFromQuery();
     return configuraciones.some(config => config.dia_semana === dia);
+  }
+
+  public tieneFranjasConfiguradas(dia: number): boolean {
+    const configuraciones = this.configuracionesFromQuery();
+    const config = configuraciones.find(config => config.dia_semana === dia);
+    return config ? (config.franjas_horarias?.length || 0) > 0 : false;
   }
 }
