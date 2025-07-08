@@ -111,7 +111,11 @@
               <button
                 class="btn btn-primary"
                 [class.btn-loading]="estaGuardando(row.original.numero)"
-                [disabled]="!form.valid || estaGuardando(row.original.numero)"
+                [disabled]="
+                  !form.valid ||
+                  estaGuardando(row.original.numero) ||
+                  espacioConfigService.creandoFranja()
+                "
                 (click)="guardarConfiguracion(row.original.numero)"
               >
                 @if (estaGuardando(row.original.numero)) {

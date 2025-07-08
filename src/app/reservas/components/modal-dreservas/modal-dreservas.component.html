@@ -1,51 +1,47 @@
 <dialog #dreservasModal class="modal p-0 z-50">
   <div
-    class="modal-box lg:w-[70vw] !max-w-[50rem] max-h-[70vh] overflow-hidden relative"
+    class="modal-box lg:w-[70vw] !max-w-[50rem] max-h-[70vh] relative"
   >
-    <div class="h-full max-h-[calc(70vh-5.75rem)] overflow-y-auto">
-      <div class="flex w-full grow flex-col md:flex-row gap-4">
-        <div
-          class="flex flex-col gap-1 w-full md:w-1/2 max-h-[calc(70vh-5.75rem)] md:sticky md:left-0 md:top-0"
-        >
-          <span class="w-full text-center text-xl font-bold">
-            {{ espacioDetallesQuery?.nombre | titlecase }}
-          </span>
-          <div class="grow overflow-y-auto">
-            <img
-              class="w-full h-[12.75rem] object-cover rounded-lg"
-              [src]="getImagenUrl(espacioDetallesQuery?.imagen?.ubicacion)"
-              alt=""
-            />
-            <div class="w-full flex items-center mt-4">
-              <app-web-icon nombreIcono="location-outline" estilos="h-5 w-5">
-              </app-web-icon>
-              <span class="text-sm ml-1">
-                {{ espacioDetallesQuery?.categoria?.grupo?.nombre | titlecase }}
-                - Sede:
-                {{ espacioDetallesQuery?.sede?.nombre | titlecase }}
-              </span>
-            </div>
-            <span class="inline-block text-lg font-semibold mt-4"
-              >Descripción:</span
-            >
-            <p class="text-sm mt-4">
-              {{ espacioDetallesQuery?.descripcion || 'No hay descripción' }}
-            </p>
-            <span class="inline-block text-sm mt-4">
-              <span class="font-semibold">Capacidad: </span>
-              {{ espacioDetallesQuery?.maximo_jugadores || 0 }} persona/s
-            </span> <br/>
-            <span class="inline-block text-sm mt-4">
-              <span class="font-semibold">Disponible desde: </span>
-              {{ obtenerFechaDeApertura(espacioDetallesQuery?.configuracion!) }}
-            </span> <br/>
-          </div>
+    <div
+      class="h-full flex-col mb-2 max-h-[calc(70vh-5.75rem)]"
+    >
+      <div class="flex gap-4 w-full">
+        <div class="flex flex-col w-1/2 mb-2">
+          <img
+            class="w-full h-[12.75rem] object-cover rounded-lg"
+            [src]="getImagenUrl(espacioDetallesQuery?.imagen?.ubicacion)"
+            alt=""
+          />
         </div>
-        <div class="flex flex-col gap-1 w-full md:w-1/2">
-          <span class="text-lg font-bold text-center">Disponibilidad:</span>
+        <div class="flex flex-col w-1/2">
+          <span class="w-full text-center text-2xl font-bold">
+            {{ espacioDetallesQuery?.nombre | upperFirst }}
+          </span>
+          <div class="w-full flex items-center mt-4">
+            <app-web-icon nombreIcono="location-outline" estilos="h-5 w-5">
+            </app-web-icon>
+            <span class="text-sm ml-1">
+              {{ espacioDetallesQuery?.sede?.nombre | uppercase }}
+            </span>
+          </div>
+          <p class="text-sm mt-4">
+            {{ espacioDetallesQuery?.descripcion || 'No hay descripción' }}
+          </p>
+          <span class="inline-block text-sm mt-4">
+            <span class="font-semibold">Reservar desde: </span>
+            {{ obtenerFechaDeApertura(espacioDetallesQuery?.configuracion!) }}
+          </span>
+          <br />
+        </div>
+      </div>
+      <div class="flex flex-col gap-1 w-full">
+        <span class="flex w-full text-lg font-bold text-center"
+          >Disponibilidad:</span
+        >
+        <div class="flex flex-wrap gap-2 items-center">
           @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
           <div
-            [ngClass]="`h-12 text-semibold text-lg flex w-full items-center justify-center rounded-lg btn btn-soft btn-${ item.estilos.background_color }`"
+            [ngClass]="`h-12 text-semibold text-lg flex flex-wrap w-44 items-center justify-center rounded-lg btn btn-${ item.estilos.background_color }`"
           >
             {{ item.hora_inicio }}
           </div>

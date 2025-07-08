@@ -3,7 +3,7 @@
 >
   <div class="flex items-center justify-between w-full">
     <h2 class="font-bold text-4xl">
-      {{ espacioQuery.data()?.nombre | titlecase }}
+      {{ espacioQuery.data()?.nombre | upperFirst }}
     </h2>
 
     <app-breadcrumbs></app-breadcrumbs>

@@ -24,6 +24,7 @@ import { TablaConfigTipoUsuarioComponent } from '@espacios/components/tabla-conf
 import { ConfigPorFechaComponent } from '@espacios/components/config-por-fecha/config-por-fecha.component';
 import { ConfigBaseComponent } from '@espacios/components/config-base/config-base.component';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'app-configuracion',
@@ -38,6 +39,7 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
     ConfigPorFechaComponent,
     ConfigBaseComponent,
     BreadcrumbsComponent,
+    UpperFirstPipe
   ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',

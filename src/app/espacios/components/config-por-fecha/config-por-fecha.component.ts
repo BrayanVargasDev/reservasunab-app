@@ -64,7 +64,7 @@ import { AuthService } from '@auth/services/auth.service';
 })
 export class ConfigPorFechaComponent {
   private fb = inject(FormBuilder);
-  private espacioConfigService = inject(EspaciosConfigService);
+  public espacioConfigService = inject(EspaciosConfigService);
   private configuracionService = inject(ConfigBaseService);
   private configPorFechaService = inject(ConfigPorFechaService);
   private alertasService = inject(AlertasService);

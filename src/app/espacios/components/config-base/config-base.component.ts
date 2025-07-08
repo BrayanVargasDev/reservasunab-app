@@ -54,7 +54,7 @@ import { AuthService } from '@auth/services/auth.service';
 })
 export class ConfigBaseComponent {
   private fb = inject(FormBuilder);
-  private espacioConfigService = inject(EspaciosConfigService);
+  public espacioConfigService = inject(EspaciosConfigService);
   private configuracionService = inject(ConfigBaseService);
   public appService = inject(AppService);
   public authService = inject(AuthService);

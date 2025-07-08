@@ -40,6 +40,7 @@ import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { AuthService } from '@auth/services/auth.service';
+import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 
 @Component({
   selector: 'configuracion-form',
@@ -56,7 +57,9 @@ import { AuthService } from '@auth/services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfiguracionFormComponent<T> {
+  private HORA_APERTURA = '05:00';
   private injector = inject(Injector);
+  private espacioConfigService = inject(EspaciosConfigService);
   configuracionForm = input.required<FormGroup>();
   diaNumero = input.required<number>();
   permisoFranjas = input.required<boolean>();
@@ -83,10 +86,10 @@ export class ConfiguracionFormComponent<T> {
 
   private horaAperturaSignal = computed(() => {
     const form = this.configuracionForm();
-    if (!form) return '08:00';
+    if (!form) return this.HORA_APERTURA;
 
     this.formChangesSignal();
-    const valor = form.get('hora_apertura')?.value || '08:00';
+    const valor = this.HORA_APERTURA;
     return valor;
   });
 
@@ -277,7 +280,7 @@ export class ConfiguracionFormComponent<T> {
       form.patchValue({
         minutos_uso: 60,
         dias_previos_apertura: 3,
-        hora_apertura: '08:00',
+        hora_apertura: this.HORA_APERTURA,
         tiempo_cancelacion: 60,
       });
     }
@@ -340,10 +343,12 @@ export class ConfiguracionFormComponent<T> {
 
   public nuevaFranja() {
     this.modoCreacion.set(true);
+    this.espacioConfigService.setCrandoFranja(true);
   }
 
   private cancelarCreacion() {
     this.resetearFormularioCreacion();
+    this.espacioConfigService.setCrandoFranja(false);
   }
 
   public eliminarFranjaLocal(franja: FranjaHoraria, index: number) {
@@ -377,7 +382,7 @@ export class ConfiguracionFormComponent<T> {
         dia: this.diaNumero(),
         franja: nuevaFranja,
       });
-
+      this.espacioConfigService.setCrandoFranja(false);
       this.resetearFormularioCreacion();
     }
   }

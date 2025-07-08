@@ -1,7 +1,7 @@
 export interface Espacio {
   id: number;
   nombre: string;
-  descripcion: string;
+  sede: string;
   tipoEspacio: string;
   estado: string;
 }

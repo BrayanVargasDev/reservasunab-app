@@ -78,12 +78,13 @@ export class TablaEspaciosComponent implements OnInit {
       id: 'nombre',
       accessorKey: 'nombre',
       header: 'Nombre',
-      cell: info => `${info.getValue()}`,
+      cell: info =>
+        `${(info.getValue() as unknown as string).toUpperCase()}`,
     },
     {
-      id: 'descripcion',
-      accessorKey: 'descripcion',
-      header: 'Descripción',
+      id: 'sede',
+      accessorKey: 'sede',
+      header: 'Ubicación',
       cell: info => `${info.getValue()}`,
     },
     {

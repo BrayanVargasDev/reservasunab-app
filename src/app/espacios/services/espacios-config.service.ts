@@ -38,6 +38,9 @@ export class EspaciosConfigService {
   private _imagen = signal<string>('');
   private _modoCreacionTipoConfig = signal<boolean>(false);
   private _filaConfigEditando = signal<{ [id: number]: boolean }>({});
+  private _creandoFranja = signal(false);
+
+  public creandoFranja = computed(() => this._creandoFranja());
 
   // * Configuracion por fecha
   public idiomaDatePicker = computed(() => i18nDatePicker);
@@ -127,5 +130,10 @@ export class EspaciosConfigService {
     this._modoEdicionGeneral.set(false);
     this._modoCreacionTipoConfig.set(false);
     this._filaConfigEditando.set({});
+    this._creandoFranja.set(false);
+  }
+
+  public setCrandoFranja(value: boolean) {
+    this._creandoFranja.set(value);
   }
 }

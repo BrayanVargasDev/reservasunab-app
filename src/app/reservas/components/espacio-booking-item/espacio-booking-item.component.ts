@@ -1,10 +1,11 @@
 import { Component, input, computed, output } from '@angular/core';
-import { CommonModule, TitleCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { environment } from '@environments/environment';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'espacio-booking-item',
-  imports: [CommonModule, TitleCasePipe],
+  imports: [CommonModule, UpperFirstPipe],
   templateUrl: './espacio-booking-item.component.html',
   styleUrl: './espacio-booking-item.component.scss',
 })

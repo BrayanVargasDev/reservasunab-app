@@ -12,16 +12,19 @@ import { environment } from '@environments/environment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Configuracion } from '@espacios/interfaces';
 import moment from 'moment';
+import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'modal-dreservas',
-  imports: [CommonModule, WebIconComponent],
+  imports: [CommonModule, WebIconComponent, UpperFirstPipe],
   templateUrl: './modal-dreservas.component.html',
   styleUrl: './modal-dreservas.component.scss',
 })
 export class ModalDreservasComponent {
   private injector = inject(Injector);
   private environment = environment;
+  private authService = inject(AuthService);
   public dreservasService = inject(DreservasService);
   public dreservasModal =
     viewChild<ElementRef<HTMLDialogElement>>('dreservasModal');

@@ -61,7 +61,7 @@
       <button
         class="btn btn-primary"
         [class.btn-loading]="cargandoConfiguracion()"
-        [disabled]="configuracionForm.invalid"
+        [disabled]="configuracionForm.invalid || espacioConfigService.creandoFranja()"
         (click)="guardarConfiguracion()"
       >
         @if (cargandoConfiguracion()) {

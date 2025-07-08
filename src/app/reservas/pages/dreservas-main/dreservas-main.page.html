@@ -207,23 +207,23 @@
     </form>
   </div>
 
+  @if (isLoadingEspacios()) {
+  <div
+    class="flex flex-col items-center justify-center w-full py-16 text-center"
+  >
+    <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
+    <h3 class="text-lg font-semibold text-base-content/70 mb-2">
+      Cargando espacios...
+    </h3>
+    <p class="text-base-content/50">
+      Por favor espere mientras consultamos la disponibilidad.
+    </p>
+  </div>
+  } @else if (espacios().length > 0) {
   <div
     class="grid w-full h-full justify-center sm:justify-start auto-rows-[15rem] grid-cols-[repeat(auto-fit,11rem)] overflow-y-auto gap-4 mt-2 place-items-center"
   >
-    @if (isLoadingEspacios()) {
-    <div
-      class="flex flex-col items-center justify-center w-full py-16 text-center"
-    >
-      <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
-      <h3 class="text-lg font-semibold text-base-content/70 mb-2">
-        Cargando espacios...
-      </h3>
-      <p class="text-base-content/50">
-        Por favor espere mientras consultamos la disponibilidad.
-      </p>
-    </div>
-    } @else if (espacios().length > 0) { @for (espacio of espacios(); track
-    trackByEspacioId($index, espacio)) {
+    @for (espacio of espacios(); track trackByEspacioId($index, espacio)) {
     <espacio-booking-item
       [calificacion]="5"
       [ubicacion]="espacio.sede"
@@ -232,24 +232,24 @@
       (abrirEspacioEvent)="abrirEspacio(espacio.id)"
     >
     </espacio-booking-item>
-    } } @else {
-    <div
-      class="flex flex-col items-center justify-center w-full py-12 text-center"
-    >
-      <app-web-icon
-        [nombreIcono]="'search-outline'"
-        [estilos]="'h-16 w-16 text-base-content/30 mb-4'"
-      >
-      </app-web-icon>
-      <h3 class="text-lg font-semibold text-base-content/70 mb-2">
-        No se encontraron espacios
-      </h3>
-      <p class="text-base-content/50">
-        Intenta ajustar los filtros para encontrar espacios disponibles.
-      </p>
-    </div>
     }
   </div>
+
+  } @else {
+  <div
+    class="alert alert-error alert-dash flex flex-col gap-1 items-center justify-center w-full text-center"
+  >
+    <app-web-icon
+      [nombreIcono]="'search-circle-outline'"
+      [estilos]="'h-16 w-16'"
+    >
+    </app-web-icon>
+    <h3 class="text-2xl font-semibold mb-1">No se encontraron espacios</h3>
+    <p class="text-lg">
+      Intenta ajustar los filtros para encontrar espacios disponibles.
+    </p>
+  </div>
+  }
 </div>
 
 <modal-dreservas></modal-dreservas>
