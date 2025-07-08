@@ -115,7 +115,9 @@ export class LoginPage {
   loginSaml() {
     this.disableForm();
     this.authService.setLoading(true);
-    // window.location.href = samlUrl;
+    const samlUrl = `${this.appService.samlUrl}/saml/${this.appService.tenantId}/login`;
+    console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
+    window.location.href = samlUrl;
   }
 
   disableForm() {
