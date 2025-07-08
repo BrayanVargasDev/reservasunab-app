@@ -125,7 +125,6 @@ export class ModalEspaciosComponent implements OnInit {
     espacio.permitirJugadores = espacio.permitirJugadores || false;
     espacio.permitirExternos = espacio.permitirExternos || false;
 
-    console.log('Formulario enviado:', espacio);
     this.espaciosService
       .guardarEsapacio(espacio)
       .then((response: GeneralResponse<Espacio>) => {

@@ -12,7 +12,7 @@
 <div class="w-full h-full max-h-full overflow-hidden flex flex-col">
   <div class="tabs tabs-lift overflow-y-auto">
     <input
-      #tabPermiso
+      #tabGeneral
       type="radio"
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
@@ -25,7 +25,7 @@
     </div>
 
     <input
-      #tabRol
+      #tabBase
       type="radio"
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
@@ -42,7 +42,7 @@
     </div>
 
     <input
-      #tabRol
+      #tabTipoUsuario
       type="radio"
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
@@ -55,7 +55,7 @@
     </div>
 
     <input
-      #tabRol
+      #tabFecha
       type="radio"
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
@@ -68,12 +68,12 @@
     </div>
 
     <input
-      #tabRol
+      #tabNovedades
       type="radio"
       name="espaciosTabs"
       class="tab font-semibold text-[1.125rem]"
       aria-label="Novedades"
-      [checked]="fechaChecked()"
+      [checked]="novedadesChecked()"
       (change)="cambiarPestana('novedades')"
     />
     <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">

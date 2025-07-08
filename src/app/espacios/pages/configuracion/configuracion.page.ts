@@ -69,6 +69,9 @@ export class ConfiguracionPage implements OnInit, OnDestroy {
   public fechaChecked = computed(
     () => this.espacioConfigService.pestana() === 'fecha',
   );
+  public novedadesChecked = computed(
+    () => this.espacioConfigService.pestana() === 'novedades',
+  );
 
   public alertaEspacioConfig = viewChild.required('alertaEspacioConfig', {
     read: ViewContainerRef,

@@ -21,7 +21,7 @@ export interface ReservaEspaciosDetalles {
   imagen: Imagen | null;
   sede: Sede;
   categoria: Categoria;
-  configuraciones: Configuracion[];
+  configuracion: Configuracion;
   novedades: Novedad[];
 }
 

@@ -200,7 +200,6 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
       };
     }
 
-    console.log('Formulario enviado:', usuario);
     this.usuarioService
       .guardarUsuario(usuario)
       .then((response: SaveUsuarioResponse) => {

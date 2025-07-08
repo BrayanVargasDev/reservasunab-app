@@ -194,7 +194,6 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   }
 
   public abrirEspacio(espacioId: number): void {
-    console.log('Abrir espacio:', espacioId);
     this.dreservasService.abrirModal();
     this.dreservasService.setIdEspacio(espacioId);
   }

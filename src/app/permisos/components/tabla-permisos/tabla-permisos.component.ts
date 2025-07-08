@@ -399,12 +399,6 @@ export class TablaPermisosComponent implements OnDestroy, OnInit {
       return;
     }
 
-    console.log('Permiso toggle para usuario:', {
-      userId,
-      permiso: evento.permiso,
-      activo: evento.activo,
-    });
-
     const permisosActuales =
       this.permisosService.getPermisosUsuarioEditando(userId);
     let nuevosPermisos: Permiso[];

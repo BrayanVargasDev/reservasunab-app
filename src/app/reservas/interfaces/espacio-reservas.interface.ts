@@ -11,5 +11,5 @@ export interface EspacioReservas {
   id_categoria: string;
   sede: string;
   categoria: string;
-  configuraciones: Configuracion[];
+  configuraciones: Configuracion;
 }

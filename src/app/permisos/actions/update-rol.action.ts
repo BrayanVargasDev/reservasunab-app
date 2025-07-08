@@ -13,8 +13,6 @@ export const actualizarRol = async (
 ): Promise<RolPermisos> => {
   const url = `${BASE_URL}/${id}`;
 
-  console.log('Updating role with ID:', id, 'and data:', rol);
-
   return firstValueFrom(
     http.patch<RolPermisos>(url, rol)
   );

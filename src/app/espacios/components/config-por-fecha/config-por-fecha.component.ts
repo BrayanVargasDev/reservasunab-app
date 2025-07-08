@@ -79,6 +79,7 @@ export class ConfigPorFechaComponent {
   public necesitaConfiguracionBase = signal<boolean>(false);
 
   public configuracionForm: FormGroup = this.fb.group({
+    id: [null],
     id_espacio: [this.espacioConfigService.idEspacio(), []],
     fecha: ['', [Validators.required]],
     minutos_uso: ['', [Validators.required, Validators.min(15)]],
@@ -205,6 +206,7 @@ export class ConfigPorFechaComponent {
         if (response.data && response.data) {
           const data = response.data;
           this.configuracionForm.patchValue({
+            id: data.id,
             fecha: this.fecha.value,
             id_espacio: data.id_espacio,
             minutos_uso: data.minutos_uso,
@@ -257,6 +259,7 @@ export class ConfigPorFechaComponent {
 
   private resetFormulario() {
     this.configuracionForm.reset({
+      id: null,
       id_espacio: this.espacioConfigService.idEspacio(),
       fecha: '',
       minutos_uso: '',
@@ -312,14 +315,26 @@ export class ConfigPorFechaComponent {
         fecha: this.fechaSeleccionada(),
       };
 
-      delete configuracion.id;
       delete configuracion.dia_semana;
 
       await this.configuracionService.saveConfigMutation.mutateAsync(
         configuracion,
       );
+
+      this.alertasService.success(
+        'Configuración guardada correctamente',
+        3000,
+        this.espacioConfigService.alertaEspacioConfigRef()!,
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
     } catch (error) {
       console.error('Error guardando configuración:', error);
+      this.alertasService.error(
+        'Error al guardar la configuración',
+        5000,
+        this.espacioConfigService.alertaEspacioConfigRef()!,
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
     }
   }
 

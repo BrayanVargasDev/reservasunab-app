@@ -17,7 +17,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const esPublica = RUTAS_PUBLICAS.some(ruta => url.includes(ruta));
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      console.log('href', window.location.href);
       const esRutaPublica = RUTAS_PUBLICAS.some(r =>
         window.location.href.includes(r),
       );

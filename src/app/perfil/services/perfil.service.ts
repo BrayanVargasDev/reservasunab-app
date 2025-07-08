@@ -52,7 +52,6 @@ export class PerfilService {
     onSuccess: (data, variables) => {
       this.queryClient.invalidateQueries({ queryKey: ['perfil'] });
       this.queryClient.setQueryData(['perfil', variables.id], variables);
-      console.log('Perfil actualizado correctamente');
     },
     onError: error => {
       console.error('Error al actualizar el perfil:', error);

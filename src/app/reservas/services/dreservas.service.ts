@@ -19,6 +19,8 @@ export class DreservasService {
   private _idEspacio = signal<number | null>(null);
   private _modalAbierta = signal(false);
 
+  public fecha = this._fecha.asReadonly();
+
   public modalAbierta = this._modalAbierta.asReadonly();
 
   allEspaciosQuery = injectQuery(() => ({

@@ -183,7 +183,6 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
       imagen: this.file(),
     };
 
-    console.log('Formulario enviado:', espacio);
     this.espacioConfigService
       .actualizarGeneral(
         espacio,
