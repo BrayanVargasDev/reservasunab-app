@@ -1,15 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
-import { type Sede } from '../interfaces';
 import { GeneralResponse, Categoria } from '@shared/interfaces';
 
 const BASE_URL = environment.apiUrl;
 
-export const getCategorias = async (
+export const createCategoria = async (
   http: HttpClient,
-): Promise<GeneralResponse<Categoria[]>> => {
-  return firstValueFrom(
-    http.get<GeneralResponse<Categoria[]>>(`${BASE_URL}/categorias`),
-  );
+  params: Partial<Categoria>,
+): Promise<GeneralResponse<Categoria>> => {
+  const url = `${BASE_URL}/categorias`;
+
+  return firstValueFrom(http.post<GeneralResponse<Categoria>>(url, params));
 };

@@ -19,41 +19,17 @@
   </div>
 </ng-template>
 
-<div class="flex w-full mb-3">
-  @if (authService.tienePermisos('ESP000010') && puedeCrearNueva()) {
-  <button
-    class="btn btn-primary h-8"
-    (click)="crearTipoConfig()"
-    [disabled]="appService.editando() || modoCreacion()"
-  >
-    <app-web-icon
-      [nombreIcono]="'add-outline'"
-      [estilos]="'h-5 w-5 mr-1'"
-    ></app-web-icon>
-    <span>Nueva config.</span>
-  </button>
-  } @else if (authService.tienePermisos('ESP000010') && !puedeCrearNueva()) {
-  <div class="alert alert-info">
-    <app-web-icon
-      [nombreIcono]="'information-circle-outline'"
-      [estilos]="'h-5 w-5 mr-2'"
-    ></app-web-icon>
-    <span>Todos los tipos de usuario ya están configurados.</span>
-  </div>
-  }
-</div>
-
 <table
   responsiveTable
-  #tablaTipoUsuario="responsiveTable"
-  [table]="tablaTipoUsuarioConfig()"
+  #tablaCategoria="responsiveTable"
+  [table]="tablaCategorias()"
   class="table w-full rounded-md table-sm sm:table-md border-t border-base-200"
 >
   <thead class="sticky top-0 z-20 bg-base-100">
-    @for (headerGroup of tablaTipoUsuarioConfig().getHeaderGroups(); track
+    @for (headerGroup of tablaCategorias().getHeaderGroups(); track
     headerGroup.id) {
     <tr>
-      @if (tablaTipoUsuario.hiddenColumnIds().size !== 0) {
+      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
       <th
         class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
       ></th>
@@ -81,7 +57,7 @@
   <tbody>
     @if (modoCreacion()) {
     <tr class="bg-base-100">
-      @if (tablaTipoUsuario.hiddenColumnIds().size !== 0) {
+      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
       <td class="!pe-0">
         <app-table-expansor
           [disabled]="appService.editando()"
@@ -90,44 +66,27 @@
         ></app-table-expansor>
       </td>
       }
-      <td></td>
+      <td class="p-2">
+        <input
+          [formControl]="nombre"
+          placeholder="Inserte nombre"
+          pattern="[a-zA-Z0-9 ]*"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        />
+      </td>
       <td class="p-2">
         <select
-          [formControl]="tipo_usuario"
-          placeholder="Inserte nombre"
+          [formControl]="grupo"
           class="select input-sm h-9 placeholder:text-gray-400"
-          type="text"
         >
           <option value="" disabled selected>Seleccione</option>
-          @for (tipo of tiposUsuariosDisponibles(); track $index) {
-          <option [value]="tipo.toLowerCase()">
-            {{ tipo | titlecase }}
+          @for (grupo of appService.gruposQuery.data(); track $index) {
+          <option [value]="grupo.id">
+            {{ grupo.nombre | upperFirst }}
           </option>
           }
         </select>
-      </td>
-      <td class="p-2">
-        <input
-          [formControl]="porcentaje_descuento"
-          placeholder="Inserte porcentaje"
-          pattern="[0-9]*"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-        />
-      </td>
-      <td class="p-2">
-        <input
-          [formControl]="minutos_retraso"
-          placeholder="Inserte minutos de retraso"
-          pattern="[0-9]*"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="number"
-          min="0"
-          step="1"
-        />
       </td>
       <td class="p-2">
         {{ fechaActual() }}
@@ -142,22 +101,21 @@
         ></acciones-tabla>
       </td>
     </tr>
-    } @if (!configsTipoUsurioQuery.length && !modoCreacion()) {
+    } @if (!categoriasQuery.length && !modoCreacion()) {
     <tr>
       <td
         [attr.colspan]="
-          tablaTipoUsuarioConfig().getAllColumns().length +
-          (tablaTipoUsuario.hiddenColumnIds().size > 0 ? 1 : 0)
+          tablaCategorias().getAllColumns().length +
+          (tablaCategoria.hiddenColumnIds().size > 0 ? 1 : 0)
         "
         class="text-center text-gray-500"
       >
         <span>No hay configuraciones aún...</span>
       </td>
     </tr>
-    } @else { @for (row of tablaTipoUsuarioConfig().getRowModel().rows; track
-    row.id) {
+    } @else { @for (row of tablaCategorias().getRowModel().rows; track row.id) {
     <tr class="bg-base-100">
-      @if (tablaTipoUsuario.hiddenColumnIds().size !== 0) {
+      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
       <td class="!pe-0">
         <app-table-expansor
           [disabled]="appService.editando()"
@@ -167,25 +125,27 @@
       </td>
       } @for (cell of row.getVisibleCells(); track cell.id) {
       <td class="py-1">
-        @if (espaciosConfigService.filaConfigEditando()[row.original.id] &&
+        @if (configService.filaCategoriaEditando()[row.original.id] &&
         esColumnaEditable(cell.column.id)) { @switch (cell.column.id) { @case
-        ('porcentaje_descuento') {
+        ('nombre') {
         <input
-          [formControl]="porcentaje_descuento"
+          [formControl]="nombre"
           class="input input-sm h-9 w-full"
-          type="number"
-          min="0"
-          max="100"
-          step="1"
+          type="text"
+          pattern="[a-zA-Z0-9 ]*"
         />
-        } @case ('retraso_reserva') {
-        <input
-          [formControl]="minutos_retraso"
-          class="input input-sm h-9 w-full"
-          type="number"
-          min="0"
-          step="1"
-        />
+        } @case('grupo') {
+        <select
+          [formControl]="grupo"
+          class="select input-sm h-9 placeholder:text-gray-400"
+        >
+          <option value="" disabled selected>Seleccione</option>
+          @for (grupo of appService.gruposQuery.data(); track $index) {
+          <option [value]="grupo.id">
+            {{ grupo.nombre | upperFirst }}
+          </option>
+          }
+        </select>
         } } } @else {
         <ng-container
           *flexRender="
@@ -200,19 +160,19 @@
       </td>
       }
     </tr>
-    @if (row.getIsExpanded() && tablaTipoUsuario.hiddenColumnIds().size !== 0) {
+    @if (row.getIsExpanded() && tablaCategoria.hiddenColumnIds().size !== 0) {
     <tr class="bg-base-300 border-none">
       <td
         [attr.colspan]="
           row.getVisibleCells().length +
-          (tablaTipoUsuario.hiddenColumnIds().size > 0 ? 1 : 0)
+          (tablaCategoria.hiddenColumnIds().size > 0 ? 1 : 0)
         "
       >
         <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
-          @if (tablaTipoUsuario.hiddenColumnIds().size !== 0) {
+          @if (tablaCategoria.hiddenColumnIds().size !== 0) {
           <ul>
-            @for (col of tablaTipoUsuarioConfig().getAllLeafColumns(); track
-            $index) { @if (tablaTipoUsuario.hiddenColumnIds().has(col.id)) {
+            @for (col of tablaCategorias().getAllLeafColumns(); track $index) {
+            @if (tablaCategoria.hiddenColumnIds().has(col.id)) {
             <li class="flex my-2 flex-row gap-2 items-center">
               <span class="font-bold text-base-content">
                 {{ col.columnDef.header }}:
@@ -220,8 +180,8 @@
               <span>
                 <ng-container
                   *flexRender="
-                    tablaTipoUsuario.getCell(col, row).column.columnDef.cell;
-                    props: tablaTipoUsuario.getCell(col, row).getContext();
+                    tablaCategoria.getCell(col, row).column.columnDef.cell;
+                    props: tablaCategoria.getCell(col, row).getContext();
                     let cell
                   "
                 >
@@ -238,5 +198,21 @@
     } } }
   </tbody>
 </table>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="configService.paginacionCategorias()"
+  [paginacion]="configService.datosPaginadorCategorias() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="configService.categoriasQuery.isFetching()"
+  (prefetchFunction)="configService.prefetchCategorias($event)"
+>
+</app-paginador>
 
 <ng-template #alertaRoles></ng-template>

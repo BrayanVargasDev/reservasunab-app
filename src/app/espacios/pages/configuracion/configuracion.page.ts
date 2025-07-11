@@ -39,7 +39,7 @@ import { UpperFirstPipe } from '@shared/pipes';
     ConfigPorFechaComponent,
     ConfigBaseComponent,
     BreadcrumbsComponent,
-    UpperFirstPipe
+    UpperFirstPipe,
   ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
@@ -101,12 +101,15 @@ export class ConfiguracionPage implements OnInit, OnDestroy {
     return this.espacioConfigService.espacioQuery;
   }
 
-  cambiarPestana(pestaña: 'general' | 'base' | 'tipoUsuario' | 'fecha' | 'novedades') {
+  cambiarPestana(
+    pestaña: 'general' | 'base' | 'tipoUsuario' | 'fecha' | 'novedades',
+  ) {
     this.appService.setEditando(false);
     this.espacioConfigService.setPestana(pestaña);
   }
 
   ngOnDestroy() {
     this.espacioConfigService.setImagen('');
+    this.espacioConfigService.setPestana('general');
   }
 }

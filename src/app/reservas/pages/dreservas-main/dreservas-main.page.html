@@ -93,44 +93,6 @@
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
           class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
-          for="sede"
-        >
-          Ubicación:
-        </label>
-        <div class="flex items-center w-full px-1">
-          <select
-            id="sede"
-            name="sede"
-            formControlName="sede"
-            class="select grow input-bordered w-full h-11 rounded-box"
-          >
-            <option value="" disabled>Seleccione</option>
-            @for (sede of appService.sedesQuery.data(); track sede.id) {
-            <option [value]="sede.id">
-              {{ sede.nombre | titlecase }}
-            </option>
-            }
-          </select>
-
-          @if (filtrosForm.value.sede) {
-          <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
-            data-tip="Limpiar ubicación"
-            (click)="limpiarUbicacion()"
-          >
-            <app-web-icon
-              [nombreIcono]="'close-circle-outline'"
-              [estilos]="'h-6 w-6'"
-            >
-            </app-web-icon>
-          </button>
-          }
-        </div>
-      </div>
-
-      <div class="flex flex-col items-center flex-1 md:max-w-56">
-        <label
-          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
           for="grupo"
         >
           Grupo:
@@ -194,6 +156,44 @@
             class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
             data-tip="Limpiar tipo de espacio"
             (click)="limpiarCategoria()"
+          >
+            <app-web-icon
+              [nombreIcono]="'close-circle-outline'"
+              [estilos]="'h-6 w-6'"
+            >
+            </app-web-icon>
+          </button>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center flex-1 md:max-w-56">
+        <label
+          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
+          for="sede"
+        >
+          Ubicación:
+        </label>
+        <div class="flex items-center w-full px-1">
+          <select
+            id="sede"
+            name="sede"
+            formControlName="sede"
+            class="select grow input-bordered w-full h-11 rounded-box"
+          >
+            <option value="" disabled>Seleccione</option>
+            @for (sede of appService.sedesQuery.data(); track sede.id) {
+            <option [value]="sede.id">
+              {{ sede.nombre | titlecase }}
+            </option>
+            }
+          </select>
+
+          @if (filtrosForm.value.sede) {
+          <button
+            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
+            data-tip="Limpiar ubicación"
+            (click)="limpiarUbicacion()"
           >
             <app-web-icon
               [nombreIcono]="'close-circle-outline'"

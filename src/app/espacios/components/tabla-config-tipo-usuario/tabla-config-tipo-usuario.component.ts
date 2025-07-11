@@ -1,6 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   inject,
   signal,
   viewChild,
@@ -35,6 +36,7 @@ import { TableExpansorComponent } from '@shared/components/table-expansor/table-
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { ResponsiveTableDirective } from '@app/shared/directives/responsive-table.directive';
 import { TipoUsuario } from '@shared/enums';
 import { createTipoUsuarioConfig } from '@espacios/actions';
 import { AuthService } from '@auth/services/auth.service';
@@ -52,6 +54,8 @@ interface Util {
     FlexRenderDirective,
     WebIconComponent,
     AccionesTablaComponent,
+    ResponsiveTableDirective,
+    TableExpansorComponent,
   ],
   templateUrl: './tabla-config-tipo-usuario.component.html',
   styleUrl: './tabla-config-tipo-usuario.component.scss',
@@ -73,6 +77,18 @@ export class TablaConfigTipoUsuarioComponent {
     TipoUsuario.Estudiante,
     TipoUsuario.Externo,
   ]);
+
+  public tiposUsuariosDisponibles = computed<TipoUsuario[]>(() => {
+    const configurados = this.configsTipoUsurioQuery.map(
+      config => config.tipo_usuario,
+    );
+    return this.tiposUsuarios().filter(tipo => !configurados.includes(tipo));
+  });
+
+  public puedeCrearNueva = computed(() => {
+    return this.tiposUsuariosDisponibles().length > 0;
+  });
+
   public accionesNuevo = computed(() => [
     {
       icono: 'remove-circle-outline',
@@ -90,11 +106,6 @@ export class TablaConfigTipoUsuarioComponent {
 
   private columnasPorDefecto = signal<ColumnDef<TipoUsuarioConfig>[]>([
     {
-      id: 'id',
-      accessorKey: 'id',
-      header: 'ID',
-    },
-    {
       id: 'tipo_usuario',
       accessorKey: 'tipo_usuario',
       header: 'Tipo de Usuario',
@@ -104,18 +115,21 @@ export class TablaConfigTipoUsuarioComponent {
     {
       id: 'porcentaje_descuento',
       accessorKey: 'porcentaje_descuento',
+      size: 150,
       header: 'Porcentaje Descuento',
       cell: info => info.getValue() + '%',
     },
     {
       id: 'retraso_reserva',
       accessorKey: 'retraso_reserva',
+      size: 150,
       header: 'Minutos de Retraso',
       cell: info => info.getValue() + ' min',
     },
     {
       accessorKey: 'creado_en',
       header: `Creado en`,
+      size: 200,
       accessorFn: row => {
         const date = moment(row.creado_en);
         return date.isValid()
@@ -136,6 +150,18 @@ export class TablaConfigTipoUsuarioComponent {
         const id = context.row.original.id;
         const enEdicion = this.espaciosConfigService.filaConfigEditando()[id];
 
+        const accionesVerificadas = [];
+
+        if (this.authService.tienePermisos('ESP000011')) {
+          accionesVerificadas.push({
+            tooltip: 'Editar',
+            icono: 'pencil-outline',
+            color: 'accent',
+            disabled: this.appService.editando(),
+            eventoClick: (event: Event) => this.iniciarEdicion(context.row),
+          });
+        }
+
         const acciones: BotonAcciones[] = enEdicion
           ? [
               {
@@ -153,17 +179,7 @@ export class TablaConfigTipoUsuarioComponent {
                   this.onGuardarEdicion(context.row),
               },
             ]
-          : this.authService.tienePermisos('ESP000011')
-          ? [
-              {
-                tooltip: 'Editar',
-                icono: 'pencil-outline',
-                color: 'accent',
-                disabled: this.appService.editando(),
-                eventoClick: (event: Event) => this.iniciarEdicion(context.row),
-              },
-            ]
-          : [];
+          : accionesVerificadas;
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -174,19 +190,18 @@ export class TablaConfigTipoUsuarioComponent {
     },
   ]);
 
-  public tipo_usuario = new FormControl<string>('', [
+  public tipo_usuario = new FormControl<string>('', [Validators.required]);
+  public porcentaje_descuento = new FormControl<number | null>(null, [
     Validators.required,
-    Validators.minLength(3),
+    Validators.min(0),
+    Validators.max(100),
   ]);
-  public porcentaje_descuento = new FormControl<string>('', [
+  public minutos_retraso = new FormControl<number | null>(null, [
     Validators.required,
-    Validators.minLength(3),
-  ]);
-  public minutos_retraso = new FormControl<string>('', [
-    Validators.required,
-    Validators.minLength(3),
+    Validators.min(0),
   ]);
   public appService = inject(AppService);
+  private cdr = inject(ChangeDetectorRef);
   public celdaAcciones = viewChild.required<TemplateRef<Util>>('celdaAcciones');
 
   public tableState = signal({
@@ -275,20 +290,36 @@ export class TablaConfigTipoUsuarioComponent {
   }
 
   public crearTipoConfig() {
+    if (!this.puedeCrearNueva()) {
+      this.alertasService.warning(
+        'No hay tipos de usuario disponibles para configurar.',
+        3000,
+        this.espaciosConfigService.alertaEspacioConfigRef()!,
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+      return;
+    }
+
     this.espaciosConfigService.setModoCreacionTipoConfig(true);
     this.appService.setEditando(true);
     this.tipoUsrConfigEnEdicion.set(null);
-    this.tipo_usuario.reset();
+
+    this.tipo_usuario.reset('');
     this.porcentaje_descuento.reset();
     this.minutos_retraso.reset();
+
+    this.cdr.detectChanges();
   }
 
   private cancelarCreacion() {
     this.espaciosConfigService.setModoCreacionTipoConfig(false);
     this.appService.setEditando(false);
-    this.tipo_usuario.reset();
+
+    this.tipo_usuario.reset('');
     this.porcentaje_descuento.reset();
     this.minutos_retraso.reset();
+
+    this.cdr.detectChanges();
   }
 
   public onCancelarEdicion(row: Row<TipoUsuarioConfig>) {
@@ -298,9 +329,12 @@ export class TablaConfigTipoUsuarioComponent {
     this.appService.setEditando(false);
 
     this.tipoUsrConfigEnEdicion.set(null);
-    this.tipo_usuario.reset();
+
+    this.tipo_usuario.reset('');
     this.porcentaje_descuento.reset();
     this.minutos_retraso.reset();
+
+    this.cdr.detectChanges();
   }
 
   private iniciarEdicion(row: Row<TipoUsuarioConfig>) {
@@ -311,12 +345,19 @@ export class TablaConfigTipoUsuarioComponent {
     this.tipoUsrConfigEnEdicion.set(tipoUsuarioConfig);
     this.appService.setEditando(true);
 
-    // Cargar los valores actuales en los controles
-    this.tipo_usuario.setValue(tipoUsuarioConfig.tipo_usuario);
-    this.porcentaje_descuento.setValue(
-      tipoUsuarioConfig.porcentaje_descuento.toString(),
-    );
-    this.minutos_retraso.setValue(tipoUsuarioConfig.retraso_reserva.toString());
+    setTimeout(() => {
+      this.tipo_usuario.setValue(tipoUsuarioConfig.tipo_usuario);
+      this.porcentaje_descuento.setValue(
+        tipoUsuarioConfig.porcentaje_descuento,
+      );
+      this.minutos_retraso.setValue(tipoUsuarioConfig.retraso_reserva);
+
+      this.tipo_usuario.markAsPristine();
+      this.porcentaje_descuento.markAsPristine();
+      this.minutos_retraso.markAsPristine();
+
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   private async onGuardarEdicion(row: Row<TipoUsuarioConfig>) {
@@ -343,8 +384,8 @@ export class TablaConfigTipoUsuarioComponent {
     const configActualizada: TipoUsuarioConfig = {
       ...config,
       tipo_usuario: this.tipo_usuario.value! as TipoUsuario,
-      porcentaje_descuento: parseFloat(this.porcentaje_descuento.value!),
-      retraso_reserva: parseInt(this.minutos_retraso.value!, 10),
+      porcentaje_descuento: this.porcentaje_descuento.value!,
+      retraso_reserva: this.minutos_retraso.value!,
     };
 
     try {
@@ -363,11 +404,14 @@ export class TablaConfigTipoUsuarioComponent {
       this.espaciosConfigService.setEditandoFilaConfig(config.id, false);
       this.appService.setEditando(false);
       this.tipoUsrConfigEnEdicion.set(null);
-      this.tipo_usuario.reset();
+
+      this.tipo_usuario.reset('');
       this.porcentaje_descuento.reset();
       this.minutos_retraso.reset();
 
       this.espaciosConfigService.espacioQuery.refetch();
+
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Error al actualizar la configuración:', error);
       this.alertasService.error(
@@ -404,11 +448,22 @@ export class TablaConfigTipoUsuarioComponent {
       return;
     }
 
+    const tipoSeleccionado = this.tipo_usuario.value! as TipoUsuario;
+    if (!this.tiposUsuariosDisponibles().includes(tipoSeleccionado)) {
+      this.alertasService.error(
+        'El tipo de usuario seleccionado ya está configurado.',
+        5000,
+        this.espaciosConfigService.alertaEspacioConfigRef()!,
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+      return;
+    }
+
     const nuevaConfig = {
       id_espacio: this.espaciosConfigService.espacioQuery.data()?.id || 0,
-      tipo_usuario: this.tipo_usuario.value! as TipoUsuario,
-      porcentaje_descuento: parseFloat(this.porcentaje_descuento.value!),
-      minutos_retraso: parseInt(this.minutos_retraso.value!, 10),
+      tipo_usuario: tipoSeleccionado,
+      porcentaje_descuento: this.porcentaje_descuento.value!,
+      minutos_retraso: this.minutos_retraso.value!,
     };
 
     try {

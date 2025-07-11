@@ -1,0 +1,226 @@
+<!-- Template de estado para celdas -->
+<ng-template #estadoCell let-context>
+  <div class="flex items-center gap-2">
+    @if (context.getValue() === null) {
+    <div class="badge badge-success">Activo</div>
+    <button
+      type="button"
+      [disabled]="appService.editando()"
+      class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
+      data-tip="Desactivar grupo"
+      (click)="cambiarEstadoConfig(context.row.original)"
+    >
+      <app-web-icon
+        [nombreIcono]="'close-circle-outline'"
+        [estilos]="'h-5 w-5'"
+      ></app-web-icon>
+    </button>
+    } @else {
+    <div class="badge badge-error">Inactivo</div>
+    <button
+      type="button"
+      [disabled]="appService.editando()"
+      class="btn btn-sm btn-success btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
+      data-tip="Activar grupo"
+      (click)="cambiarEstadoConfig(context.row.original)"
+    >
+      <app-web-icon
+        [nombreIcono]="'checkmark-circle-outline'"
+        [estilos]="'h-5 w-5'"
+      ></app-web-icon>
+    </button>
+    }
+  </div>
+</ng-template>
+
+<!-- Tabla de grupos -->
+<table
+  responsiveTable
+  #tablaGrupo="responsiveTable"
+  [table]="tablaGrupos()"
+  class="table w-full rounded-md table-sm sm:table-md"
+>
+  <thead class="sticky top-0 z-20 bg-base-100">
+    @for (headerGroup of tablaGrupos().getHeaderGroups(); track
+    headerGroup.id) {
+    <tr>
+      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+      ></th>
+      } @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (modoCreacion()) {
+    <tr class="bg-base-100">
+      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
+      <td class="!pe-0">
+        <app-table-expansor
+          [disabled]="appService.editando()"
+          [isExpanded]="false"
+          (toggleExpand)="(null)"
+        ></app-table-expansor>
+      </td>
+      }
+      <td class="p-2">
+        <input
+          [formControl]="nombre"
+          placeholder="Inserte nombre del grupo"
+          pattern="[a-zA-Z0-9 ]*"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        />
+      </td>
+      <td class="p-2">
+        {{ fechaActual() }}
+      </td>
+      <td class="p-2">
+        <span class="text-sm"></span>
+      </td>
+      <td class="p-2">
+        <acciones-tabla
+          [acciones]="accionesNuevo()"
+          [ngClass]="'flex justify-between'"
+        ></acciones-tabla>
+      </td>
+    </tr>
+    } @if (!gruposQuery.length && !modoCreacion()) {
+    <tr>
+      <td
+        [attr.colspan]="
+          tablaGrupos().getAllColumns().length +
+          (tablaGrupo.hiddenColumnIds().size > 0 ? 1 : 0)
+        "
+        class="text-center text-gray-500"
+      >
+        <span>No hay grupos aún...</span>
+      </td>
+    </tr>
+    } @else { @for (row of tablaGrupos().getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
+      <td class="!pe-0">
+        <app-table-expansor
+          [disabled]="appService.editando()"
+          [isExpanded]="row.getIsExpanded()"
+          (toggleExpand)="row.toggleExpanded()"
+        ></app-table-expansor>
+      </td>
+      } @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="p-2">
+        @if (esColumnaEditable(cell.column.id) &&
+          configService.filaGrupoEditando()[row.original.id]) { @switch
+        (cell.column.id) { @case ('nombre') {
+        <input
+          [formControl]="nombre"
+          placeholder="Inserte nombre"
+          pattern="[a-zA-Z0-9 ]*"
+          class="input input-sm h-9 placeholder:text-gray-400"
+          type="text"
+        />
+        } } } @else {
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+        }
+      </td>
+      }
+    </tr>
+    @if (row.getIsExpanded() && tablaGrupo.hiddenColumnIds().size !== 0) {
+    <tr class="bg-base-300 border-none">
+      <td
+        [attr.colspan]="
+          row.getVisibleCells().length +
+          (tablaGrupo.hiddenColumnIds().size > 0 ? 1 : 0)
+        "
+      >
+        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+          @if (tablaGrupo.hiddenColumnIds().size !== 0) {
+          <ul>
+            @for (col of tablaGrupos().getAllLeafColumns(); track $index) { @if
+            (tablaGrupo.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span class="font-bold text-base-content">
+                {{ col.columnDef.header }}:
+              </span>
+              <span>
+                <ng-container
+                  *flexRender="
+                    tablaGrupo.getCell(col, row).column.columnDef.cell;
+                    props: tablaGrupo.getCell(col, row).getContext();
+                    let cell
+                  "
+                >
+                  <div [innerHTML]="cell"></div>
+                </ng-container>
+              </span>
+            </li>
+            } }
+          </ul>
+          <div class="divider my-1"></div>
+          }
+        </div>
+      </td>
+    </tr>
+    } } }
+  </tbody>
+</table>
+
+<!-- Botón para crear nuevo grupo -->
+<div class="flex justify-between items-center mt-4">
+  <button
+    type="button"
+    [disabled]="appService.editando()"
+    class="btn btn-primary btn-soft"
+    (click)="crearGrupo()"
+  >
+    <app-web-icon
+      [nombreIcono]="'add-circle-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+    Crear Grupo
+  </button>
+</div>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="configService.paginacionGrupos()"
+  [paginacion]="configService.datosPaginadorGrupos() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="configService.gruposQuery.isFetching()"
+  (prefetchFunction)="configService.prefetchGrupos($event)"
+>
+</app-paginador>
+
+<ng-template #alertaGrupos></ng-template>

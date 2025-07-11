@@ -19,6 +19,7 @@
       "@espacios/*": ["src/app/espacios/*"],
       "@dreservas/*": ["src/app/dreservas/*"],
       "@reservas/*": ["src/app/reservas/*"],
+      "@configuracion/*": ["src/app/configuracion/*"],
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

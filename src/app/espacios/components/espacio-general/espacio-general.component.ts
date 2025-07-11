@@ -63,6 +63,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     permitirExternos: [false],
     minimoJugadores: [''],
     maximoJugadores: [''],
+    reservasSimultaneas: [1, [Validators.min(1)]],
   });
   public tiltuloImagen = signal<{ nombre: string; peso: string } | null>(null);
 
@@ -111,6 +112,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         permitirExternos: espacio?.permite_externos || false,
         minimoJugadores: espacio?.minimo_jugadores || '',
         maximoJugadores: espacio?.maximo_jugadores || '',
+        reservasSimultaneas: espacio?.reservas_simultaneas || 1,
       });
 
       if (espacio.imagen) {

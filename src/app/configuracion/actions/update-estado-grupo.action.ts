@@ -1,29 +1,29 @@
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
-import { TipoUsuarioConfig } from '../interfaces/tipo-usuario-config.interface';
+import { Grupo } from '@shared/interfaces';
 
 const BASE_URL = environment.apiUrl;
 
-export const updateEstadoTipoConfig = async (
+export const updateEstadoGrupo = async (
   http: HttpClient,
-  idConfig: number,
+  idGrupo: number,
   nuevoEstado: string,
-): Promise<TipoUsuarioConfig> => {
+): Promise<Grupo> => {
   if (!['activo', 'inactivo'].includes(nuevoEstado)) {
     throw new Error('El estado debe ser "activo" o "inactivo".');
   }
 
-  let url = `${BASE_URL}/espacios/tipo-usuario-config/`;
-  url += nuevoEstado === 'activo' ? `${idConfig}/restaurar` : `${idConfig}`;
+  let url = `${BASE_URL}/grupos/`;
+  url += nuevoEstado === 'activo' ? `${idGrupo}/restaurar` : `${idGrupo}`;
 
   const method = nuevoEstado === 'activo' ? 'PATCH' : 'DELETE';
   const body = { estado: nuevoEstado };
 
   const response = await firstValueFrom(
     method === 'PATCH'
-      ? http.patch<{ data: TipoUsuarioConfig }>(url, body)
-      : http.delete<{ data: TipoUsuarioConfig }>(url, { body })
+      ? http.patch<{ data: Grupo }>(url, body)
+      : http.delete<{ data: Grupo }>(url, { body }),
   );
 
   return response.data;

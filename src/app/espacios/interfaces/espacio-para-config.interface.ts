@@ -11,6 +11,7 @@ export interface EspacioParaConfig {
   agregar_jugadores: boolean;
   minimo_jugadores: number;
   maximo_jugadores: number;
+  reservas_simultaneas: number;
   permite_externos: boolean;
   id_sede: string;
   id_categoria: string;

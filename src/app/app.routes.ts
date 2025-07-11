@@ -75,6 +75,14 @@ export const routes: Routes = [
           import('@reservas/reservas.routes').then(m => m.dreservasRoutes),
         canActivate: [AuthGuard],
       },
+      {
+        path: 'config',
+        loadChildren: () =>
+          import('@configuracion/configuracion.routes').then(
+            m => m.configRoutes,
+          ),
+        canActivate: [AuthGuard],
+      },
     ],
   },
   {
