@@ -6,6 +6,7 @@ import { AccessDeniedPage } from './shared/pages/access-denied/access-denied.pag
 import { MainLayoutComponent } from '@shared/main-layout/main-layout.component';
 
 export const routes: Routes = [
+  // Rutas públicas (sin autenticación) - DEBEN IR PRIMERO
   {
     path: 'auth',
     loadChildren: () => import('@auth/auth.routes').then(m => m.authRoutes),
@@ -14,6 +15,14 @@ export const routes: Routes = [
     path: 'acceso-denegado',
     component: AccessDeniedPage,
   },
+  {
+    path: 'pagos/reservas',
+    loadComponent: () =>
+      import('@pagos/pages/pago-redirect/pago-redirect.page').then(
+        m => m.PagoRedirectPage,
+      ),
+  },
+  // Rutas con autenticación y layout
   {
     path: '',
     component: MainLayoutComponent,
@@ -47,21 +56,18 @@ export const routes: Routes = [
         loadChildren: () =>
           import('@usuarios/usuarios.routes').then(m => m.usuariosRoutes),
         canActivate: [AuthGuard],
-        data: { permission: 'usuarios_ver' },
       },
       {
         path: 'pagos',
         loadChildren: () =>
           import('@pagos/pagos.routes').then(m => m.pagosRoutes),
         canActivate: [AuthGuard],
-        data: { permission: 'pagos_ver' },
       },
       {
         path: 'permisos',
         loadChildren: () =>
           import('@permisos/permisos.routes').then(m => m.permisosRoutes),
         canActivate: [AuthGuard],
-        data: { permission: 'admin' },
       },
       {
         path: 'espacios',

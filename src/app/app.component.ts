@@ -26,16 +26,6 @@ export class AppComponent implements OnInit {
   momentL = moment;
   private router = inject(Router);
 
-  private esRutaPublica = computed(() => {
-    const url = this.router.url;
-    const rutasPublicas = [
-      '/auth/login',
-      '/auth/registro',
-      '/auth/reset-password',
-    ];
-    return rutasPublicas.some(ruta => url.includes(ruta));
-  });
-
   appService = inject(AppService);
   authService = inject(AuthService);
 
@@ -45,17 +35,14 @@ export class AppComponent implements OnInit {
     this.momentL.tz.setDefault('America/Bogota');
     this.momentL.locale('es');
 
-    effect(() => {
-      const isAuthenticated = this.authService.estaAutenticado();
-      if (!isAuthenticated && !this.esRutaPublica()) {
-        this.router.navigate(['/auth/login']);
-      }
-    });
+    // Removemos el effect() problemático - dejar que AuthGuard maneje la autenticación
   }
 
   ngOnInit() {
     this.router.events.subscribe(() => {
-      this.showMenu.set(!this.router.url.includes('/auth'));
+      const url = this.router.url;
+      const rutasSinMenu = ['/auth', '/pagos/reservas', '/acceso-denegado'];
+      this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
     });
   }
 }
