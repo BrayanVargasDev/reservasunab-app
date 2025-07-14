@@ -1,0 +1,208 @@
+/* Success State */
+.pago-info-container {
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* Header */
+.pago-header {
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  color: white;
+
+  &.estado-completado {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  }
+
+  &.estado-pendiente {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  }
+
+  &.estado-procesando {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  }
+
+  &.estado-rechazado {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  }
+}
+
+.estado-badge {
+  .estado-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+}
+
+/* Main Info */
+.pago-main-info {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 20px 20px 0 0;
+  margin-top: -20px;
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 200px);
+}
+
+.info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+
+  h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: #667eea;
+      margin-right: 0.75rem;
+      border-radius: 2px;
+    }
+  }
+}
+
+.info-grid {
+  display: grid;
+  gap: 1rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  span {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+
+    &.codigo-pago {
+      font-family: 'Courier New', monospace;
+      background: #f1f3f4;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #e1e5e9;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    &.monto {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #4caf50;
+    }
+  }
+}
+
+/* Estado Mensaje */
+.estado-mensaje {
+  padding: 1.5rem;
+  margin-top: -1.5rem;
+
+  &.estado-completado {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(69, 160, 73, 0.1) 100%);
+  }
+
+  &.estado-pendiente {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.1) 100%);
+  }
+
+  &.estado-procesando {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%);
+  }
+
+  &.estado-rechazado {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(211, 47, 47, 0.1) 100%);
+  }
+
+  .mensaje-estado {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    .mensaje-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+
+      &[name="checkmark-circle"] {
+        color: #4caf50;
+      }
+
+      &[name="time"] {
+        color: #ff9800;
+      }
+
+      &[name="refresh-circle"] {
+        color: #2196f3;
+      }
+
+      &[name="close-circle"] {
+        color: #f44336;
+      }
+    }
+
+    p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #333;
+    }
+  }
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .pago-main-info {
+    max-width: 800px;
+    margin: -20px auto 0;
+    padding: 2rem;
+  }
+
+  .estado-mensaje {
+    max-width: 800px;
+    margin: -2rem auto 0;
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .pago-header {
+    padding: 3rem 2rem 2rem;
+  }
+}

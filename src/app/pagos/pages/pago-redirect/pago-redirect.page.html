@@ -1,0 +1,50 @@
+<ion-content class="pago-redirect-content" [fullscreen]="true">
+  <!-- Loading State -->
+  <app-loading-spinner
+    *ngIf="loading"
+    title="Verificando información del pago"
+    message="Por favor espera mientras procesamos tu solicitud...">
+  </app-loading-spinner>
+
+  <!-- Error State -->
+  <app-error-display
+    *ngIf="error && !loading"
+    [title]="'¡Ups! Algo salió mal'"
+    [message]="error"
+    [showRetry]="!!codigo"
+    (retry)="reintentar()"
+    (goHome)="volver()">
+  </app-error-display>
+
+  <!-- Success State -->
+  <div *ngIf="pagoInfo && !loading">
+    <app-pago-info-card
+      [pagoInfo]="pagoInfo"
+      [formatearMonto]="formatearMonto.bind(this)"
+      [formatearFecha]="formatearFecha.bind(this)"
+      [obtenerMensajeEstado]="obtenerMensajeEstado.bind(this)">
+    </app-pago-info-card>
+
+    <!-- Acciones -->
+    <div class="pago-actions">
+      <ion-button
+        fill="outline"
+        color="medium"
+        (click)="volver()"
+        expand="block">
+        <ion-icon name="arrow-back" slot="start"></ion-icon>
+        Volver al inicio
+      </ion-button>
+
+      <ion-button
+        *ngIf="pagoInfo.estado === 'pendiente' || pagoInfo.estado === 'procesando'"
+        fill="solid"
+        color="primary"
+        (click)="reintentar()"
+        expand="block">
+        <ion-icon name="refresh" slot="start"></ion-icon>
+        Actualizar estado
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

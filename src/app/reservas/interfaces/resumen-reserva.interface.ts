@@ -1,4 +1,5 @@
 export interface ResumenReserva {
+  id: number;
   nombre_espacio: string;
   duracion: number;
   sede: string;

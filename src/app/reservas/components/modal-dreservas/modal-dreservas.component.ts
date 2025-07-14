@@ -69,8 +69,9 @@ export class ModalDreservasComponent {
     if (estado && estado.fecha) {
       return {
         ...estado,
-        fecha: moment(estado.fecha + ' 12:00', 'YYYY-MM-DD HH:mm')
-          .format('dddd, D [de] MMMM [de] YYYY'),
+        fecha: moment(estado.fecha + ' 12:00', 'YYYY-MM-DD HH:mm').format(
+          'dddd, D [de] MMMM [de] YYYY',
+        ),
       };
     }
     return estado;
@@ -176,7 +177,7 @@ export class ModalDreservasComponent {
             `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
             6 * 1000,
             this.alertaModalReservas(),
-            'w-full h-11',
+            'flex justify-center transition-all ease-in-out w-full',
           );
           this.dreservasService.setCargando(false);
           return;
@@ -190,9 +191,7 @@ export class ModalDreservasComponent {
       .catch(error => {
         console.error('Error al iniciar la reserva:', error.error);
 
-        // Mostrar mensaje de error más específico si está disponible
         const mensajeError =
-          error.error?.message ||
           error.error?.error ||
           'Error al iniciar la reserva. Por favor, inténtelo de nuevo.';
 
@@ -200,7 +199,7 @@ export class ModalDreservasComponent {
           mensajeError,
           6 * 1000,
           this.alertaModalReservas(),
-          'w-full h-11',
+          'flex justify-center transition-all ease-in-out w-full',
         );
         this.dreservasService.setCargando(false);
       });
@@ -210,24 +209,43 @@ export class ModalDreservasComponent {
     this.dreservasService.setCargando(true);
     this.dreservasService.setPago(true);
 
-    // Simulación de procesamiento de pago
     setTimeout(() => {
-      this.dreservasService.setCargando(false);
-      this.alertaService.success(
-        'Pago procesado exitosamente',
-        4000,
-        this.alertaModalReservas(),
-        'w-full h-11',
-      );
+      this.dreservasService
+        .pagarReserva(this.estadoResumen()?.id!)
+        .then(response => {
+          if (!response.data) {
+            this.alertaService.error(
+              `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
+              6 * 1000,
+              this.alertaModalReservas(),
+              'flex justify-center transition-all ease-in-out w-full',
+            );
+            this.dreservasService.setCargando(false);
+            return;
+          }
 
-      // Actualizar el estado a completada después del pago exitoso
-      const estadoActual = this.dreservasService.estadoResumen();
-      if (estadoActual) {
-        this.dreservasService.setEstadoResumen({
-          ...estadoActual,
-          estado: 'completada',
+          // Establecer el estado del pago con la respuesta del servidor
+          this.dreservasService.setPago(false);
+          this.dreservasService.setEstadoResumen(null);
+          this.dreservasService.setResumen(false);
+          this.dreservasService.setCargando(false);
+          window.location.href = response.data;
+        })
+        .catch(error => {
+          console.error('Error al procesar el pago:', error.error);
+
+          const mensajeError =
+            error.error?.error ||
+            'Error al procesar el pago. Por favor, inténtelo de nuevo.';
+
+          this.alertaService.error(
+            mensajeError,
+            6 * 1000,
+            this.alertaModalReservas(),
+            'flex justify-center transition-all ease-in-out w-full',
+          );
+          this.dreservasService.setCargando(false);
         });
-      }
-    }, 2000);
+    }, 1000);
   }
 }

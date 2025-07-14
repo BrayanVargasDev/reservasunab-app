@@ -24,7 +24,6 @@ import { computed } from '@angular/core';
         'alert-info': tipo() === 'info',
         'alert-warning': tipo() === 'warning',
         'shadow-lg': true,
-        'max-w-md': true,
       }"
     >
       <app-web-icon

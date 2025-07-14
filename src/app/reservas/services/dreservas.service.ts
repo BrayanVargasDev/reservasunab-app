@@ -9,7 +9,7 @@ import {
   ReservaEspaciosDetalles,
   ResumenReserva,
 } from '../interfaces';
-import { iniciarReserva } from '../actions';
+import { iniciarReserva, pagarReserva } from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -162,7 +162,11 @@ export class DreservasService {
     });
   }
 
-  public setEstadoResumen(resumen: ResumenReserva) {
+  public setEstadoResumen(resumen: ResumenReserva | null) {
     this._estadoResumen.set(resumen);
+  }
+
+  public pagarReserva(idReserva: number) {
+    return pagarReserva(this.http, idReserva);
   }
 }
