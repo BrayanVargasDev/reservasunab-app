@@ -1,10 +1,15 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { getEspaciosAll, getEspacioDetalles } from '@reservas/actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Espacio } from '@espacios/interfaces';
-import { EspacioReservas, ReservaEspaciosDetalles } from '../interfaces';
+import {
+  EspacioReservas,
+  ReservaEspaciosDetalles,
+  ResumenReserva,
+} from '../interfaces';
+import { iniciarReserva } from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +23,17 @@ export class DreservasService {
   private _idCategoria = signal<number | null>(null);
   private _idEspacio = signal<number | null>(null);
   private _modalAbierta = signal(false);
+
+  // ? Estado para las reservas
+  private _cargando = signal(false);
+  private _resumen = signal(false);
+  private _pago = signal(false);
+  private _estadoResumen = signal<ResumenReserva | null>(null);
+
+  public cargando = computed(() => this._cargando());
+  public resumen = computed(() => this._resumen());
+  public pago = computed(() => this._pago());
+  public estadoResumen = computed(() => this._estadoResumen());
 
   public fecha = this._fecha.asReadonly();
 
@@ -114,5 +130,39 @@ export class DreservasService {
   public cerrarModal() {
     this._modalAbierta.set(false);
     this._idEspacio.set(null);
+    this._cargando.set(false);
+    this._resumen.set(false);
+    this._pago.set(false);
+    this._estadoResumen.set(null);
+  }
+
+  public setCargando(cargando: boolean) {
+    this._cargando.set(cargando);
+  }
+
+  public setResumen(resumen: boolean) {
+    this._resumen.set(resumen);
+  }
+
+  public setPago(pago: boolean) {
+    this._pago.set(pago);
+  }
+
+  public iniciarReserva(
+    base: ReservaEspaciosDetalles,
+    fechaBase: string,
+    horaInicio: string,
+    horaFin: string,
+  ) {
+    return iniciarReserva(this.http, {
+      base,
+      fecha: fechaBase,
+      horaInicio,
+      horaFin,
+    });
+  }
+
+  public setEstadoResumen(resumen: ResumenReserva) {
+    this._estadoResumen.set(resumen);
   }
 }

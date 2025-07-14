@@ -31,11 +31,18 @@ export interface Disponibilidad {
   disponible: boolean;
   valor: null;
   estilos: Estilos;
-  novedad: null;
+  novedad: Novedad | null;
+  reserva: ReservaDisp | null;
 }
 
 export interface Estilos {
   background_color: string;
   text_color: string;
   border_color: string;
+}
+
+export interface ReservaDisp {
+  hora_inicio: string;
+  hora_fin: string;
+  estado: string;
 }

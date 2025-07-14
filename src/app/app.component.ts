@@ -43,6 +43,7 @@ export class AppComponent implements OnInit {
 
   constructor() {
     this.momentL.tz.setDefault('America/Bogota');
+    this.momentL.locale('es');
 
     effect(() => {
       const isAuthenticated = this.authService.estaAutenticado();

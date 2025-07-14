@@ -5,15 +5,26 @@ import {
   effect,
   viewChild,
   ElementRef,
+  ViewContainerRef,
+  computed,
 } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
+
+import moment from 'moment';
+import 'moment/locale/es';
+
 import { environment } from '@environments/environment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Configuracion } from '@espacios/interfaces';
-import moment from 'moment';
 import { AuthService } from '@auth/services/auth.service';
 import { UpperFirstPipe } from '@shared/pipes';
+import { AlertasService } from '@shared/services/alertas.service';
+
+import {
+  Disponibilidad,
+  ReservaEspaciosDetalles,
+} from '@reservas/interfaces/reserva-espacio-detalle.interface';
 
 @Component({
   selector: 'modal-dreservas',
@@ -25,9 +36,59 @@ export class ModalDreservasComponent {
   private injector = inject(Injector);
   private environment = environment;
   private authService = inject(AuthService);
+  private alertaService = inject(AlertasService);
   public dreservasService = inject(DreservasService);
+
+  constructor() {
+    // Configurar moment para usar español por defecto
+    moment.locale('es');
+  }
   public dreservasModal =
     viewChild<ElementRef<HTMLDialogElement>>('dreservasModal');
+
+  public alertaModalReservas = viewChild.required('alertaModalReservas', {
+    read: ViewContainerRef,
+  });
+
+  public cargando = computed(() => {
+    return this.dreservasService.cargando();
+  });
+
+  public resumen = computed(() => {
+    return this.dreservasService.resumen();
+  });
+
+  public mensajeCargando = computed(() => {
+    return this.dreservasService.resumen()
+      ? 'Trabajando en el pago...'
+      : 'Trabajando en la reserva...';
+  });
+
+  public estadoResumen = computed(() => {
+    const estado = this.dreservasService.estadoResumen();
+    if (estado && estado.fecha) {
+      return {
+        ...estado,
+        fecha: moment(estado.fecha + ' 12:00', 'YYYY-MM-DD HH:mm')
+          .format('dddd, D [de] MMMM [de] YYYY'),
+      };
+    }
+    return estado;
+  });
+
+  public pago = computed(() => {
+    return this.dreservasService.pago();
+  });
+
+  public necesitaPago = computed(() => {
+    const estado = this.dreservasService.estadoResumen();
+    return (
+      estado &&
+      estado.estado !== 'completada' &&
+      estado.valor &&
+      estado.valor > 0
+    );
+  });
 
   ngOnInit() {
     effect(
@@ -89,5 +150,84 @@ export class ModalDreservasComponent {
       console.error('Error al calcular fecha de apertura:', error);
       return 'No disponible';
     }
+  }
+
+  public async iniciarReserva(
+    base: ReservaEspaciosDetalles | undefined,
+    item: Disponibilidad,
+  ) {
+    if (!base) return;
+    this.dreservasService.setCargando(true);
+
+    const fechaFiltro = this.dreservasService.fecha();
+    const fechaBase = fechaFiltro
+      ? moment(fechaFiltro, 'YYYY-MM-DD').format('YYYY-MM-DD')
+      : moment().format('YYYY-MM-DD');
+
+    console.log({ base, fechaBase, item });
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    this.dreservasService
+      .iniciarReserva(base, fechaBase, item.hora_inicio, item.hora_fin)
+      .then(response => {
+        if (!response.data) {
+          this.alertaService.error(
+            `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
+            6 * 1000,
+            this.alertaModalReservas(),
+            'w-full h-11',
+          );
+          this.dreservasService.setCargando(false);
+          return;
+        }
+
+        // Establecer el estado del resumen con la respuesta del servidor
+        this.dreservasService.setEstadoResumen(response.data);
+        this.dreservasService.setResumen(true);
+        this.dreservasService.setCargando(false);
+      })
+      .catch(error => {
+        console.error('Error al iniciar la reserva:', error.error);
+
+        // Mostrar mensaje de error más específico si está disponible
+        const mensajeError =
+          error.error?.message ||
+          error.error?.error ||
+          'Error al iniciar la reserva. Por favor, inténtelo de nuevo.';
+
+        this.alertaService.error(
+          mensajeError,
+          6 * 1000,
+          this.alertaModalReservas(),
+          'w-full h-11',
+        );
+        this.dreservasService.setCargando(false);
+      });
+  }
+
+  public procesarPago() {
+    this.dreservasService.setCargando(true);
+    this.dreservasService.setPago(true);
+
+    // Simulación de procesamiento de pago
+    setTimeout(() => {
+      this.dreservasService.setCargando(false);
+      this.alertaService.success(
+        'Pago procesado exitosamente',
+        4000,
+        this.alertaModalReservas(),
+        'w-full h-11',
+      );
+
+      // Actualizar el estado a completada después del pago exitoso
+      const estadoActual = this.dreservasService.estadoResumen();
+      if (estadoActual) {
+        this.dreservasService.setEstadoResumen({
+          ...estadoActual,
+          estado: 'completada',
+        });
+      }
+    }, 2000);
   }
 }

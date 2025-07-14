@@ -1,10 +1,150 @@
 <dialog #dreservasModal class="modal p-0 z-50">
   <div
-    class="modal-box lg:w-[70vw] !max-w-[50rem] max-h-[70vh] relative"
+    class="modal-box lg:w-[70vw] !max-w-[50rem] min-h-[50vh] max-h-[70vh] relative"
   >
-    <div
-      class="h-full flex-col mb-2 max-h-[calc(70vh-5.75rem)]"
-    >
+    @if (cargando()) {
+    <div class="flex flex-row items-center justify-center h-full min-h-[40vh]">
+      <span class="loading loading-spinner loading-xl text-primary"></span>
+      <span class="ml-2 text-base-content">{{ mensajeCargando() }}</span>
+    </div>
+    } @else if (!cargando() && resumen()) {
+    <div class="flex flex-col h-full min-h-[40vh] p-4">
+      <!-- Header del resumen -->
+      <div
+        class="alert mb-6 rounded-lg"
+        [class.alert-success]="estadoResumen()?.estado === 'completada'"
+        [class.alert-info]="estadoResumen()?.estado !== 'completada'"
+      >
+        <div class="flex items-center justify-center w-full">
+          <app-web-icon
+            [nombreIcono]="
+              estadoResumen()?.estado === 'completada'
+                ? 'checkmark-circle-outline'
+                : 'information-circle-outline'
+            "
+            estilos="h-6 w-6 mr-2"
+          ></app-web-icon>
+          <span class="text-xl font-bold">
+            @if (estadoResumen()?.estado === 'completada') { ¡Reserva
+            Confirmada! } @else { Resumen de Reserva }
+          </span>
+        </div>
+      </div>
+
+      <!-- Información de la reserva -->
+      <div class="bg-base-200 rounded-lg p-6 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Espacio -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="home-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Espacio:</span>
+              <p class="font-medium">
+                {{ estadoResumen()?.nombre_espacio | upperFirst }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Sede -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="location-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Sede:</span>
+              <p class="font-medium">{{ estadoResumen()?.sede | uppercase }}</p>
+            </div>
+          </div>
+
+          <!-- Fecha -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="calendar-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Fecha:</span>
+              <p class="font-medium">
+                {{ estadoResumen()?.fecha }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Hora -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="time-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Hora de inicio:</span>
+              <p class="font-medium">{{ estadoResumen()?.hora_inicio }}</p>
+            </div>
+          </div>
+
+          <!-- Duración -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="hourglass-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Duración:</span>
+              <p class="font-medium">{{ estadoResumen()?.duracion }} hora(s)</p>
+            </div>
+          </div>
+
+          <!-- Usuario -->
+          <div class="flex items-center">
+            <app-web-icon
+              nombreIcono="person-outline"
+              estilos="h-6 w-6 mr-3 text-primary"
+            ></app-web-icon>
+            <div>
+              <span class="text-sm text-base-content/70">Reservado por:</span>
+              <p class="font-medium">{{ estadoResumen()?.usuario_reserva }}</p>
+              <p class="text-sm text-base-content/50">
+                {{ estadoResumen()?.codigo_usuario }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Valor si existe -->
+        @if (estadoResumen()?.valor && estadoResumen()?.valor! > 0) {
+        <div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <app-web-icon
+                nombreIcono="card-outline"
+                estilos="h-5 w-5 mr-3 text-success"
+              ></app-web-icon>
+              <span class="text-lg font-semibold">Valor total:</span>
+            </div>
+            <span class="text-2xl font-bold text-success">
+              ${{ estadoResumen()?.valor?.toLocaleString('es-CO') }}
+            </span>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Mensaje de éxito final -->
+      @if (estadoResumen()?.estado === 'completada') {
+      <div class="text-center text-base-content/70">
+        <p class="text-lg">¡Tu reserva ha sido confirmada exitosamente!</p>
+        <p class="text-sm mt-1">
+          Recibirás un correo con los detalles de tu reserva.
+        </p>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="h-full flex-col mb-2 max-h-[calc(70vh-5.75rem)]">
       <div class="flex gap-4 w-full">
         <div class="flex flex-col w-1/2 mb-2">
           <img
@@ -38,25 +178,63 @@
         <span class="flex w-full text-lg font-bold text-center"
           >Disponibilidad:</span
         >
-        <div class="flex flex-wrap gap-2 items-center">
+        <div
+          class="grid gap-2 items-center grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]"
+        >
           @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
           <div
-            [ngClass]="`h-12 text-semibold text-lg flex flex-wrap w-44 items-center justify-center rounded-lg btn btn-${ item.estilos.background_color }`"
+            (click)="
+              item.disponible
+                ? iniciarReserva(espacioDetallesQuery, item)
+                : null
+            "
+            class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn"
+            [class.cursor-pointer]="item.disponible"
+            [class.cursor-not-allowed]="!item.disponible"
+            [class.transition-all]="item.disponible"
+            [class.duration-200]="item.disponible"
+            [style.background-color]="item.estilos.background_color"
+            [style.color]="item.estilos.text_color"
+            [style.border-color]="item.estilos.text_color"
+            [ngClass]="{
+              'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
+            }"
           >
-            {{ item.hora_inicio }}
+            @if (item.disponible) {
+            <span>{{ item.hora_inicio }}</span>
+            } @else if (item.reserva && !item.novedad) {
+            <span class="text-wrap text-base leading-tight"
+              >{{ item.hora_inicio }} - Reservado</span
+            >
+            } @else if (!item.reserva && item.novedad) {
+            <span>{{ item.hora_inicio }} - {{ item.novedad.nombre }}</span>
+            }
           </div>
           }
         </div>
       </div>
     </div>
+    }
+
+    <ng-template #alertaModalReservas></ng-template>
     <div class="modal-action mt-2 sticky bottom-0 z-10">
       <button
         type="button"
-        class="btn btn-ghost h-11 rounded-box"
+        class="btn btn-ghost h-11 rounded-lg"
         (click)="dreservasService.cerrarModal()"
       >
         Cerrar
       </button>
+      @if (necesitaPago() && !pago()) {
+      <button
+        type="button"
+        class="btn btn-primary h-11 rounded-lg"
+        (click)="procesarPago()"
+        [disabled]="cargando()"
+      >
+        Pagar
+      </button>
+      }
     </div>
   </div>
 </dialog>
