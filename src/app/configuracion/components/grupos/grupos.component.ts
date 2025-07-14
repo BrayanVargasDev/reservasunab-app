@@ -56,7 +56,6 @@ interface Util {
     ReactiveFormsModule,
     TableExpansorComponent,
     PaginadorComponent,
-    WebIconComponent,
   ],
   templateUrl: './grupos.component.html',
   styleUrl: './grupos.component.scss',
@@ -267,6 +266,7 @@ export class GruposComponent implements OnInit, OnDestroy {
                 'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
               );
               this.configService.gruposQuery.refetch();
+              this.appService.gruposQuery.refetch();
             })
             .catch((error: any) => {
               console.error(`Error al ${accion} el grupo:`, error);
@@ -359,6 +359,7 @@ export class GruposComponent implements OnInit, OnDestroy {
 
       this.cancelarCreacion();
       this.configService.gruposQuery.refetch();
+      this.appService.gruposQuery.refetch();
     } catch (error) {
       console.error('Error al crear grupo:', error);
       this.alertaService.error(
@@ -411,7 +412,7 @@ export class GruposComponent implements OnInit, OnDestroy {
       this.nombre.reset('');
 
       this.configService.gruposQuery.refetch();
-
+      this.appService.gruposQuery.refetch();
       this.cdr.detectChanges();
     } catch (error) {
       console.error('Error al actualizar el grupo:', error);

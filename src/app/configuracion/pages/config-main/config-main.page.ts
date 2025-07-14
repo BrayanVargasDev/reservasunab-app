@@ -56,7 +56,7 @@ export default class ConfigMainPageComponent {
         this.configService.inciarCrearCategoria();
         break;
       case 'grupos':
-        // this.configService.inciarCrearGrupo();
+        this.configService.inciarCrearGrupo();
         break;
       default:
         console.error('Pestana no reconocida');

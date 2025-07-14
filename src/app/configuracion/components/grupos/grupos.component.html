@@ -1,35 +1,21 @@
-<!-- Template de estado para celdas -->
 <ng-template #estadoCell let-context>
-  <div class="flex items-center gap-2">
-    @if (context.getValue() === null) {
-    <div class="badge badge-success">Activo</div>
-    <button
-      type="button"
-      [disabled]="appService.editando()"
-      class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
-      data-tip="Desactivar grupo"
-      (click)="cambiarEstadoConfig(context.row.original)"
-    >
-      <app-web-icon
-        [nombreIcono]="'close-circle-outline'"
-        [estilos]="'h-5 w-5'"
-      ></app-web-icon>
-    </button>
-    } @else {
-    <div class="badge badge-error">Inactivo</div>
-    <button
-      type="button"
-      [disabled]="appService.editando()"
-      class="btn btn-sm btn-success btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
-      data-tip="Activar grupo"
-      (click)="cambiarEstadoConfig(context.row.original)"
-    >
-      <app-web-icon
-        [nombreIcono]="'checkmark-circle-outline'"
-        [estilos]="'h-5 w-5'"
-      ></app-web-icon>
-    </button>
-    }
+  <div
+    [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
+    [ngClass]="{
+      'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge-success': context.getValue() === null,
+      'badge-error': context.getValue() !== null,
+      'opacity-50 pointer-events-none badge-ghost': appService.editando()
+    }"
+    (click)="
+      authService.tienePermisos('ESP000012')
+        ? appService.editando()
+          ? null
+          : cambiarEstadoConfig(context.row.original)
+        : null
+    "
+  >
+    {{ (context.getValue() === null ? 'activo' : 'inactivo') | titlecase }}
   </div>
 </ng-template>
 
@@ -85,7 +71,7 @@
         <input
           [formControl]="nombre"
           placeholder="Inserte nombre del grupo"
-          pattern="[a-zA-Z0-9 ]*"
+          pattern="[a-zA-Z0-9áéíóú ]*"
           class="input input-sm h-9 placeholder:text-gray-400"
           type="text"
         />
@@ -133,7 +119,7 @@
         <input
           [formControl]="nombre"
           placeholder="Inserte nombre"
-          pattern="[a-zA-Z0-9 ]*"
+          pattern="[a-zA-Z0-9áéíóú ]*"
           class="input input-sm h-9 placeholder:text-gray-400"
           type="text"
         />
@@ -190,22 +176,6 @@
     } } }
   </tbody>
 </table>
-
-<!-- Botón para crear nuevo grupo -->
-<div class="flex justify-between items-center mt-4">
-  <button
-    type="button"
-    [disabled]="appService.editando()"
-    class="btn btn-primary btn-soft"
-    (click)="crearGrupo()"
-  >
-    <app-web-icon
-      [nombreIcono]="'add-circle-outline'"
-      [estilos]="'h-5 w-5'"
-    ></app-web-icon>
-    Crear Grupo
-  </button>
-</div>
 
 <!-- Paginador -->
 <app-paginador

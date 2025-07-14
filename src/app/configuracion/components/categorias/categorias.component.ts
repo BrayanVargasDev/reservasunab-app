@@ -111,9 +111,7 @@ export class CategoriasComponent implements OnDestroy {
       accessorKey: 'grupo.nombre',
       size: 150,
       header: 'Grupo',
-      cell: info =>
-        (info.getValue() as string).charAt(0).toUpperCase() +
-        (info.getValue() as string).slice(1),
+      cell: info => info.getValue() || 'Sin grupo',
     },
     {
       accessorKey: 'creado_en',
@@ -278,6 +276,7 @@ export class CategoriasComponent implements OnDestroy {
                 'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
               );
               this.configService.categoriasQuery.refetch();
+              this.appService.categoriasQuery.refetch();
             })
             .catch((error: any) => {
               console.error(`Error al ${accion} el categoría:`, error);
@@ -377,6 +376,7 @@ export class CategoriasComponent implements OnDestroy {
 
       this.cancelarCreacion();
       this.configService.categoriasQuery.refetch();
+      this.appService.categoriasQuery.refetch();
     } catch (error) {
       console.error('Error al crear categoría:', error);
       this.alertaService.error(
@@ -431,7 +431,7 @@ export class CategoriasComponent implements OnDestroy {
       this.grupo.reset();
 
       this.configService.categoriasQuery.refetch();
-
+      this.appService.categoriasQuery.refetch();
       this.cdr.detectChanges();
     } catch (error) {
       console.error('Error al actualizar la configuración:', error);
