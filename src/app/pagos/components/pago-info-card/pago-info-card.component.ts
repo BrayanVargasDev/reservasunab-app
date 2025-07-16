@@ -178,6 +178,8 @@ export class PagoInfoCardComponent {
         return 'Pago Completado';
       case 'pendiente':
         return 'Pago Pendiente';
+      case 'PENDING':
+        return 'Pago Pendiente';
       case 'procesando':
         return 'Procesando Pago';
       case 'rechazado':

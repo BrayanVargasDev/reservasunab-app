@@ -1,0 +1,108 @@
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <!-- Espacio -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="home-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Espacio:</span>
+      <p class="font-medium">
+        {{ resumen()?.nombre_espacio | upperFirst }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Sede -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="location-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Sede:</span>
+      <p class="font-medium">{{ resumen()?.sede | uppercase }}</p>
+    </div>
+  </div>
+
+  <!-- Fecha -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="calendar-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Fecha:</span>
+      <p class="font-medium">
+        {{ resumen()?.fecha }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Hora -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="time-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Hora de inicio:</span>
+      <p class="font-medium">{{ resumen()?.hora_inicio }}</p>
+    </div>
+  </div>
+
+  <!-- Duración -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="hourglass-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Duración:</span>
+      <p class="font-medium">{{ resumen()?.duracion }} hora(s)</p>
+    </div>
+  </div>
+
+  <!-- Usuario -->
+  <div class="flex items-center">
+    <app-web-icon
+      nombreIcono="person-outline"
+      estilos="h-6 w-6 mr-3 text-primary"
+    ></app-web-icon>
+    <div>
+      <span class="text-sm text-base-content/70">Reservado por:</span>
+      <p class="font-medium">{{ resumen()?.usuario_reserva }}</p>
+      <p class="text-sm text-base-content/50">
+        {{ resumen()?.codigo_usuario }}
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Valor si existe -->
+@if (resumen()?.valor && resumen()?.valor! > 0) {
+<div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <app-web-icon
+        nombreIcono="card-outline"
+        estilos="h-5 w-5 mr-3 text-success"
+      ></app-web-icon>
+      <span class="text-lg font-semibold">Valor total:</span>
+    </div>
+    <span class="text-2xl font-bold text-success">
+      ${{ resumen()?.valor?.toLocaleString('es-CO') }}
+    </span>
+  </div>
+</div>
+}
+
+<!-- Mensaje de éxito final -->
+@if (resumen()?.estado === 'completada') {
+<div class="text-center text-base-content/70">
+  <p class="text-lg">¡Tu reserva ha sido confirmada exitosamente!</p>
+  <p class="text-sm mt-1">
+    Recibirás un correo con los detalles de tu reserva.
+  </p>
+</div>
+}

@@ -43,6 +43,8 @@ export class PagosService {
         'Tu pago ha sido procesado exitosamente. Recibirás un correo de confirmación.',
       pendiente:
         'Tu pago está siendo procesado. Te notificaremos cuando se complete.',
+      PENDING:
+        'Tu pago está siendo procesado. Te notificaremos cuando se complete.',
       procesando: 'Estamos procesando tu pago. Esto puede tomar unos minutos.',
       rechazado:
         'Tu pago ha sido rechazado. Intenta con otro método de pago o contacta soporte.',

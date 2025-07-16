@@ -1,5 +1,6 @@
 import { Sede, Categoria } from '@shared/interfaces';
 import { Configuracion, Novedad, Imagen } from '@espacios/interfaces';
+import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
 
 export interface ReservaEspaciosDetalles {
   id: number;
@@ -23,26 +24,24 @@ export interface ReservaEspaciosDetalles {
   categoria: Categoria;
   configuracion: Configuracion;
   novedades: Novedad[];
+  tipo_usuario_config: TipoUsuarioConfig[];
 }
 
 export interface Disponibilidad {
   hora_inicio: string;
   hora_fin: string;
   disponible: boolean;
+  mi_reserva: boolean;
+  reserva_pasada: boolean;
   valor: null;
   estilos: Estilos;
-  novedad: Novedad | null;
-  reserva: ReservaDisp | null;
+  novedad: boolean;
+  reservada: boolean;
+  novedad_desc?: string;
 }
 
 export interface Estilos {
   background_color: string;
   text_color: string;
   border_color: string;
-}
-
-export interface ReservaDisp {
-  hora_inicio: string;
-  hora_fin: string;
-  estado: string;
 }

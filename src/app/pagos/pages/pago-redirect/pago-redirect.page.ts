@@ -97,15 +97,17 @@ export class PagoRedirectPage implements OnInit {
   getEstadoIcon(estado: string): string {
     switch (estado) {
       case 'completado':
-        return 'checkmark-circle';
+        return 'checkmark-circle-outline';
       case 'pendiente':
-        return 'time';
+        return 'time-outline';
+      case 'PENDING':
+        return 'time-outline';
       case 'procesando':
-        return 'refresh-circle';
+        return 'refresh-circle-outline';
       case 'rechazado':
-        return 'close-circle';
+        return 'close-circle-outline';
       default:
-        return 'time';
+        return 'time-outline';
     }
   }
 
@@ -114,6 +116,8 @@ export class PagoRedirectPage implements OnInit {
       case 'completado':
         return 'Pago Completado';
       case 'pendiente':
+        return 'Pago Pendiente';
+      case 'PENDING':
         return 'Pago Pendiente';
       case 'procesando':
         return 'Procesando Pago';
@@ -135,7 +139,6 @@ export class PagoRedirectPage implements OnInit {
   }
 
   formatearMonto(monto: number | string): string {
-    console.log('🚀 ✅ ~ PagoRedirectPage ~ formatearMonto ~ monto:', monto);
     return this.pagosService.formatearMonto(monto);
   }
 

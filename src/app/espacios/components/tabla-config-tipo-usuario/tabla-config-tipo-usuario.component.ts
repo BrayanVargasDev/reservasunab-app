@@ -40,6 +40,7 @@ import { ResponsiveTableDirective } from '@app/shared/directives/responsive-tabl
 import { TipoUsuario } from '@shared/enums';
 import { createTipoUsuarioConfig } from '@espacios/actions';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -56,6 +57,7 @@ interface Util {
     AccionesTablaComponent,
     ResponsiveTableDirective,
     TableExpansorComponent,
+    UpperFirstPipe,
   ],
   templateUrl: './tabla-config-tipo-usuario.component.html',
   styleUrl: './tabla-config-tipo-usuario.component.scss',

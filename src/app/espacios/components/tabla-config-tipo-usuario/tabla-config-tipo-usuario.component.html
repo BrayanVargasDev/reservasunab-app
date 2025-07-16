@@ -15,7 +15,7 @@
         : null
     "
   >
-    {{ (context.getValue() === null ? 'activo' : 'inactivo') | titlecase }}
+    {{ (context.getValue() === null ? 'activo' : 'inactivo') | upperFirst }}
   </div>
 </ng-template>
 
@@ -90,7 +90,6 @@
         ></app-table-expansor>
       </td>
       }
-      <td></td>
       <td class="p-2">
         <select
           [formControl]="tipo_usuario"
@@ -101,7 +100,7 @@
           <option value="" disabled selected>Seleccione</option>
           @for (tipo of tiposUsuariosDisponibles(); track $index) {
           <option [value]="tipo.toLowerCase()">
-            {{ tipo | titlecase }}
+            {{ tipo | upperFirst }}
           </option>
           }
         </select>
@@ -208,16 +207,36 @@
           (tablaTipoUsuario.hiddenColumnIds().size > 0 ? 1 : 0)
         "
       >
-        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+        <div class="bg-base-100 rounded-md p-3 shadow-md w-full">
           @if (tablaTipoUsuario.hiddenColumnIds().size !== 0) {
-          <ul>
+          <div class="grid grid-cols-1 gap-4">
             @for (col of tablaTipoUsuarioConfig().getAllLeafColumns(); track
             $index) { @if (tablaTipoUsuario.hiddenColumnIds().has(col.id)) {
-            <li class="flex my-2 flex-row gap-2 items-center">
-              <span class="font-bold text-base-content">
+            <div class="flex flex-col gap-2">
+              <span class="font-bold text-base-content text-sm">
                 {{ col.columnDef.header }}:
               </span>
-              <span>
+              <div>
+                @if (espaciosConfigService.filaConfigEditando()[row.original.id]
+                && esColumnaEditable(col.id)) { @switch (col.id) { @case
+                ('porcentaje_descuento') {
+                <input
+                  [formControl]="porcentaje_descuento"
+                  class="input input-sm h-9 w-full"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                />
+                } @case ('retraso_reserva') {
+                <input
+                  [formControl]="minutos_retraso"
+                  class="input input-sm h-9 w-full"
+                  type="number"
+                  min="0"
+                  step="1"
+                />
+                } } } @else {
                 <ng-container
                   *flexRender="
                     tablaTipoUsuario.getCell(col, row).column.columnDef.cell;
@@ -227,10 +246,11 @@
                 >
                   <div [innerHTML]="cell"></div>
                 </ng-container>
-              </span>
-            </li>
+                }
+              </div>
+            </div>
             } }
-          </ul>
+          </div>
           }
         </div>
       </td>

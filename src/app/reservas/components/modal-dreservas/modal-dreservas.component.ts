@@ -25,10 +25,17 @@ import {
   Disponibilidad,
   ReservaEspaciosDetalles,
 } from '@reservas/interfaces/reserva-espacio-detalle.interface';
+import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
+import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
 
 @Component({
   selector: 'modal-dreservas',
-  imports: [CommonModule, WebIconComponent, UpperFirstPipe],
+  imports: [
+    CommonModule,
+    WebIconComponent,
+    UpperFirstPipe,
+    InfoReservaComponent,
+  ],
   templateUrl: './modal-dreservas.component.html',
   styleUrl: './modal-dreservas.component.scss',
 })
@@ -121,7 +128,10 @@ export class ModalDreservasComponent {
     return `${environment.apiUrl}${ubicacion}`;
   }
 
-  public obtenerFechaDeApertura(configuracion: Configuracion): string {
+  public obtenerFechaDeApertura(
+    configuracion: Configuracion,
+    tipo_usuario_config: TipoUsuarioConfig[],
+  ): string {
     try {
       if (!configuracion) return 'No disponible';
 
@@ -139,9 +149,18 @@ export class ModalDreservasComponent {
         .split(':')
         .map(n => parseInt(n, 10));
 
+      const tipoUsuarioConfig = tipo_usuario_config.find(
+        config =>
+          config.tipo_usuario === this.authService.usuario()?.tipo_usuario,
+      );
+
+      const minutosTotales = tipoUsuarioConfig
+        ? minutos + tipoUsuarioConfig.retraso_reserva
+        : minutos;
+
       fechaApertura.set({
         hour: horas,
-        minute: minutos,
+        minute: minutosTotales,
         second: 0,
         millisecond: 0,
       });
@@ -165,8 +184,6 @@ export class ModalDreservasComponent {
       ? moment(fechaFiltro, 'YYYY-MM-DD').format('YYYY-MM-DD')
       : moment().format('YYYY-MM-DD');
 
-    console.log({ base, fechaBase, item });
-
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     this.dreservasService
@@ -175,31 +192,28 @@ export class ModalDreservasComponent {
         if (!response.data) {
           this.alertaService.error(
             `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
-            6 * 1000,
+            3 * 1000,
             this.alertaModalReservas(),
-            'flex justify-center transition-all ease-in-out w-full',
+            'flex justify-center transition-all ease-in-out w-full text-lg',
           );
           this.dreservasService.setCargando(false);
           return;
         }
 
-        // Establecer el estado del resumen con la respuesta del servidor
         this.dreservasService.setEstadoResumen(response.data);
         this.dreservasService.setResumen(true);
         this.dreservasService.setCargando(false);
       })
       .catch(error => {
-        console.error('Error al iniciar la reserva:', error.error);
-
         const mensajeError =
           error.error?.error ||
           'Error al iniciar la reserva. Por favor, inténtelo de nuevo.';
 
         this.alertaService.error(
           mensajeError,
-          6 * 1000,
+          3 * 1000,
           this.alertaModalReservas(),
-          'flex justify-center transition-all ease-in-out w-full',
+          'flex justify-center transition-all ease-in-out w-full text-lg',
         );
         this.dreservasService.setCargando(false);
       });
@@ -216,33 +230,29 @@ export class ModalDreservasComponent {
           if (!response.data) {
             this.alertaService.error(
               `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
-              6 * 1000,
+              3 * 1000,
               this.alertaModalReservas(),
-              'flex justify-center transition-all ease-in-out w-full',
+              'flex justify-center transition-all ease-in-out w-full text-lg',
             );
             this.dreservasService.setCargando(false);
             return;
           }
 
-          // Establecer el estado del pago con la respuesta del servidor
           this.dreservasService.setPago(false);
           this.dreservasService.setEstadoResumen(null);
           this.dreservasService.setResumen(false);
-          this.dreservasService.setCargando(false);
           window.location.href = response.data;
         })
         .catch(error => {
-          console.error('Error al procesar el pago:', error.error);
-
           const mensajeError =
             error.error?.error ||
             'Error al procesar el pago. Por favor, inténtelo de nuevo.';
 
           this.alertaService.error(
             mensajeError,
-            6 * 1000,
+            4 * 1000,
             this.alertaModalReservas(),
-            'flex justify-center transition-all ease-in-out w-full',
+            'flex justify-center transition-all ease-in-out w-full text-lg',
           );
           this.dreservasService.setCargando(false);
         });

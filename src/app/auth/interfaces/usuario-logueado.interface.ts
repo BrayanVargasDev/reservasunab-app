@@ -1,4 +1,5 @@
 import { Rol, Permiso } from '@permisos/interfaces';
+import { TipoUsuario } from '@shared/enums';
 
 export interface UsuarioLogueado {
   id: number;
@@ -8,4 +9,5 @@ export interface UsuarioLogueado {
   rol: Rol;
   token: string;
   permisos: Permiso[];
+  tipo_usuario: TipoUsuario;
 }

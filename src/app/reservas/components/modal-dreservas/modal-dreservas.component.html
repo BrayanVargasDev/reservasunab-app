@@ -32,116 +32,9 @@
       </div>
 
       <!-- Información de la reserva -->
-      <div class="bg-base-200 rounded-lg p-6 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Espacio -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="home-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Espacio:</span>
-              <p class="font-medium">
-                {{ estadoResumen()?.nombre_espacio | upperFirst }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Sede -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="location-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Sede:</span>
-              <p class="font-medium">{{ estadoResumen()?.sede | uppercase }}</p>
-            </div>
-          </div>
-
-          <!-- Fecha -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="calendar-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Fecha:</span>
-              <p class="font-medium">
-                {{ estadoResumen()?.fecha }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Hora -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="time-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Hora de inicio:</span>
-              <p class="font-medium">{{ estadoResumen()?.hora_inicio }}</p>
-            </div>
-          </div>
-
-          <!-- Duración -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="hourglass-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Duración:</span>
-              <p class="font-medium">{{ estadoResumen()?.duracion }} hora(s)</p>
-            </div>
-          </div>
-
-          <!-- Usuario -->
-          <div class="flex items-center">
-            <app-web-icon
-              nombreIcono="person-outline"
-              estilos="h-6 w-6 mr-3 text-primary"
-            ></app-web-icon>
-            <div>
-              <span class="text-sm text-base-content/70">Reservado por:</span>
-              <p class="font-medium">{{ estadoResumen()?.usuario_reserva }}</p>
-              <p class="text-sm text-base-content/50">
-                {{ estadoResumen()?.codigo_usuario }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Valor si existe -->
-        @if (estadoResumen()?.valor && estadoResumen()?.valor! > 0) {
-        <div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <app-web-icon
-                nombreIcono="card-outline"
-                estilos="h-5 w-5 mr-3 text-success"
-              ></app-web-icon>
-              <span class="text-lg font-semibold">Valor total:</span>
-            </div>
-            <span class="text-2xl font-bold text-success">
-              ${{ estadoResumen()?.valor?.toLocaleString('es-CO') }}
-            </span>
-          </div>
-        </div>
-        }
-      </div>
-
-      <!-- Mensaje de éxito final -->
-      @if (estadoResumen()?.estado === 'completada') {
-      <div class="text-center text-base-content/70">
-        <p class="text-lg">¡Tu reserva ha sido confirmada exitosamente!</p>
-        <p class="text-sm mt-1">
-          Recibirás un correo con los detalles de tu reserva.
-        </p>
-      </div>
-      }
+      <dreservas-info-reserva
+        [resumen]="estadoResumen()"
+      ></dreservas-info-reserva>
     </div>
     } @else {
     <div class="h-full flex-col mb-2 max-h-[calc(70vh-5.75rem)]">
@@ -169,7 +62,7 @@
           </p>
           <span class="inline-block text-sm mt-4">
             <span class="font-semibold">Reservar desde: </span>
-            {{ obtenerFechaDeApertura(espacioDetallesQuery?.configuracion!) }}
+            {{ obtenerFechaDeApertura(espacioDetallesQuery?.configuracion!, espacioDetallesQuery?.tipo_usuario_config!) }}
           </span>
           <br />
         </div>
@@ -182,34 +75,36 @@
           class="grid gap-2 items-center grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]"
         >
           @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
-          <div
+          <button
+            type="button"
             (click)="
               item.disponible
                 ? iniciarReserva(espacioDetallesQuery, item)
                 : null
             "
             class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn"
-            [class.cursor-pointer]="item.disponible"
-            [class.cursor-not-allowed]="!item.disponible"
-            [class.transition-all]="item.disponible"
-            [class.duration-200]="item.disponible"
-            [style.background-color]="item.estilos.background_color"
-            [style.color]="item.estilos.text_color"
-            [style.border-color]="item.estilos.text_color"
+            [disabled]="item.reserva_pasada || item.novedad"
+            [class.btn-disabled]="item.reserva_pasada"
+            [class.btn-accent]="item.disponible"
+            [class.btn-success]="item.mi_reserva"
+            [class.btn-error]="!item.mi_reserva && item.reservada"
+            [class.pointer-events-none]="
+              item.novedad || (!item.disponible && !item.mi_reserva)
+            "
             [ngClass]="{
               'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
             }"
           >
             @if (item.disponible) {
             <span>{{ item.hora_inicio }}</span>
-            } @else if (item.reserva && !item.novedad) {
-            <span class="text-wrap text-base leading-tight"
-              >{{ item.hora_inicio }} - Reservado</span
-            >
-            } @else if (!item.reserva && item.novedad) {
-            <span>{{ item.hora_inicio }} - {{ item.novedad.nombre }}</span>
+            } @else if (item.reservada && !item.novedad) {
+            <span class="text-wrap text-base leading-tight">
+              {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
+            </span>
+            } @else if (!item.reservada && item.novedad) {
+            <span>{{ item.hora_inicio }} - {{ item.novedad_desc }}</span>
             }
-          </div>
+          </button>
           }
         </div>
       </div>
