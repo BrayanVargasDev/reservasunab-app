@@ -12,4 +12,8 @@ export interface Categoria {
   direccion?: string;
   telefono?: string;
   grupo?: Grupo;
+  reservas_estudiante?: number;
+  reservas_administrativo?: number;
+  reservas_externo?: number;
+  reservas_egresado?: number;
 }

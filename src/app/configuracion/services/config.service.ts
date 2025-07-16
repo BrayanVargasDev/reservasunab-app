@@ -36,6 +36,7 @@ export class ConfigService {
 
   private _pestana = signal<'categorias' | 'grupos'>('categorias');
   private _alertaConfig = signal<ViewContainerRef | null>(null);
+  private _categoriaSeleccionada = signal<Categoria | null>(null);
 
   // Categorías
   private _modoCreacionCategoria = signal<boolean>(false);
@@ -65,6 +66,7 @@ export class ConfigService {
   public datosPaginadorCategorias = computed(() =>
     this._datosPaginadorCategorias(),
   );
+  public categoriaSeleccionada = computed(() => this._categoriaSeleccionada());
 
   // Grupos
   public modoCreacionGrupo = computed(() => this._modoCreacionGrupo());
@@ -191,10 +193,15 @@ export class ConfigService {
     this._alertaConfig.set(alertaConfig);
   }
 
+  public setCategoriaeleccionada(pantalla: Categoria | null) {
+    this._categoriaSeleccionada.set(pantalla);
+  }
+
   public resetAll() {
     // Reset categorías
     this._modoCreacionCategoria.set(false);
     this._filaCategoriaEditando.set({});
+    this._categoriaSeleccionada.set(null);
     this._paginacionCategorias.set({
       pageIndex: 0,
       pageSize: 10,

@@ -1,4 +1,7 @@
 <ng-template #estadoCell let-context>
+  @if(context.row.original.id === -1) {
+  <span class="badge badge-outline badge-info">Nuevo</span>
+  } @else {
   <div
     [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
     [ngClass]="{
@@ -17,6 +20,52 @@
   >
     {{ (context.getValue() === null ? 'activo' : 'inactivo') | upperFirst }}
   </div>
+  }
+</ng-template>
+
+<ng-template #nombreCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaCategoriaEditando()[context.row.original.id]) {
+  <input
+    [formControl]="nombre"
+    placeholder="Inserte nombre"
+    pattern="[a-zA-Z0-9áéíóú ]*"
+    class="input input-sm h-9 placeholder:text-gray-400"
+    type="text"
+  />
+  } @else {
+  <span class="font-semibold">{{ context.getValue() | upperFirst }}</span>
+  }
+</ng-template>
+
+<ng-template #grupoCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaCategoriaEditando()[context.row.original.id]) {
+  <select
+    [formControl]="grupo"
+    class="select input-sm h-9 placeholder:text-gray-400"
+  >
+    <option value="" disabled selected>Seleccione</option>
+    @for(grupo of appService.gruposQuery.data(); track $index) {
+    <option [value]="grupo.id">
+      {{ grupo.nombre | upperFirst }}
+    </option>
+    }
+  </select>
+  } @else {
+  <span>{{ context.getValue() | upperFirst }}</span>
+  }
+</ng-template>
+
+<ng-template #fechaCell let-context>
+  @if (context.row.original.id === -1 ||
+  configService.filaCategoriaEditando()[context.row.original.id]) {
+  <span>{{ fechaActual() }}</span>
+  } @else {
+  <span>
+    {{ context.getValue() }}
+  </span>
+  }
 </ng-template>
 
 <table
@@ -29,11 +78,7 @@
     @for (headerGroup of tablaCategorias().getHeaderGroups(); track
     headerGroup.id) {
     <tr>
-      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
-      <th
-        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
-      ></th>
-      } @for (header of headerGroup.headers; track header.id) {
+      @for (header of headerGroup.headers; track header.id) {
       <th
         class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
         [colSpan]="header.colSpan"
@@ -55,17 +100,8 @@
     }
   </thead>
   <tbody>
-    @if (modoCreacion()) {
+    <!-- @if (modoCreacion()) {
     <tr class="bg-base-100">
-      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
-      <td class="!pe-0">
-        <app-table-expansor
-          [disabled]="appService.editando()"
-          [isExpanded]="false"
-          (toggleExpand)="(null)"
-        ></app-table-expansor>
-      </td>
-      }
       <td class="p-2">
         <input
           [formControl]="nombre"
@@ -94,14 +130,9 @@
       <td class="p-2">
         <span class="text-sm"></span>
       </td>
-      <td class="p-2">
-        <acciones-tabla
-          [acciones]="accionesNuevo()"
-          [ngClass]="'flex justify-between'"
-        ></acciones-tabla>
-      </td>
     </tr>
-    } @if (!categoriasQuery.length && !modoCreacion()) {
+    }  -->
+    @if (!categoriasQuery.length && !modoCreacion()) {
     <tr>
       <td
         [attr.colspan]="
@@ -115,38 +146,8 @@
     </tr>
     } @else { @for (row of tablaCategorias().getRowModel().rows; track row.id) {
     <tr class="bg-base-100">
-      @if (tablaCategoria.hiddenColumnIds().size !== 0) {
-      <td class="!pe-0">
-        <app-table-expansor
-          [disabled]="appService.editando()"
-          [isExpanded]="row.getIsExpanded()"
-          (toggleExpand)="row.toggleExpanded()"
-        ></app-table-expansor>
-      </td>
-      } @for (cell of row.getVisibleCells(); track cell.id) {
+      @for (cell of row.getVisibleCells(); track cell.id) {
       <td class="py-1">
-        @if (configService.filaCategoriaEditando()[row.original.id] &&
-        esColumnaEditable(cell.column.id)) { @switch (cell.column.id) { @case
-        ('nombre') {
-        <input
-          [formControl]="nombre"
-          class="input input-sm h-9 w-full"
-          type="text"
-          pattern="[a-zA-Z0-9áéíóú ]*"
-        />
-        } @case('grupo') {
-        <select
-          [formControl]="grupo"
-          class="select input-sm h-9 placeholder:text-gray-400"
-        >
-          <option value="" disabled selected>Seleccione</option>
-          @for (grupo of appService.gruposQuery.data(); track $index) {
-          <option [value]="grupo.id">
-            {{ grupo.nombre | upperFirst }}
-          </option>
-          }
-        </select>
-        } } } @else {
         <ng-container
           *flexRender="
             cell.column.columnDef.cell;
@@ -156,41 +157,129 @@
         >
           <div [innerHTML]="cell"></div>
         </ng-container>
-        }
       </td>
       }
     </tr>
-    @if (row.getIsExpanded() && tablaCategoria.hiddenColumnIds().size !== 0) {
+    @if (row.getIsExpanded()) {
     <tr class="bg-base-300 border-none">
-      <td
-        [attr.colspan]="
-          row.getVisibleCells().length +
-          (tablaCategoria.hiddenColumnIds().size > 0 ? 1 : 0)
-        "
-      >
-        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-4 shadow-md w-full">
+          <h4 class="text-lg font-semibold mb-4 text-center">
+            Configuración de reservas por tipo de usuario
+          </h4>
+
+          <div
+            class="grid w-full grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-4"
+          >
+            <!-- Reservas Estudiante -->
+            <div class="flex flex-col">
+              <label class="font-bold text-base-content text-sm mb-2">
+                Estudiante:
+              </label>
+              @if (row.original.id === -1 ||
+              configService.filaCategoriaEditando()[row.original.id]) {
+              <input
+                [formControl]="reservasEstudiante"
+                class="input input-sm h-9 w-full"
+                type="number"
+                min="0"
+                placeholder="Número de reservas"
+              />
+              } @else {
+              <span class="p-2 bg-base-200 rounded">
+                {{ row.original.reservas_estudiante || 'No definido' }}
+              </span>
+              }
+            </div>
+            <!-- Reservas Administrativo -->
+            <div class="flex flex-col">
+              <label class="font-bold text-base-content text-sm mb-2">
+                Administrativo:
+              </label>
+              @if (row.original.id === -1 ||
+              configService.filaCategoriaEditando()[row.original.id]) {
+              <input
+                [formControl]="reservasAdministrativo"
+                class="input input-sm h-9 w-full"
+                type="number"
+                min="0"
+                placeholder="Número de reservas"
+              />
+              } @else {
+              <span class="p-2 bg-base-200 rounded">
+                {{ row.original.reservas_administrativo || 'No definido' }}
+              </span>
+              }
+            </div>
+
+            <!-- Reservas Externo -->
+            <div class="flex flex-col">
+              <label class="font-bold text-base-content text-sm mb-2">
+                Externo:
+              </label>
+              @if (row.original.id === -1 ||
+              configService.filaCategoriaEditando()[row.original.id]) {
+              <input
+                [formControl]="reservasExterno"
+                class="input input-sm h-9 w-full"
+                type="number"
+                min="0"
+                placeholder="Número de reservas"
+              />
+              } @else {
+              <span class="p-2 bg-base-200 rounded">
+                {{ row.original.reservas_externo || 'No definido' }}
+              </span>
+              }
+            </div>
+
+            <!-- Reservas Egresado -->
+            <div class="flex flex-col">
+              <label class="font-bold text-base-content text-sm mb-2">
+                Egresado:
+              </label>
+              @if (row.original.id === -1 ||
+              configService.filaCategoriaEditando()[row.original.id]) {
+              <input
+                [formControl]="reservasEgresado"
+                class="input input-sm h-9 w-full"
+                type="number"
+                min="0"
+                placeholder="Número de reservas"
+              />
+              } @else {
+              <span class="p-2 bg-base-200 rounded">
+                {{ row.original.reservas_egresado || 'No definido' }}
+              </span>
+              }
+            </div>
+          </div>
+
           @if (tablaCategoria.hiddenColumnIds().size !== 0) {
-          <ul>
-            @for (col of tablaCategorias().getAllLeafColumns(); track $index) {
-            @if (tablaCategoria.hiddenColumnIds().has(col.id)) {
-            <li class="flex my-2 flex-row gap-2 items-center">
-              <span class="font-bold text-base-content">
-                {{ col.columnDef.header }}:
-              </span>
-              <span>
-                <ng-container
-                  *flexRender="
-                    tablaCategoria.getCell(col, row).column.columnDef.cell;
-                    props: tablaCategoria.getCell(col, row).getContext();
-                    let cell
-                  "
-                >
-                  <div [innerHTML]="cell"></div>
-                </ng-container>
-              </span>
-            </li>
-            } }
-          </ul>
+          <div class="divider my-4"></div>
+          <div class="space-y-2">
+            <ul>
+              @for (col of tablaCategorias.getAllLeafColumns(); track $index) {
+              @if (tablaCategoria.hiddenColumnIds().has(col.id)) {
+              <li class="flex my-2 flex-row gap-2 items-center">
+                <span class="font-bold text-base-content">
+                  {{ col.columnDef.header }}:
+                </span>
+                <span>
+                  <ng-container
+                    *flexRender="
+                      tablaCategoria.getCell(col, row).column.columnDef.cell;
+                      props: tablaCategoria.getCell(col, row).getContext();
+                      let cell
+                    "
+                  >
+                    <div [innerHTML]="cell"></div>
+                  </ng-container>
+                </span>
+              </li>
+              } }
+            </ul>
+          </div>
           }
         </div>
       </td>

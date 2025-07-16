@@ -50,10 +50,8 @@ interface Util {
   imports: [
     CommonModule,
     ResponsiveTableDirective,
-    AccionesTablaComponent,
     FlexRenderDirective,
     ReactiveFormsModule,
-    TableExpansorComponent,
     UpperFirstPipe,
     PaginadorComponent,
   ],
@@ -76,14 +74,29 @@ export class CategoriasComponent implements OnDestroy {
     Validators.required,
     Validators.minLength(3),
   ]);
-
   public grupo = new FormControl<number | null>(null, [Validators.required]);
+  public reservasEstudiante = new FormControl<number | null>(null, [
+    Validators.min(0),
+  ]);
+  public reservasAdministrativo = new FormControl<number | null>(null, [
+    Validators.min(0),
+  ]);
+  public reservasExterno = new FormControl<number | null>(null, [
+    Validators.min(0),
+  ]);
+  public reservasEgresado = new FormControl<number | null>(null, [
+    Validators.min(0),
+  ]);
 
   public modoCreacion = computed(() =>
     this.configService.modoCreacionCategoria(),
   );
 
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
+  public nombreCell = viewChild.required<TemplateRef<Util>>('nombreCell');
+  public grupoCell = viewChild.required<TemplateRef<Util>>('grupoCell');
+  public fechaCell = viewChild.required<TemplateRef<Util>>('fechaCell');
+
   public accionesNuevo = computed(() => [
     {
       icono: 'remove-circle-outline',
@@ -101,22 +114,33 @@ export class CategoriasComponent implements OnDestroy {
 
   private columnasPorDefecto = signal<ColumnDef<Categoria>[]>([
     {
+      id: 'expansor',
+      header: '',
+      size: 55,
+      cell: context =>
+        flexRenderComponent(TableExpansorComponent, {
+          inputs: {
+            isExpanded: context.row.getIsExpanded(),
+            disabled: this.appService.editando(),
+          },
+          outputs: {
+            toggleExpand: () => this.onToggleRow(context.row),
+          },
+        }),
+    },
+    {
       id: 'nombre',
       accessorKey: 'nombre',
       header: 'Nombre',
-      cell: info =>
-        `<span class="font-semibold">${this.upperFirstPipe.transform(
-          info.getValue() as unknown as string,
-        )}</span>`,
+      size: 200,
+      cell: this.nombreCell,
     },
     {
       id: 'grupo',
       accessorKey: 'grupo.nombre',
       size: 150,
       header: 'Grupo',
-      cell: info =>
-        this.upperFirstPipe.transform(info.getValue() as unknown as string) ||
-        'Sin grupo',
+      cell: this.grupoCell,
     },
     {
       accessorKey: 'creado_en',
@@ -128,6 +152,7 @@ export class CategoriasComponent implements OnDestroy {
           ? date.format('DD/MM/YYYY hh:mm a')
           : 'Fecha inválida';
       },
+      cell: this.fechaCell,
     },
     {
       id: 'estado',
@@ -139,9 +164,33 @@ export class CategoriasComponent implements OnDestroy {
       id: 'acciones',
       header: 'Acciones',
       cell: context => {
-        const id = context.row.original.id;
-        const enEdicion = this.configService.filaCategoriaEditando()[id];
+        const categoria = context.row.original;
+        const id = categoria.id;
 
+        // Si es la fila de creación (ID = -1)
+        if (id === -1) {
+          return flexRenderComponent(AccionesTablaComponent, {
+            inputs: {
+              acciones: [
+                {
+                  tooltip: 'Cancelar',
+                  icono: 'remove-circle-outline',
+                  color: 'error',
+                  eventoClick: (event: Event) => this.cancelarCreacion(),
+                },
+                {
+                  tooltip: 'Guardar',
+                  icono: 'save-outline',
+                  color: 'success',
+                  eventoClick: (event: Event) => this.onGuardarNuevo(),
+                },
+              ],
+            },
+          });
+        }
+
+        // Para filas normales
+        const enEdicion = this.configService.filaCategoriaEditando()[id];
         const accionesVerificadas = [];
 
         if (this.authService.tienePermisos('ESP000011')) {
@@ -231,8 +280,12 @@ export class CategoriasComponent implements OnDestroy {
         this.configService.pestana();
 
         if (this.configService.pestana() !== 'categorias') {
-          this.nombre.reset();
-          this.grupo.reset();
+          this.nombre.reset(null);
+          this.grupo.reset(null);
+          this.reservasEstudiante.reset(null);
+          this.reservasAdministrativo.reset(null);
+          this.reservasExterno.reset(null);
+          this.reservasEgresado.reset(null);
           this.categoriaEnEdicion.set(null);
           this.configService.resetAll();
         }
@@ -244,7 +297,28 @@ export class CategoriasComponent implements OnDestroy {
   }
 
   get categoriasQuery() {
-    return this.configService.categoriasQuery.data() || [];
+    const categorias = this.configService.categoriasQuery.data() || [];
+
+    if (this.modoCreacion()) {
+      const categoriaVacia: Categoria = {
+        id: -1, // ID negativo para identificar la fila de creación
+        nombre: '',
+        id_grupo: undefined,
+        reservas_estudiante: undefined,
+        reservas_administrativo: undefined,
+        reservas_externo: undefined,
+        reservas_egresado: undefined,
+        creado_en: this.fechaActual(),
+        eliminado_en: null,
+        creado_por: this.authService.usuario()!.id,
+        actualizado_en: '',
+        actualizado_por: null,
+        eliminado_por: null,
+        grupo: undefined, // Agregar el grupo como undefined para evitar errores
+      };
+      return [categoriaVacia, ...categorias];
+    }
+    return categorias;
   }
 
   public onPageChange(estado: PaginationState): void {
@@ -252,7 +326,14 @@ export class CategoriasComponent implements OnDestroy {
   }
 
   public esColumnaEditable(columnId: string): boolean {
-    const columnasEditables = ['nombre', 'grupo'];
+    const columnasEditables = [
+      'nombre',
+      'grupo',
+      'reservas_estudiante',
+      'reservas_administrativo',
+      'reservas_externo',
+      'reservas_egresado',
+    ];
     return columnasEditables.includes(columnId);
   }
 
@@ -301,8 +382,13 @@ export class CategoriasComponent implements OnDestroy {
     this.appService.setEditando(true);
     this.categoriaEnEdicion.set(null);
 
+    // Limpiar todos los controles de formulario
     this.nombre.reset('');
-    this.grupo.reset();
+    this.grupo.reset(null);
+    this.reservasEstudiante.reset(null);
+    this.reservasAdministrativo.reset(null);
+    this.reservasExterno.reset(null);
+    this.reservasEgresado.reset(null);
 
     this.cdr.detectChanges();
   }
@@ -318,9 +404,23 @@ export class CategoriasComponent implements OnDestroy {
     setTimeout(() => {
       this.nombre.setValue(tipoUsuarioConfig.nombre);
       this.grupo.setValue(tipoUsuarioConfig.id_grupo ?? null);
+      this.reservasEstudiante.setValue(
+        tipoUsuarioConfig.reservas_estudiante ?? null,
+      );
+      this.reservasAdministrativo.setValue(
+        tipoUsuarioConfig.reservas_administrativo ?? null,
+      );
+      this.reservasExterno.setValue(tipoUsuarioConfig.reservas_externo ?? null);
+      this.reservasEgresado.setValue(
+        tipoUsuarioConfig.reservas_egresado ?? null,
+      );
 
       this.nombre.markAsPristine();
       this.grupo.markAsPristine();
+      this.reservasEstudiante.markAsPristine();
+      this.reservasAdministrativo.markAsPristine();
+      this.reservasExterno.markAsPristine();
+      this.reservasEgresado.markAsPristine();
 
       this.cdr.detectChanges();
     }, 0);
@@ -329,13 +429,23 @@ export class CategoriasComponent implements OnDestroy {
   public onCancelarEdicion(row: Row<Categoria>) {
     const id = row.original.id;
     this.configService.setEditandoFilaCategoria(id, false);
-    this.configService.setModoCreacionCategoria(false);
     this.appService.setEditando(false);
 
     this.categoriaEnEdicion.set(null);
 
-    this.nombre.reset('');
-    this.grupo.reset();
+    // Colapsar todas las filas expandidas
+    this.tableState.update(state => ({
+      ...state,
+      expanded: {},
+    }));
+
+    // Limpiar todos los controles de formulario
+    this.nombre.reset(null);
+    this.grupo.reset(null);
+    this.reservasEstudiante.reset(null);
+    this.reservasAdministrativo.reset(null);
+    this.reservasExterno.reset(null);
+    this.reservasEgresado.reset(null);
 
     this.cdr.detectChanges();
   }
@@ -344,8 +454,19 @@ export class CategoriasComponent implements OnDestroy {
     this.configService.setModoCreacionCategoria(false);
     this.appService.setEditando(false);
 
-    this.nombre.reset('');
-    this.grupo.reset();
+    // Colapsar todas las filas expandidas
+    this.tableState.update(state => ({
+      ...state,
+      expanded: {},
+    }));
+
+    // Limpiar todos los controles de formulario
+    this.nombre.reset(null);
+    this.grupo.reset(null);
+    this.reservasEstudiante.reset(null);
+    this.reservasAdministrativo.reset(null);
+    this.reservasExterno.reset(null);
+    this.reservasEgresado.reset(null);
 
     this.cdr.detectChanges();
   }
@@ -367,6 +488,10 @@ export class CategoriasComponent implements OnDestroy {
     const nuevaCategoria: Partial<Categoria> = {
       nombre: this.nombre.value?.trim(),
       id_grupo: this.grupo.value ?? 0,
+      reservas_estudiante: this.reservasEstudiante.value ?? undefined,
+      reservas_administrativo: this.reservasAdministrativo.value ?? undefined,
+      reservas_externo: this.reservasExterno.value ?? undefined,
+      reservas_egresado: this.reservasEgresado.value ?? undefined,
     };
 
     try {
@@ -378,6 +503,12 @@ export class CategoriasComponent implements OnDestroy {
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+
+      // Colapsar todas las filas expandidas
+      this.tableState.update(state => ({
+        ...state,
+        expanded: {},
+      }));
 
       this.cancelarCreacion();
       this.configService.categoriasQuery.refetch();
@@ -413,6 +544,10 @@ export class CategoriasComponent implements OnDestroy {
       ...categoria,
       nombre: this.nombre.value!,
       id_grupo: this.grupo.value!,
+      reservas_estudiante: this.reservasEstudiante.value ?? undefined,
+      reservas_administrativo: this.reservasAdministrativo.value ?? undefined,
+      reservas_externo: this.reservasExterno.value ?? undefined,
+      reservas_egresado: this.reservasEgresado.value ?? undefined,
     };
 
     try {
@@ -428,12 +563,23 @@ export class CategoriasComponent implements OnDestroy {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
 
+      // Colapsar todas las filas expandidas
+      this.tableState.update(state => ({
+        ...state,
+        expanded: {},
+      }));
+
       this.configService.setEditandoFilaCategoria(categoria.id, false);
       this.appService.setEditando(false);
       this.categoriaEnEdicion.set(null);
 
-      this.nombre.reset('');
-      this.grupo.reset();
+      // Limpiar todos los controles de formulario
+      this.nombre.reset(null);
+      this.grupo.reset(null);
+      this.reservasEstudiante.reset(null);
+      this.reservasAdministrativo.reset(null);
+      this.reservasExterno.reset(null);
+      this.reservasEgresado.reset(null);
 
       this.configService.categoriasQuery.refetch();
       this.appService.categoriasQuery.refetch();
@@ -449,13 +595,44 @@ export class CategoriasComponent implements OnDestroy {
     }
   }
 
+  public onToggleRow(row: Row<Categoria>, editing = false) {
+    const rowId = row.id;
+    const currentExpanded = this.tableState().expanded as Record<
+      string,
+      boolean
+    >;
+
+    let newExpanded: Record<string, boolean>;
+
+    if (editing) {
+      newExpanded = { [rowId]: true };
+    } else {
+      newExpanded = currentExpanded[rowId] ? {} : { [rowId]: true };
+      if (currentExpanded[rowId]) {
+        this.configService.setCategoriaeleccionada(null);
+      }
+    }
+
+    this.tableState.update(state => ({
+      ...state,
+      expanded: newExpanded,
+    }));
+  }
+
   ngOnDestroy() {
     this.configService.setModoCreacionCategoria(false);
     this.appService.setEditando(false);
     this.configService.setEditandoFilaCategoria(0, false);
     this.categoriaEnEdicion.set(null);
-    this.nombre.reset();
-    this.grupo.reset();
+
+    // Limpiar todos los controles de formulario
+    this.nombre.reset(null);
+    this.grupo.reset(null);
+    this.reservasEstudiante.reset(null);
+    this.reservasAdministrativo.reset(null);
+    this.reservasExterno.reset(null);
+    this.reservasEgresado.reset(null);
+
     this.cdr.detectChanges();
   }
 }
