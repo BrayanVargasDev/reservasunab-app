@@ -32,7 +32,7 @@
               {{ usuario.email }}
             </p>
             <p class="text-xs opacity-80 text-base-content">
-              {{ usuario.rol.nombre }}
+              {{ obtenerLeyenda(usuario) | upperFirst }}
             </p>
             }
           </div>
@@ -73,10 +73,7 @@
 
       <!-- Footer del drawer con botón de cerrar sesión -->
       <div class="px-4 pb-4">
-        <button
-          class="btn btn-outline btn-error w-full"
-          (click)="logout()"
-        >
+        <button class="btn btn-outline btn-error w-full" (click)="logout()">
           <app-web-icon
             nombreIcono="log-out-outline"
             estilos="w-5 h-5"

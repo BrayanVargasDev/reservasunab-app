@@ -56,11 +56,11 @@ export class SideMenuComponent {
 
     let pantallasVisibles = pantallas.filter(pantalla => pantalla.visible);
 
-    if (!usuario || !usuario.rol) {
+    if (!usuario) {
       return [];
     }
 
-    if (usuario.rol.nombre?.toLowerCase() === 'administrador') {
+    if (usuario.rol?.nombre?.toLowerCase() === 'administrador') {
       return pantallasVisibles.sort((a, b) => a.orden - b.orden);
     }
 

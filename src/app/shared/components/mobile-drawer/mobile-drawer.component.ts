@@ -12,6 +12,8 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
 import { AppService } from '@app/app.service';
 import { AuthService } from '@auth/services/auth.service';
 import { Pantalla } from '../../interfaces/pantalla.interface';
+import { UpperFirstPipe } from '@shared/pipes';
+import { UsuarioLogueado } from '../../../auth/interfaces/usuario-logueado.interface';
 
 @Component({
   selector: 'app-mobile-drawer',
@@ -23,6 +25,7 @@ import { Pantalla } from '../../interfaces/pantalla.interface';
     RouterLink,
     RouterLinkActive,
     WebIconComponent,
+    UpperFirstPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -40,11 +43,11 @@ export class MobileDrawerComponent implements OnDestroy {
 
     let pantallasVisibles = pantallas.filter(pantalla => pantalla.visible);
 
-    if (!usuario || !usuario.rol) {
+    if (!usuario) {
       return [];
     }
 
-    if (usuario.rol.nombre?.toLowerCase() === 'administrador') {
+    if (usuario.rol?.nombre?.toLowerCase() === 'administrador') {
       return pantallasVisibles.sort((a, b) => a.orden - b.orden);
     }
 
@@ -68,7 +71,7 @@ export class MobileDrawerComponent implements OnDestroy {
     this.toggleListener = () => {
       this.toggleDrawer();
     };
-    
+
     document.addEventListener('toggle-mobile-drawer', this.toggleListener);
   }
 
@@ -83,10 +86,12 @@ export class MobileDrawerComponent implements OnDestroy {
    * Abre/cierra el drawer usando el checkbox de DaisyUI
    */
   toggleDrawer() {
-    const checkbox = document.getElementById('mobile-drawer-toggle') as HTMLInputElement;
+    const checkbox = document.getElementById(
+      'mobile-drawer-toggle',
+    ) as HTMLInputElement;
     if (checkbox) {
       checkbox.checked = !checkbox.checked;
-      
+
       // Controlar el scroll del body
       if (checkbox.checked) {
         document.body.classList.add('overflow-hidden');
@@ -100,7 +105,9 @@ export class MobileDrawerComponent implements OnDestroy {
    * Cierra el drawer
    */
   closeDrawer() {
-    const checkbox = document.getElementById('mobile-drawer-toggle') as HTMLInputElement;
+    const checkbox = document.getElementById(
+      'mobile-drawer-toggle',
+    ) as HTMLInputElement;
     if (checkbox) {
       checkbox.checked = false;
       document.body.classList.remove('overflow-hidden');
@@ -131,6 +138,14 @@ export class MobileDrawerComponent implements OnDestroy {
         console.error('Error al cerrar sesión:', error);
       },
     );
+  }
+
+  obtenerLeyenda(usuario: UsuarioLogueado): string {
+    if (usuario.rol) {
+      return usuario.rol.nombre!;
+    }
+
+    return usuario.tipo_usuario || 'Usuario';
   }
 
   /**
