@@ -30,10 +30,11 @@ import { AppService } from '@app/app.service';
 import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'espacio-general',
-  imports: [CommonModule, ReactiveFormsModule, ImagenDropComponent],
+  imports: [CommonModule, ReactiveFormsModule, ImagenDropComponent, UpperFirstPipe],
   templateUrl: './espacio-general.component.html',
   styleUrl: './espacio-general.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -198,7 +199,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
           this.estilosAlerta(),
         );
         this.espacioConfigService.espacioQuery.refetch();
-
+        this.espaciosService.espaciosQuery.refetch();
         this.cancelarEditar();
       })
       .catch((error: GeneralResponse<Espacio>) => {

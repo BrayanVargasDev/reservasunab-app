@@ -40,6 +40,7 @@ import { TableExpansorComponent } from '@shared/components/table-expansor/table-
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { effect } from '@angular/core';
+import { UpperFirstPipe } from '@shared/pipes';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -56,12 +57,14 @@ interface Util {
     ReactiveFormsModule,
     TableExpansorComponent,
     PaginadorComponent,
+    UpperFirstPipe,
   ],
   templateUrl: './grupos.component.html',
   styleUrl: './grupos.component.scss',
 })
 export class GruposComponent implements OnInit, OnDestroy {
   private injector = inject(Injector);
+  private upperFirstPipe = inject(UpperFirstPipe);
   private alertaService = inject(AlertasService);
   private cdr = inject(ChangeDetectorRef);
   private grupoEnEdicion = signal<Grupo | null>(null);
@@ -76,9 +79,7 @@ export class GruposComponent implements OnInit, OnDestroy {
     Validators.minLength(3),
   ]);
 
-  public modoCreacion = computed(() =>
-    this.configService.modoCreacionGrupo(),
-  );
+  public modoCreacion = computed(() => this.configService.modoCreacionGrupo());
 
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public accionesNuevo = computed(() => [
@@ -102,7 +103,9 @@ export class GruposComponent implements OnInit, OnDestroy {
       accessorKey: 'nombre',
       header: 'Nombre',
       cell: info =>
-        `<span class="capitalize font-semibold">${info.getValue()}</span>`,
+        `<span class="font-semibold">${this.upperFirstPipe.transform(
+          info.getValue() as unknown as string,
+        )}</span>`,
     },
     {
       accessorKey: 'creado_en',
@@ -392,10 +395,7 @@ export class GruposComponent implements OnInit, OnDestroy {
     };
 
     try {
-      await this.configService.actualizarGrupo(
-        grupo.id,
-        grupoActualizado,
-      );
+      await this.configService.actualizarGrupo(grupo.id, grupoActualizado);
 
       this.alertaService.success(
         'Grupo actualizado exitosamente.',

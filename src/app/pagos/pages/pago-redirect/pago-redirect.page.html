@@ -1,50 +1,63 @@
-<ion-content class="pago-redirect-content" [fullscreen]="true">
+<div class="h-screen overflow-hidden bg-base-200 flex flex-col">
   <!-- Loading State -->
+  @if (loading()) {
   <app-loading-spinner
-    *ngIf="loading"
     title="Verificando información del pago"
-    message="Por favor espera mientras procesamos tu solicitud...">
+    message="Por favor espera mientras procesamos tu solicitud..."
+  >
   </app-loading-spinner>
-
+  }
   <!-- Error State -->
+  @if (error() && !loading()) {
   <app-error-display
-    *ngIf="error && !loading"
-    [title]="'¡Ups! Algo salió mal'"
-    [message]="error"
+    [titulo]="'¡Ups! Algo salió mal'"
+    [mensaje]="error() ?? ''"
     [showRetry]="!!codigo"
     (retry)="reintentar()"
-    (goHome)="volver()">
+    (goHome)="volver()"
+  >
   </app-error-display>
+  }
 
   <!-- Success State -->
-  <div *ngIf="pagoInfo && !loading">
+  @if (pagoInfo() && !loading()) {
+  <div class="flex-1 overflow-y-auto">
     <app-pago-info-card
-      [pagoInfo]="pagoInfo"
+      [pagoInfo]="pagoInfo()!"
       [formatearMonto]="formatearMonto.bind(this)"
       [formatearFecha]="formatearFecha.bind(this)"
-      [obtenerMensajeEstado]="obtenerMensajeEstado.bind(this)">
+      [obtenerMensajeEstado]="obtenerMensajeEstado.bind(this)"
+    >
     </app-pago-info-card>
 
     <!-- Acciones -->
-    <div class="pago-actions">
-      <ion-button
-        fill="outline"
-        color="medium"
-        (click)="volver()"
-        expand="block">
-        <ion-icon name="arrow-back" slot="start"></ion-icon>
-        Volver al inicio
-      </ion-button>
+    <div class="w-full">
+      <div
+        class="flex flex-col md:flex-row items-center justify-center max-w-4xl mx-auto p-2 gap-2"
+      >
+        <button
+          class="btn btn-outline btn-ghost font-semibold h-11"
+          (click)="volver()"
+        >
+          <app-web-icon
+            nombreIcono="arrow-back-circle-outline"
+            estilos="h-5 w-5"
+          ></app-web-icon>
+          Volver al inicio
+        </button>
 
-      <ion-button
-        *ngIf="pagoInfo.estado === 'pendiente' || pagoInfo.estado === 'procesando'"
-        fill="solid"
-        color="primary"
-        (click)="reintentar()"
-        expand="block">
-        <ion-icon name="refresh" slot="start"></ion-icon>
-        Actualizar estado
-      </ion-button>
+        @if (pagoInfo()?.pago?.estado === 'pendiente' ||
+        pagoInfo()?.pago?.estado === 'procesando') {
+        <button
+          class="btn btn-primary font-semibold h-11"
+          (click)="reintentar()"
+        >
+          <app-web-icon nombreIcono="refresh-outline" estilos="h-5 w-5"></app-web-icon>
+          Actualizar estado
+        </button>
+        }
+      </div>
     </div>
   </div>
-</ion-content>
+  }
+</div>

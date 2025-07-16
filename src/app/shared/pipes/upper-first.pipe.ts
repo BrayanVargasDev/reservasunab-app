@@ -1,8 +1,11 @@
-import { Pipe, type PipeTransform } from '@angular/core';
+import { Pipe, type PipeTransform, Injectable } from '@angular/core';
 
 @Pipe({
   name: 'upperFirst',
+  pure: true,
+  standalone: true,
 })
+@Injectable({ providedIn: 'root' })
 export class UpperFirstPipe implements PipeTransform {
   transform(value: string | undefined): string | undefined {
     if (!value) return value;

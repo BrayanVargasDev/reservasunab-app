@@ -15,7 +15,7 @@
         : null
     "
   >
-    {{ (context.getValue() === null ? 'activo' : 'inactivo') | titlecase }}
+    {{ (context.getValue() === null ? 'activo' : 'inactivo') | upperFirst }}
   </div>
 </ng-template>
 

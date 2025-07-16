@@ -36,6 +36,7 @@ import { AlertasService } from '@shared/services/alertas.service';
 import { BotonAcciones } from '@shared/interfaces';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -53,6 +54,7 @@ interface Util {
     PaginadorComponent,
     ResponsiveTableDirective,
     TableExpansorComponent,
+    UpperFirstPipe,
   ],
 })
 export class TablaEspaciosComponent implements OnInit {

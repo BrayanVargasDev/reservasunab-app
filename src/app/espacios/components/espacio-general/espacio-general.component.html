@@ -72,7 +72,7 @@
         <option value="" disabled selected>Seleccione</option>
         @for (sede of appService.sedesQuery.data(); track sede.id) {
         <option [value]="sede.id">
-          {{ `${sede.nombre}` | titlecase }}
+          {{ `${sede.nombre}` | upperFirst }}
         </option>
         }
       </select>

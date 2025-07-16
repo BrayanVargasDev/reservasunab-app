@@ -28,7 +28,7 @@ import { IonicModule } from '@ionic/angular';
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary) 100%);
       display: flex;
       align-items: center;
       justify-content: center;

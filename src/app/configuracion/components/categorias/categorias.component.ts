@@ -62,6 +62,7 @@ interface Util {
 })
 export class CategoriasComponent implements OnDestroy {
   private injector = inject(Injector);
+  private upperFirstPipe = inject(UpperFirstPipe);
   private alertaService = inject(AlertasService);
   private cdr = inject(ChangeDetectorRef);
   private categoriaEnEdicion = signal<Categoria | null>(null);
@@ -104,14 +105,18 @@ export class CategoriasComponent implements OnDestroy {
       accessorKey: 'nombre',
       header: 'Nombre',
       cell: info =>
-        `<span class="capitalize font-semibold">${info.getValue()}</span>`,
+        `<span class="font-semibold">${this.upperFirstPipe.transform(
+          info.getValue() as unknown as string,
+        )}</span>`,
     },
     {
       id: 'grupo',
       accessorKey: 'grupo.nombre',
       size: 150,
       header: 'Grupo',
-      cell: info => info.getValue() || 'Sin grupo',
+      cell: info =>
+        this.upperFirstPipe.transform(info.getValue() as unknown as string) ||
+        'Sin grupo',
     },
     {
       accessorKey: 'creado_en',
@@ -417,7 +422,7 @@ export class CategoriasComponent implements OnDestroy {
       );
 
       this.alertaService.success(
-        'Configuración actualizada exitosamente.',
+        'Categoría actualizada exitosamente.',
         5000,
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
@@ -434,9 +439,9 @@ export class CategoriasComponent implements OnDestroy {
       this.appService.categoriasQuery.refetch();
       this.cdr.detectChanges();
     } catch (error) {
-      console.error('Error al actualizar la configuración:', error);
+      console.error('Error al actualizar la categoría:', error);
       this.alertaService.error(
-        'Error al actualizar la configuración. Por favor, inténtalo de nuevo.',
+        'Error al actualizar la categoría. Por favor, inténtalo de nuevo.',
         5000,
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',

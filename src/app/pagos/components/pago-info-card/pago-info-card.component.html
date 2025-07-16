@@ -1,0 +1,31 @@
+<div class="flex flex-col items-center max-w-4xl mx-auto p-2 gap-2 animate-fade-in">
+  <div class="px-8 py-4" [ngClass]="getEstadoClass(pagoInfo().pago.estado)">
+    <div class="flex items-center justify-center">
+      <app-web-icon
+        [nombreIcono]="getEstadoIcon(pagoInfo().pago.estado)"
+        estilos="h-8 w-8 mr-2"
+      ></app-web-icon>
+      <h1 class="text-3xl">
+        {{ getEstadoTexto(pagoInfo().pago.estado) }}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Información de la transacción (si existe) -->
+  <pago-info-item
+    [items]="informacionTransaccionItems()"
+    [title]="'Información de la Transacción'"
+  >
+  </pago-info-item>
+
+  <pago-info-item
+    [items]="infoReservaItems()"
+    [title]="'Información de la reserva'"
+  ></pago-info-item>
+
+  <!-- Información del usuario -->
+  <pago-info-item
+    [items]="infoUsuarioItems()"
+    [title]="'Información del usuario'"
+  ></pago-info-item>
+</div>
