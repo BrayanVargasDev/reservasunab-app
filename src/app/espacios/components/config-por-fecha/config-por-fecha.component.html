@@ -1,108 +1,106 @@
-<div class="flex w-full flex-col gap-2">
-  <div class="flex w-full gap-2 items-center">
-    <label
-      class="label text-base font-[600] text-base-content mb-1 md:mb-0"
-      for="fecha"
-    >
-      Seleccione la fecha:
-    </label>
-    <label
-      class="input input-bordered w-full max-w-60 h-11 rounded-box"
-      [ngClass]="{ 'text-gray-400': !fechaSeleccionada() }"
-    >
-      <input
-        id="fecha"
-        [formControl]="fecha"
-        type="text"
-        #fechaPicker
-        placeholder="dd/mm/yyyy"
-        class="grow pika-single placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm"
-      />
-      <app-web-icon
-        [nombreIcono]="'calendar-outline'"
-        [estilos]="'h-5 w-5'"
-      ></app-web-icon>
-    </label>
-
-    @if (fechaSeleccionada()) {
-    <button
-      class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
-      data-tip="Cancelar"
-      (click)="limpiarFecha()"
-    >
-      <app-web-icon
-        [nombreIcono]="'close-circle-outline'"
-        [estilos]="'h-6 w-6'"
-      ></app-web-icon>
-    </button>
-    }
-  </div>
+<div class="flex w-full gap-2 items-center">
+  <label
+    class="label text-base font-[600] text-base-content mb-1 md:mb-0"
+    for="fecha"
+  >
+    Seleccione la fecha:
+  </label>
+  <label
+    class="input input-bordered w-full max-w-60 h-11 rounded-box"
+    [ngClass]="{ 'text-gray-400': !fechaSeleccionada() }"
+  >
+    <input
+      id="fecha"
+      [formControl]="fecha"
+      type="text"
+      #fechaPicker
+      placeholder="dd/mm/yyyy"
+      class="grow pika-single placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm"
+    />
+    <app-web-icon
+      [nombreIcono]="'calendar-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+  </label>
 
   @if (fechaSeleccionada()) {
-  <div class="mt-4">
-    @if (cargandoConfiguracion()) {
-    <div class="flex justify-center items-center py-8">
-      <span class="loading loading-spinner loading-lg"></span>
-      <p class="ml-3 text-base-content/70">Cargando configuración...</p>
-    </div>
-    } @else if (configuracionCargada()) {
-    <configuracion-form
-      [configuracionForm]="configuracionForm"
-      [diaNumero]="0"
-      (agregarFranja)="agregarFranja($event)"
-      (eliminarFranja)="eliminarFranja($event)"
-      [permisoFranjas]="authService.tienePermisos('ESP000013')"
-      [permisoEliminarFranja]="authService.tienePermisos('ESP000009')"
-    ></configuracion-form>
+  <button
+    class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right"
+    data-tip="Cancelar"
+    (click)="limpiarFecha()"
+  >
+    <app-web-icon
+      [nombreIcono]="'close-circle-outline'"
+      [estilos]="'h-6 w-6'"
+    ></app-web-icon>
+  </button>
+  }
+</div>
 
-    <!-- Botón para guardar configuración -->
-    @if (authService.tienePermisos('ESP000008')) {
-    <div class="flex justify-end mt-6">
-      <button
-        class="btn btn-primary"
-        [class.btn-loading]="cargandoConfiguracion()"
-        [disabled]="configuracionForm.invalid || espacioConfigService.creandoFranja()"
-        (click)="guardarConfiguracion()"
-      >
-        @if (cargandoConfiguracion()) {
-        <span>Guardando...</span>
-        } @else {
-        <app-web-icon
-          [nombreIcono]="'save-outline'"
-          [estilos]="'h-5 w-5 mr-2'"
-        ></app-web-icon>
-        <span>Guardar Configuración</span>
-        }
-      </button>
-    </div>
-    } } @else if (necesitaConfiguracionBase()) {
-    <div class="alert alert-info">
+@if (fechaSeleccionada()) {
+<div class="mt-4">
+  @if (cargandoConfiguracion()) {
+  <div class="flex justify-center items-center py-8">
+    <span class="loading loading-spinner loading-lg"></span>
+    <p class="ml-3 text-base-content/70">Cargando configuración...</p>
+  </div>
+  } @else if (configuracionCargada()) {
+  <configuracion-form
+    [configuracionForm]="configuracionForm"
+    [diaNumero]="0"
+    (agregarFranja)="agregarFranja($event)"
+    (eliminarFranja)="eliminarFranja($event)"
+    [permisoFranjas]="authService.tienePermisos('ESP000013')"
+    [permisoEliminarFranja]="authService.tienePermisos('ESP000009')"
+  ></configuracion-form>
+
+  <!-- Botón para guardar configuración -->
+  @if (authService.tienePermisos('ESP000008')) {
+  <div class="flex justify-end mt-6">
+    <button
+      class="btn btn-primary"
+      [class.btn-loading]="cargandoConfiguracion()"
+      [disabled]="
+        configuracionForm.invalid || espacioConfigService.creandoFranja()
+      "
+      (click)="guardarConfiguracion()"
+    >
+      @if (cargandoConfiguracion()) {
+      <span>Guardando...</span>
+      } @else {
       <app-web-icon
-        [nombreIcono]="'information-circle-outline'"
-        [estilos]="'h-5 w-5'"
+        [nombreIcono]="'save-outline'"
+        [estilos]="'h-5 w-5 mr-2'"
       ></app-web-icon>
-      <div class="flex flex-col gap-2">
-        <span>No hay configuración base disponible para esta fecha.</span>
-        <span class="text-sm"
-          >Configure primero la configuración base en la pestaña
-          correspondiente.</span
-        >
-      </div>
-      <button class="btn btn-sm btn-outline" (click)="irAConfiguracionBase()">
-        Ir a Configuración Base
-      </button>
-    </div>
-    } @else {
-    <div class="alert alert-warning">
-      <app-web-icon
-        [nombreIcono]="'warning-outline'"
-        [estilos]="'h-5 w-5'"
-      ></app-web-icon>
-      <span
-        >No se pudo cargar la configuración para la fecha seleccionada.</span
+      <span>Guardar Configuración</span>
+      }
+    </button>
+  </div>
+  } } @else if (necesitaConfiguracionBase()) {
+  <div class="alert alert-info">
+    <app-web-icon
+      [nombreIcono]="'information-circle-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+    <div class="flex flex-col gap-2">
+      <span>No hay configuración base disponible para esta fecha.</span>
+      <span class="text-sm"
+        >Configure primero la configuración base en la pestaña
+        correspondiente.</span
       >
     </div>
-    }
+    <button class="btn btn-sm btn-outline" (click)="irAConfiguracionBase()">
+      Ir a Configuración Base
+    </button>
+  </div>
+  } @else {
+  <div class="alert alert-warning">
+    <app-web-icon
+      [nombreIcono]="'warning-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+    <span>No se pudo cargar la configuración para la fecha seleccionada.</span>
   </div>
   }
 </div>
+}

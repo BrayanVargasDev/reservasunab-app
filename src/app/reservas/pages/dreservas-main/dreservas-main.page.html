@@ -15,7 +15,7 @@
           Seleccione una fecha para consultar la disponibilidad.
         </p>
       </div>
-      <div class="flex gap-2">
+      <div class="flex gap-2 justify-center md:justify-end">
         @if (hasFilters()) {
         <button
           class="btn btn-warning btn-sm mt-2"
@@ -44,7 +44,7 @@
 
     <form
       [formGroup]="filtrosForm"
-      class="flex w-full flex-row gap-4 flex-wrap"
+      class="grid gap-1 w-full items-center grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]"
     >
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
@@ -59,6 +59,7 @@
             [ngClass]="{ 'text-gray-400': !filtrosForm.value.fecha }"
           >
             <input
+              autocomplete="off"
               id="fecha"
               name="fecha"
               formControlName="fecha"
@@ -76,7 +77,7 @@
 
           @if (filtrosForm.value.fecha) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
+            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar fecha"
             (click)="limpiarFecha()"
           >
@@ -114,7 +115,7 @@
 
           @if (filtrosForm.value.grupo) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
+            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar grupo"
             (click)="limpiarGrupo()"
           >
@@ -153,7 +154,7 @@
 
           @if (filtrosForm.value.categoria) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
+            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar tipo de espacio"
             (click)="limpiarCategoria()"
           >
@@ -191,7 +192,7 @@
 
           @if (filtrosForm.value.sede) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-2"
+            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar ubicación"
             (click)="limpiarUbicacion()"
           >

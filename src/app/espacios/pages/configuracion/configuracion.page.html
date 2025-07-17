@@ -20,8 +20,14 @@
       [checked]="generalChecked()"
       (change)="cambiarPestana('general')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
-      <espacio-general></espacio-general>
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 xl:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
+      <espacio-general
+        [ngClass]="
+          'flex flex-col h-full max-h-[calc(100vh_-_18rem)] overflow-y-auto'
+        "
+      ></espacio-general>
     </div>
 
     <input
@@ -34,10 +40,12 @@
       (change)="cambiarPestana('base')"
     />
     <div
-      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+      class="tab-content border-base-300 bg-base-100 p-5 xl:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
     >
       <config-base
-        [ngClass]="'flex flex-col h-full max-h-[inherit] overflow-y-auto'"
+        [ngClass]="
+          'flex flex-col h-full max-h-[calc(100vh_-_18rem)] overflow-y-auto'
+        "
       ></config-base>
     </div>
 
@@ -50,8 +58,14 @@
       [checked]="tipoUsuarioChecked()"
       (change)="cambiarPestana('tipoUsuario')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
-      <tabla-config-tipo-usuario></tabla-config-tipo-usuario>
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 xl:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
+      <tabla-config-tipo-usuario
+        [ngClass]="
+          'flex flex-col h-full max-h-[calc(100vh_-_18rem)] overflow-y-auto'
+        "
+      ></tabla-config-tipo-usuario>
     </div>
 
     <input
@@ -63,8 +77,14 @@
       [checked]="fechaChecked()"
       (change)="cambiarPestana('fecha')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
-      <config-por-fecha></config-por-fecha>
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 xl:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
+      <config-por-fecha
+        [ngClass]="
+          'flex flex-col h-full max-h-[calc(100vh_-_18rem)] overflow-y-auto'
+        "
+      ></config-por-fecha>
     </div>
 
     <input
@@ -76,7 +96,9 @@
       [checked]="novedadesChecked()"
       (change)="cambiarPestana('novedades')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10">
+    <div
+      class="tab-content border-base-300 bg-base-100 p-5 xl:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+    >
       <!-- <config-por-fecha></config-por-fecha> -->
     </div>
   </div>

@@ -12,7 +12,7 @@ import { UpperFirstPipe } from '@shared/pipes';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   host: {
-    class: 'bg-base-200 rounded-lg p-6 mb-4',
+    class: 'bg-base-200 rounded-lg p-6',
   },
 })
 export class InfoReservaComponent {

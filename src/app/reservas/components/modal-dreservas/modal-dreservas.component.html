@@ -1,6 +1,6 @@
 <dialog #dreservasModal class="modal p-0 z-50">
   <div
-    class="modal-box lg:w-[70vw] !max-w-[50rem] min-h-[50vh] max-h-[70vh] relative"
+    class="modal-box lg:w-[70vw] !max-w-[50rem] min-h-[50vh] relative"
   >
     @if (cargando()) {
     <div class="flex flex-row items-center justify-center h-full min-h-[40vh]">
@@ -37,8 +37,8 @@
       ></dreservas-info-reserva>
     </div>
     } @else {
-    <div class="h-full flex-col mb-2 max-h-[calc(70vh-5.75rem)]">
-      <div class="flex gap-4 w-full">
+    <div class="h-full flex flex-col mb-2">
+      <div class="flex gap-4 w-full mb-4 flex-shrink-0">
         <div class="flex flex-col w-1/2 mb-2">
           <img
             class="w-full h-[12.75rem] object-cover rounded-lg"
@@ -67,52 +67,55 @@
           <br />
         </div>
       </div>
-      <div class="flex flex-col gap-1 w-full">
-        <span class="flex w-full text-lg font-bold text-center"
+
+      <div class="flex flex-col gap-1 w-full flex-1 min-h-0">
+        <span class="flex w-full text-lg font-bold text-center flex-shrink-0"
           >Disponibilidad:</span
         >
-        <div
-          class="grid gap-2 items-center grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]"
-        >
-          @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
-          <button
-            type="button"
-            (click)="
-              item.disponible
-                ? iniciarReserva(espacioDetallesQuery, item)
-                : null
-            "
-            class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn"
-            [disabled]="item.reserva_pasada || item.novedad"
-            [class.btn-disabled]="item.reserva_pasada"
-            [class.btn-accent]="item.disponible"
-            [class.btn-success]="item.mi_reserva"
-            [class.btn-error]="!item.mi_reserva && item.reservada"
-            [class.pointer-events-none]="
-              item.novedad || (!item.disponible && !item.mi_reserva)
-            "
-            [ngClass]="{
-              'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
-            }"
+        <div class="flex-1 overflow-y-auto pr-2 max-h-[400px] md:max-h-none">
+          <div
+            class="grid gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]"
           >
-            @if (item.disponible) {
-            <span>{{ item.hora_inicio }}</span>
-            } @else if (item.reservada && !item.novedad) {
-            <span class="text-wrap text-base leading-tight">
-              {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
-            </span>
-            } @else if (!item.reservada && item.novedad) {
-            <span>{{ item.hora_inicio }} - {{ item.novedad_desc }}</span>
+            @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
+            <button
+              type="button"
+              (click)="
+                item.disponible
+                  ? iniciarReserva(espacioDetallesQuery, item)
+                  : null
+              "
+              class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn"
+              [disabled]="item.reserva_pasada || item.novedad"
+              [class.btn-disabled]="item.reserva_pasada"
+              [class.btn-accent]="item.disponible"
+              [class.btn-success]="item.mi_reserva"
+              [class.btn-error]="!item.mi_reserva && item.reservada"
+              [class.pointer-events-none]="
+                item.novedad || (!item.disponible && !item.mi_reserva)
+              "
+              [ngClass]="{
+                'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
+              }"
+            >
+              @if (item.disponible) {
+              <span>{{ item.hora_inicio }}</span>
+              } @else if (item.reservada && !item.novedad) {
+              <span class="text-wrap text-base leading-tight">
+                {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
+              </span>
+              } @else if (!item.reservada && item.novedad) {
+              <span>{{ item.hora_inicio }} - {{ item.novedad_desc }}</span>
+              }
+            </button>
             }
-          </button>
-          }
+          </div>
         </div>
       </div>
     </div>
     }
 
     <ng-template #alertaModalReservas></ng-template>
-    <div class="modal-action mt-2 sticky bottom-0 z-10">
+    <div class="modal-action mt-2 sticky bg-base-100 bottom-0 z-10">
       <button
         type="button"
         class="btn btn-ghost h-11 rounded-lg"
