@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
+import { NavigationService } from '@shared/services/navigation.service';
 
 @Component({
   selector: 'app-not-found',
@@ -15,7 +16,7 @@ import { RouterLink } from '@angular/router';
         <h2>Página no encontrada</h2>
         <p>La página que estás buscando no existe o ha sido movida.</p>
         <ion-button
-          routerLink="/dashboard"
+          (click)="volverAlInicio()"
           expand="block">
           Volver al inicio
         </ion-button>
@@ -65,6 +66,12 @@ import { RouterLink } from '@angular/router';
     `,
   ],
   standalone: true,
-  imports: [IonicModule, RouterLink],
+  imports: [IonicModule],
 })
-export class NotFoundPage {}
+export class NotFoundPage {
+  private navigationService = inject(NavigationService);
+
+  volverAlInicio() {
+    this.navigationService.navegarAPrimeraPaginaDisponible();
+  }
+}

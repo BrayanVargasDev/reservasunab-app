@@ -6,12 +6,17 @@ import {
   Router,
 } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { NavigationService } from '@shared/services/navigation.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NoAuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private navigationService: NavigationService
+  ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -23,14 +28,14 @@ export class NoAuthGuard implements CanActivate {
       setTimeout(() => {
         const nuevoEstado = this.authService.estadoAutenticacion();
         if (nuevoEstado === 'autenticado') {
-          this.router.navigate(['/dashboard']);
+          this.navigationService.navegarAPrimeraPaginaDisponible();
         }
       }, 100);
       return true;
     }
 
     if (estadoAuth === 'autenticado') {
-      this.router.navigate(['/dashboard']);
+      this.navigationService.navegarAPrimeraPaginaDisponible();
       return false;
     }
 

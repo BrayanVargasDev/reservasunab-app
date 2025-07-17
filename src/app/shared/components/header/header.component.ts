@@ -23,13 +23,22 @@ import {
 import { AuthService } from '@auth/services/auth.service';
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '../web-icon/web-icon.component';
+import { NavigationService } from '@shared/services/navigation.service';
+import { UsuarioLogueado } from '@auth/interfaces/usuario-logueado.interface';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [IonicModule, RouterLink, CommonModule, WebIconComponent],
+  imports: [
+    IonicModule,
+    RouterLink,
+    CommonModule,
+    WebIconComponent,
+    UpperFirstPipe,
+  ],
 })
 export class HeaderComponent implements OnInit {
   title = signal('Reservas UNAB');
@@ -38,6 +47,7 @@ export class HeaderComponent implements OnInit {
 
   private authServicio = inject(AuthService);
   private plataforma = inject(Platform);
+  private navigationService = inject(NavigationService);
   private router = inject(Router);
 
   usuario = computed(() => this.authServicio.usuario());
@@ -122,5 +132,13 @@ export class HeaderComponent implements OnInit {
   toggleMobileDrawer() {
     const event = new CustomEvent('toggle-mobile-drawer', { bubbles: true });
     document.dispatchEvent(event);
+  }
+
+  obtenerLeyenda(usuario: UsuarioLogueado | null): string {
+    return usuario?.rol?.nombre ?? usuario?.tipo_usuario ?? 'Usuario';
+  }
+
+  navegarAlInicio() {
+    this.navigationService.navegarAPrimeraPaginaDisponible();
   }
 }

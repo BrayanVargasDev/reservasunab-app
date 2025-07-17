@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { NavigationService } from '@shared/services/navigation.service';
 
 @Component({
   selector: 'app-access-denied',
@@ -15,7 +16,7 @@ import { IonicModule } from '@ionic/angular';
         <h2>Acceso Denegado</h2>
         <p>No tienes los permisos necesarios para acceder a esta página.</p>
         <ion-button
-          routerLink="/dashboard"
+          (click)="volverAlInicio()"
           expand="block">
           Volver al inicio
         </ion-button>
@@ -65,6 +66,12 @@ import { IonicModule } from '@ionic/angular';
     `,
   ],
   standalone: true,
-  imports: [IonicModule, RouterLink],
+  imports: [IonicModule],
 })
-export class AccessDeniedPage {}
+export class AccessDeniedPage {
+  private navigationService = inject(NavigationService);
+
+  volverAlInicio() {
+    this.navigationService.navegarAPrimeraPaginaDisponible();
+  }
+}

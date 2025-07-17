@@ -44,6 +44,7 @@ import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { AuthService } from '@auth/services/auth.service';
 import { AlertasService } from '@shared/services/alertas.service';
+import { NavigationService } from '@shared/services/navigation.service';
 
 @Component({
   selector: 'app-login',
@@ -73,6 +74,7 @@ export class LoginPage {
   private router = inject(Router);
   private formBuilder = inject(FormBuilder);
   private alertaService = inject(AlertasService);
+  private navigationService = inject(NavigationService);
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
@@ -141,7 +143,8 @@ export class LoginPage {
         this.authService.setUser(response.data);
         this.authService.setToken(response.data?.token || null);
         this.authService.userQuery.refetch();
-        this.router.navigate(['/']);
+        // Navegar a la primera página disponible en el menú del usuario
+        this.navigationService.navegarAPrimeraPaginaDisponible();
       })
       .catch(error => {
         this.authService.setLoading(false);

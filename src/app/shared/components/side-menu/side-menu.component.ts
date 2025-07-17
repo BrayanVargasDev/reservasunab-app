@@ -25,6 +25,7 @@ import {
 import { WebIconComponent } from '../web-icon/web-icon.component';
 import { AppService } from '@app/app.service';
 import { AuthService } from '@auth/services/auth.service';
+import { PermissionService } from '@shared/services/permission.service';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Pantalla } from '../../interfaces/pantalla.interface';
 
@@ -45,33 +46,12 @@ import { Pantalla } from '../../interfaces/pantalla.interface';
 export class SideMenuComponent {
   private authServicio = inject(AuthService);
   private router = inject(Router);
+  private permissionService = inject(PermissionService);
 
   public appService = inject(AppService);
 
   menuItems = computed<Pantalla[]>(() => {
-    const pantallas = this.appService.pantallasQuery.data();
-    const usuario = this.authServicio.usuario();
-
-    if (!pantallas) return [];
-
-    let pantallasVisibles = pantallas.filter(pantalla => pantalla.visible);
-
-    if (!usuario) {
-      return [];
-    }
-
-    if (usuario.rol?.nombre?.toLowerCase() === 'administrador') {
-      return pantallasVisibles.sort((a, b) => a.orden - b.orden);
-    }
-
-    const permisosUsuario = usuario.permisos || [];
-    const pantallaPermitidas = new Set(
-      permisosUsuario.map(permiso => permiso.id_pantalla),
-    );
-
-    return pantallasVisibles
-      .filter(pantalla => pantallaPermitidas.has(pantalla.id_pantalla))
-      .sort((a, b) => a.orden - b.orden);
+    return this.permissionService.obtenerPantallasAccesibles();
   });
   isMenuOpen = signal(false);
   usuarioActual = computed(() => this.authServicio.usuario());
@@ -91,22 +71,15 @@ export class SideMenuComponent {
     });
   }
 
-  /**
-   * Cierra el menú
-   */
   closeMenu() {
     this.isMenuOpen.set(false);
     document.body.classList.remove('menu-open');
   }
 
-  /**
-   * Abre/cierra el menú desplegable
-   */
   toggleMenu() {
     const newState = !this.isMenuOpen();
     this.isMenuOpen.set(newState);
 
-    // Añadir/quitar clase al body para efectos visuales (overlay, etc)
     if (newState) {
       document.body.classList.add('menu-open');
     } else {
@@ -114,9 +87,6 @@ export class SideMenuComponent {
     }
   }
 
-  /**
-   * Cierra sesión y cierra el menú si está abierto
-   */
   logout() {
     this.closeMenu();
     this.authServicio.logout().then(
