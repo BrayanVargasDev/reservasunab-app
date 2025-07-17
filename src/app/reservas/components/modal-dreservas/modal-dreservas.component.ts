@@ -192,7 +192,7 @@ export class ModalDreservasComponent {
         if (!response.data) {
           this.alertaService.error(
             `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
-            3 * 1000,
+            5 * 1000,
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
           );
@@ -211,7 +211,7 @@ export class ModalDreservasComponent {
 
         this.alertaService.error(
           mensajeError,
-          3 * 1000,
+          5 * 1000,
           this.alertaModalReservas(),
           'flex justify-center transition-all ease-in-out w-full text-lg',
         );
@@ -230,7 +230,7 @@ export class ModalDreservasComponent {
           if (!response.data) {
             this.alertaService.error(
               `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
-              3 * 1000,
+              5 * 1000,
               this.alertaModalReservas(),
               'flex justify-center transition-all ease-in-out w-full text-lg',
             );
@@ -250,7 +250,7 @@ export class ModalDreservasComponent {
 
           this.alertaService.error(
             mensajeError,
-            4 * 1000,
+            5 * 1000,
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
           );
