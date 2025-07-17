@@ -3,34 +3,56 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { ToastController } from '@ionic/angular';
+import { AuthService } from '@auth/services/auth.service';
 
 const RUTAS_PUBLICAS = [
   '/auth/login',
   '/auth/registro',
   '/auth/reset-password',
+  '/acceso-denegado',
+  '/404',
+  '/pagos/reservas'
 ];
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toastController = inject(ToastController);
   const router = inject(Router);
-  const url = router.url;
-  const esPublica = RUTAS_PUBLICAS.some(ruta => url.includes(ruta));
+  const authService = inject(AuthService);
+
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const esRutaPublica = RUTAS_PUBLICAS.some(r =>
-        window.location.href.includes(r),
-      );
+      const currentUrl = router.url;
+      const esRutaPublica = RUTAS_PUBLICAS.some(ruta => currentUrl.includes(ruta));
       const esUserCall = req.url.endsWith('/me');
 
-      if (error.status === 401 && !esRutaPublica) {
-        router.navigate(['/auth/login']);
+      // Manejar errores 401 (no autorizado)
+      if (error.status === 401) {
+        // Limpiar sesión siempre que haya un 401
+        authService.clearSession();
+
+        // Solo redirigir si no estamos en una ruta pública
+        if (!esRutaPublica) {
+          router.navigate(['/auth/login'], {
+            queryParams: { returnUrl: currentUrl },
+            replaceUrl: true
+          });
+        }
+
         return throwError(() => error);
       }
 
+      // Manejar errores 403 (prohibido/sin permisos)
+      if (error.status === 403 && !esRutaPublica) {
+        router.navigate(['/acceso-denegado'], { replaceUrl: true });
+        return throwError(() => error);
+      }
+
+      // Si es una llamada al endpoint de usuario y estamos en ruta pública, no mostrar error
       if (esRutaPublica && esUserCall) {
         return throwError(() => error);
       }
 
+      // Manejar otros errores
       let errorMessage = 'Ha ocurrido un error inesperado';
       if (error.error instanceof ErrorEvent) {
         errorMessage = `Error: ${error.error.message}`;
@@ -38,6 +60,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         errorMessage = error.error?.errors
           ? Object.values(error.error.errors).join(', ')
           : error.error?.message || 'Error desconocido';
+      }
+
+      // Mostrar toast de error solo para errores que no sean 401/403 en rutas públicas
+      if (!esRutaPublica || (error.status !== 401 && error.status !== 403)) {
+        toastController.create({
+          message: errorMessage,
+          duration: 3000,
+          position: 'top',
+          color: 'danger'
+        }).then(toast => toast.present());
       }
 
       return throwError(() => error);

@@ -28,7 +28,7 @@ import {
   IonCol,
   IonText,
 } from '@ionic/angular/standalone';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   mailOutline,
@@ -72,6 +72,7 @@ import { NavigationService } from '@shared/services/navigation.service';
 })
 export class LoginPage {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private formBuilder = inject(FormBuilder);
   private alertaService = inject(AlertasService);
   private navigationService = inject(NavigationService);
@@ -143,8 +144,14 @@ export class LoginPage {
         this.authService.setUser(response.data);
         this.authService.setToken(response.data?.token || null);
         this.authService.userQuery.refetch();
-        // Navegar a la primera página disponible en el menú del usuario
-        this.navigationService.navegarAPrimeraPaginaDisponible();
+
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+        if (returnUrl && returnUrl !== '/') {
+          this.router.navigate([returnUrl]);
+        } else {
+          this.navigationService.navegarAPrimeraPaginaDisponible();
+        }
       })
       .catch(error => {
         this.authService.setLoading(false);
@@ -155,7 +162,7 @@ export class LoginPage {
           }`,
           500000,
           this.alertaLogin(),
-          'w-full block my-2'
+          'w-full block my-2',
         );
       });
   }

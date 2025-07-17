@@ -6,12 +6,14 @@ import {
   Router,
 } from '@angular/router';
 import { PermissionService } from '@shared/services/permission.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PermissionsGuard implements CanActivate {
   private permissionService = inject(PermissionService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   canActivate(
@@ -19,14 +21,22 @@ export class PermissionsGuard implements CanActivate {
     state: RouterStateSnapshot,
   ): boolean {
     const rutaActual = state.url;
+
+    const estadoAuth = this.authService.estadoAutenticacion();
+
+    if (estadoAuth === 'chequeando' || estadoAuth === 'noAutenticado') {
+      return true;
+    }
+
     const puedeAcceder = this.permissionService.puedeAccederARuta(rutaActual);
 
     if (!puedeAcceder) {
-      console.warn(`Acceso denegado a la ruta: ${rutaActual}`);
+      console.warn(`❌ Acceso denegado a la ruta: ${rutaActual}`);
       this.router.navigate(['/acceso-denegado']);
       return false;
     }
 
+    console.log('✅ Acceso permitido a:', rutaActual);
     return true;
   }
 }

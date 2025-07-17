@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authRoutes } from '@auth/auth.routes';
 import { AuthGuard } from './auth/guards/auth.guard';
+import { AppInitGuard } from './auth/guards/app-init.guard';
 import { PermissionsGuard } from './shared/guards/permissions-simple.guard';
 import { NotFoundPage } from './shared/pages/not-found/not-found.page';
 import { AccessDeniedPage } from './shared/pages/access-denied/access-denied.page';
@@ -28,7 +29,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AppInitGuard, AuthGuard],
     children: [
       {
         path: '',

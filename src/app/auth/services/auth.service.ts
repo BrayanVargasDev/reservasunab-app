@@ -56,6 +56,9 @@ export class AuthService {
       '/auth/login',
       '/auth/registro',
       '/auth/reset-password',
+      '/acceso-denegado',
+      '/404',
+      '/pagos/reservas'
     ];
     return rutasPublicas.some(ruta => url.includes(ruta));
   });
@@ -65,6 +68,7 @@ export class AuthService {
     queryFn: () => getUser(this.http),
     retry: 0,
     enabled: !this.esRutaPublica(),
+    staleTime: 1000 * 60 * 5, // 5 minutos
     select: (response: GeneralResponse<UsuarioLogueado>) => {
       const user = response.data;
       this._usuario.set(user);
@@ -72,6 +76,13 @@ export class AuthService {
       this._estadoAutenticacion.set('autenticado');
       return user || null;
     },
+    onError: (error: any) => {
+      // Si hay error en la consulta del usuario, marcar como no autenticado
+      this._usuario.set(null);
+      this._token.set(null);
+      this._estadoAutenticacion.set('noAutenticado');
+      this.setToken(null);
+    }
   }));
 
   loginMutation = injectMutation(() => ({
@@ -89,8 +100,12 @@ export class AuthService {
     mutationKey: ['logout'],
     mutationFn: () => logoutAction(this.http),
     onSuccess: () => {
-      this.qc.setQueryData(['user'], null);
+      this.clearSession();
     },
+    onError: () => {
+      // Aunque falle el logout en el servidor, limpiar sesión local
+      this.clearSession();
+    }
   }));
 
   setLoading(loading: boolean): void {
@@ -118,6 +133,18 @@ export class AuthService {
     return logoutAction(this.http);
   }
 
+  /**
+   * Limpia completamente la sesión del usuario
+   */
+  clearSession(): void {
+    this._usuario.set(null);
+    this._token.set(null);
+    this._estadoAutenticacion.set('noAutenticado');
+    this.setToken(null);
+    this.qc.setQueryData(['user'], null);
+    this.qc.removeQueries({ queryKey: ['user'] });
+  }
+
   isAuthenticated(): boolean {
     return this.estadoAutenticacion() === 'autenticado';
   }
@@ -140,6 +167,14 @@ export class AuthService {
       this._token.set(token);
       // Si hay token, el userQuery se ejecutará automáticamente
       // y actualizará el estado cuando se resuelva
+
+      // Establecer un timeout para evitar que se quede indefinidamente en "chequeando"
+      setTimeout(() => {
+        if (this._estadoAutenticacion() === 'chequeando') {
+          this._estadoAutenticacion.set('noAutenticado');
+          this.setToken(null);
+        }
+      }, 5000); // 5 segundos máximo para resolver
     } else {
       this._estadoAutenticacion.set('noAutenticado');
     }

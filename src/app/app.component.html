@@ -1,9 +1,11 @@
-@if (appService.esMovil()) {
-<ion-app>
-  <ion-router-outlet id="main-content"></ion-router-outlet>
-</ion-app>
+@if (isInitializing()) {
+  <app-auth-loading></app-auth-loading>
 } @else {
-
-<router-outlet></router-outlet>
-
+  @if (appService.esMovil()) {
+    <ion-app>
+      <ion-router-outlet id="main-content"></ion-router-outlet>
+    </ion-app>
+  } @else {
+    <router-outlet></router-outlet>
+  }
 }
