@@ -44,8 +44,8 @@ import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/ta
     WebIconComponent,
     ReactiveFormsModule,
     EspacioBookingItemComponent,
-    ModalDreservasComponent
-],
+    ModalDreservasComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
@@ -100,18 +100,12 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
 
   public readonly hasFilters = computed(() => {
     const filtros = this.filtros();
-    return !!(
-      filtros?.fecha ||
-      filtros?.sede ||
-      filtros?.grupo ||
-      filtros?.categoria
-    );
+    return !!(filtros?.sede || filtros?.grupo || filtros?.categoria);
   });
 
   public readonly filtrosActivos = computed(() => {
     const filtros = this.filtros();
     const activos = [];
-    if (filtros?.fecha) activos.push('Fecha');
     if (filtros?.sede) activos.push('Sede');
     if (filtros?.grupo) activos.push('Grupo');
     if (filtros?.categoria) activos.push('Categoría');
@@ -139,17 +133,21 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
       },
       {
         injector: this.injector,
-        allowSignalWrites: true,
       },
     );
   }
 
   private initializePikaday(): void {
+    const fechaHoy = moment().format('DD/MM/YYYY');
+    this.filtrosForm.controls.fecha.setValue(fechaHoy);
+
     this.pikaday = new Pikaday({
       field: this.fechaPicker()?.nativeElement,
       minDate: moment().toDate(),
       i18n: i18nDatePicker,
       format: 'DD/MM/YYYY',
+      setDefaultDate: true,
+      defaultDate: moment().toDate(),
       onSelect: (date: Date) => {
         this.filtrosForm.controls.fecha.setValue(
           moment(date).format('DD/MM/YYYY'),
@@ -176,9 +174,7 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   }
 
   public limpiarTodosFiltros(): void {
-    this.pikaday?.setDate(null);
     this.filtrosForm.patchValue({
-      fecha: '',
       sede: '',
       categoria: '',
       grupo: '',
