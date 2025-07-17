@@ -19,7 +19,6 @@ export class PermissionsGuard implements CanActivate {
     state: RouterStateSnapshot,
   ): boolean {
     const rutaActual = state.url;
-
     const puedeAcceder = this.permissionService.puedeAccederARuta(rutaActual);
 
     if (!puedeAcceder) {

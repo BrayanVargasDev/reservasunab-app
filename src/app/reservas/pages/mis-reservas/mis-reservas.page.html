@@ -1,0 +1,130 @@
+<div
+  class="flex flex-col md:flex-row sm:px-4 w-full py-2 sm:py-3 lg:py-4 justify-center lg:justify-between sticky top-0 z-10 bg-base-300 sm:gap-3 lg:gap-0"
+>
+  <div
+    class="flex flex-col lg:flex-row items-center justify-center lg:justify-start w-full lg:w-auto gap-1 sm:gap-4"
+  >
+    <h2
+      class="font-bold text-2xl sm:text-3xl lg:text-4xl text-center sm:text-left"
+    >
+      Mis reservas
+    </h2>
+    <app-breadcrumbs></app-breadcrumbs>
+  </div>
+  <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 w-full lg:w-auto">
+    <input
+      type="text"
+      placeholder="Buscar..."
+      class="input input-bordered input-primary w-full h-10 sm:h-11 rounded-box lg:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+    />
+    <!-- [value]="espaciosService.filtroTexto()"
+      (input)="aplicarFiltro($any($event.target).value)" -->
+
+    <button class="btn btn-primary h-10 sm:h-11 rounded-box w-full sm:w-auto">
+      <app-web-icon
+        estilos="h-4 w-4 sm:h-5 sm:w-5"
+        nombreIcono="calendar-outline"
+      ></app-web-icon>
+      <span class="hidden sm:inline">Reservar</span>
+      <span class="sm:hidden">Nueva</span>
+    </button>
+  </div>
+</div>
+
+<div
+  class="px-2 sm:px-4 w-full h-full max-h-[calc(100vh_-_19.75rem)] overflow-y-auto flex flex-col gap-2 sm:gap-3"
+>
+  @for(reserva of misReservas; track $index) {
+  <div class="bg-base-100 rounded-box p-3 sm:p-4 shadow-sm">
+    <div class="flex flex-col md:flex-row w-full gap-4 md:gap-6">
+      <!-- Imagen -->
+      <div class="flex-shrink-0 w-full md:w-auto">
+        <img
+          class="w-full md:max-w-48 h-32 sm:h-36 md:h-28 object-cover rounded-md mx-auto md:mx-0"
+          [src]="getImagenUrl(reserva.espacio.imagen.ubicacion)"
+          [alt]="
+            reserva.espacio.imagen.ubicacion
+              ? 'Imagen de ' + reserva.espacio.nombre
+              : 'Imagen no disponible'
+          "
+        />
+      </div>
+
+      <!-- Información principal -->
+      <div class="flex flex-col flex-grow space-y-1 sm:space-y-2">
+        <h3 class="text-base sm:text-md font-semibold text-base-content">
+          Reserva {{ reserva.codigo.slice(10) }}
+        </h3>
+        <span class="text-gray-400 underline text-sm sm:text-base">
+          Para {{ reserva.espacio.nombre | upperFirst }}
+        </span>
+        <span class="text-gray-400 text-sm sm:text-base">
+          Sede: {{ reserva.espacio.sede.nombre | upperFirst }}
+        </span>
+        <span class="text-gray-400 text-sm sm:text-base">
+          Categoría: {{ reserva.espacio.categoria.nombre | upperFirst }}
+        </span>
+      </div>
+
+      <!-- Información de fecha y estado (móvil: columna, desktop: columna) -->
+      <div
+        class="flex flex-col md:flex-col space-y-1 sm:space-y-2 md:min-w-0 md:w-auto"
+      >
+        <div
+          class="flex flex-col sm:flex-row md:flex-col gap-2 sm:gap-4 md:gap-1"
+        >
+          <span
+            class="text-base-content font-semibold text-sm sm:text-base md:text-lg"
+          >
+            Fecha: {{ reserva.fecha | date : 'shortDate' }}
+          </span>
+          <span class="text-gray-400 text-sm sm:text-base">
+            Hora: {{ reserva.hora_inicio | date : 'shortTime' }}
+          </span>
+        </div>
+        <div
+          class="flex flex-col lg:flex-row lg:items-center justify-between sm:justify-start lg:justify-between gap-2"
+        >
+          <span class="text-gray-400 text-sm sm:text-base">Estado:</span>
+          <span
+            class="badge badge-outline text-xs sm:text-sm"
+            [ngClass]="{
+              'badge-info': reserva.estado === 'pagada',
+              'badge-success': reserva.estado === 'confirmada',
+              'badge-ghost': reserva.estado === 'inicial',
+              'badge-warning': reserva.estado === 'pendiente',
+              'badge-error': reserva.estado === 'cancelada'
+            }"
+          >
+            {{ reserva.estado | upperFirst }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Precio -->
+      <div
+        class="flex flex-col gap-2 justify-center lg:justify-end items-start lg:items-center"
+      >
+        @if (reserva.pago.estado === 'PENDING') {
+        <button class="btn btn-soft btn-accent h-9 w-full rounded-lg">Pagar</button>
+        } @if (sePuedeCancelar(reserva)) {
+        <button class="btn btn-soft btn-error h-9 w-full rounded-lg">Cancelar</button>
+        }
+
+        <span
+          class="font-semibold text-lg sm:text-xl badge badge-outline h-9 px-3 text-center"
+          [ngClass]="{
+            'badge-success': reserva.pago.estado === 'OK',
+            'badge-warning': reserva.pago.estado === 'PENDING',
+            'badge-error': reserva.pago.estado === 'FAILED'
+          }"
+        >
+          {{
+            reserva.pago.valor | currency : 'COP' : 'symbol-narrow' : '1.0-0'
+          }}
+        </span>
+      </div>
+    </div>
+  </div>
+  }
+</div>

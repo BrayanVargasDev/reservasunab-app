@@ -18,7 +18,7 @@
       <div class="flex gap-2 justify-center md:justify-end">
         @if (hasFilters()) {
         <button
-          class="btn btn-warning btn-sm mt-2"
+          class="btn btn-warning btn-sm mt-2 rounded-box"
           (click)="limpiarTodosFiltros()"
           [attr.title]="'Limpiar filtros: ' + filtrosActivos().join(', ')"
         >
@@ -31,7 +31,10 @@
         </button>
         }
 
-        <button class="btn btn-primary btn-sm mt-2">
+        <button
+          (click)="navegarMisReservas()"
+          class="btn btn-primary btn-sm mt-2 rounded-box"
+        >
           <app-web-icon
             [nombreIcono]="'file-tray-full-outline'"
             [estilos]="'h-5 w-5 mr-2'"

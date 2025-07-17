@@ -2,16 +2,17 @@ import { Component, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { NavigationService } from '@shared/services/navigation.service';
+import { WebIconComponent } from "@app/shared/components/web-icon/web-icon.component";
 
 @Component({
   selector: 'app-not-found',
   template: `
     <ion-content class="ion-padding">
       <div class="error-container">
-        <ion-icon
-          name="alert-circle-outline"
+        <app-web-icon
+          nombreIcono="alert-circle-outline"
           color="danger"
-          class="error-icon"></ion-icon>
+          estilos="h-15 w-15 text-error"></app-web-icon>
         <h1>404</h1>
         <h2>Página no encontrada</h2>
         <p>La página que estás buscando no existe o ha sido movida.</p>
@@ -66,7 +67,7 @@ import { NavigationService } from '@shared/services/navigation.service';
     `,
   ],
   standalone: true,
-  imports: [IonicModule],
+  imports: [IonicModule, WebIconComponent],
 })
 export class NotFoundPage {
   private navigationService = inject(NavigationService);

@@ -21,6 +21,11 @@ export class PermissionService {
       return true;
     }
 
+    // Permitir acceso a todas las rutas de reservas para todos los usuarios autenticados
+    if (ruta.startsWith('/reservas')) {
+      return true;
+    }
+
     const pantallas = this.appService.pantallasQuery.data();
     if (!pantallas) {
       return false;
@@ -78,8 +83,24 @@ export class PermissionService {
       permisosUsuario.map(permiso => permiso.id_pantalla),
     );
 
-    return pantallasVisibles
-      .filter(pantalla => pantallasPermitidas.has(pantalla.id_pantalla))
-      .sort((a, b) => a.orden - b.orden);
+    // Incluir todas las pantallas de reservas para todos los usuarios autenticados
+    const pantallasReservas = pantallasVisibles.filter(pantalla =>
+      pantalla.ruta?.startsWith('/reservas'),
+    );
+
+    const pantallasConPermisos = pantallasVisibles.filter(pantalla =>
+      pantallasPermitidas.has(pantalla.id_pantalla),
+    );
+
+    // Combinar pantallas con permisos y pantallas de reservas, evitando duplicados
+    const todasLasPantallas = new Map();
+
+    [...pantallasConPermisos, ...pantallasReservas].forEach(pantalla => {
+      todasLasPantallas.set(pantalla.id_pantalla, pantalla);
+    });
+
+    return Array.from(todasLasPantallas.values()).sort(
+      (a, b) => a.orden - b.orden,
+    );
   }
 }

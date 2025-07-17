@@ -39,7 +39,7 @@ export class BreadcrumbsComponent {
     let url = '';
 
     breadcrumbs.push({
-      label: 'Home',
+      label: 'Inicio',
       url: '/',
       isActive: false,
     });

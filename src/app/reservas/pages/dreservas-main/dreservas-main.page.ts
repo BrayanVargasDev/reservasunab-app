@@ -15,9 +15,10 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { combineLatest, startWith, debounceTime } from 'rxjs';
 
+import { combineLatest, startWith, debounceTime } from 'rxjs';
 import Pikaday from 'pikaday';
 import moment from 'moment';
 
@@ -47,16 +48,15 @@ import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/ta
     ModalDreservasComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    class: 'flex flex-col grow w-full sm:pl-3 relative',
-  },
 })
 export default class DreservasMainPage implements OnInit, OnDestroy {
-  private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly dreservasService = inject(DreservasService);
-  private readonly espacioConfigService = inject(EspaciosConfigService);
-  public readonly appService = inject(AppService);
+  private injector = inject(Injector);
+  // private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
+  private dreservasService = inject(DreservasService);
+  private espacioConfigService = inject(EspaciosConfigService);
+  public appService = inject(AppService);
 
   public readonly environment = environment;
   private readonly DEFAULT_IMAGE =
@@ -192,6 +192,10 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   public abrirEspacio(espacioId: number): void {
     this.dreservasService.abrirModal();
     this.dreservasService.setIdEspacio(espacioId);
+  }
+
+  navegarMisReservas(): void {
+    this.router.navigate(['reservas', 'mis-reservas']);
   }
 
   public ngOnDestroy(): void {

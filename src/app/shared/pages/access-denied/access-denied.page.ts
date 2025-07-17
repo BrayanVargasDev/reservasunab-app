@@ -2,16 +2,16 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { NavigationService } from '@shared/services/navigation.service';
+import { WebIconComponent } from "@app/shared/components/web-icon/web-icon.component";
 
 @Component({
   selector: 'app-access-denied',
   template: `
     <ion-content class="ion-padding">
       <div class="error-container">
-        <ion-icon
-          name="lock-closed-outline"
-          color="warning"
-          class="error-icon"></ion-icon>
+        <app-web-icon
+          nombreIcono="lock-closed-outline"
+          class="error-icon"></app-web-icon>
         <h1>403</h1>
         <h2>Acceso Denegado</h2>
         <p>No tienes los permisos necesarios para acceder a esta página.</p>
@@ -66,7 +66,7 @@ import { NavigationService } from '@shared/services/navigation.service';
     `,
   ],
   standalone: true,
-  imports: [IonicModule],
+  imports: [IonicModule, WebIconComponent],
 })
 export class AccessDeniedPage {
   private navigationService = inject(NavigationService);
