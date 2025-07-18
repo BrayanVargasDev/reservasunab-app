@@ -12,7 +12,8 @@ export interface Reserva {
   creado_en: Date;
   actualizado_en: Date;
   eliminado_en: null;
-  pago: Pago;
+  puede_cancelar: boolean;
+  pago: Pago | null;
   espacio: Espacio;
 }
 
@@ -23,7 +24,7 @@ export interface Espacio {
   id_categoria: number;
   sede: Categoria;
   categoria: Categoria;
-  imagen: Imagen;
+  imagen: Imagen | null;
 }
 
 export interface Categoria {
@@ -33,7 +34,7 @@ export interface Categoria {
 
 export interface Imagen {
   id_espacio: number;
-  ubicacion: string;
+  ubicacion?: string;
 }
 
 export interface Pago {
