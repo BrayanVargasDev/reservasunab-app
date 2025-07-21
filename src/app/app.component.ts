@@ -14,6 +14,7 @@ import moment from 'moment-timezone';
 
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
+import { SessionSyncService } from '@auth/services/session-sync.service';
 import { AuthLoadingComponent } from '@shared/components/auth-loading/auth-loading.component';
 
 @Component({
@@ -29,10 +30,10 @@ export class AppComponent implements OnInit {
 
   appService = inject(AppService);
   authService = inject(AuthService);
+  sessionSyncService = inject(SessionSyncService);
 
   showMenu = signal(false);
 
-  // Computed para verificar si la app está inicializando
   isInitializing = computed(() => {
     return this.authService.estadoAutenticacion() === 'chequeando';
   });
@@ -45,7 +46,12 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.router.events.subscribe(() => {
       const url = this.router.url;
-      const rutasSinMenu = ['/auth', '/pagos/reservas', '/acceso-denegado', '/404'];
+      const rutasSinMenu = [
+        '/auth',
+        '/pagos/reservas',
+        '/acceso-denegado',
+        '/404',
+      ];
       this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
     });
   }

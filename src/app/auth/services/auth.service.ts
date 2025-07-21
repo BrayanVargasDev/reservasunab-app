@@ -13,6 +13,7 @@ import { Registro, UsuarioLogueado } from '../interfaces';
 import { CredencialesLogin } from '@auth/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
 import { Rol } from '@permisos/interfaces';
+import { STORAGE_KEYS, AUTH_CONFIG } from '../constants/storage.constants';
 
 type EstadoAutenticacion = 'autenticado' | 'noAutenticado' | 'chequeando';
 
@@ -29,7 +30,7 @@ export class AuthService {
   private _isLoading = signal<boolean>(false);
 
   constructor() {
-    this.checkStoredToken();
+    this.initializeFromStorage();
   }
 
   estadoAutenticacion = computed<EstadoAutenticacion>(() => {
@@ -58,7 +59,7 @@ export class AuthService {
       '/auth/reset-password',
       '/acceso-denegado',
       '/404',
-      '/pagos/reservas'
+      '/pagos/reservas',
     ];
     return rutasPublicas.some(ruta => url.includes(ruta));
   });
@@ -67,32 +68,39 @@ export class AuthService {
     queryKey: ['user'],
     queryFn: () => getUser(this.http),
     retry: 0,
-    enabled: !this.esRutaPublica(),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    enabled: !!this.getToken() && !this.esRutaPublica(),
+    staleTime: AUTH_CONFIG.CACHE_DURATION,
     select: (response: GeneralResponse<UsuarioLogueado>) => {
       const user = response.data;
-      this._usuario.set(user);
-      this._token.set(user?.token || null);
-      this._estadoAutenticacion.set('autenticado');
+      if (user) {
+        this.saveUserToStorage(user);
+        this.updateLastActivity();
+        this._usuario.set(user);
+        this._token.set(user.token || this.getToken());
+        this._estadoAutenticacion.set('autenticado');
+      }
       return user || null;
     },
     onError: (error: any) => {
-      // Si hay error en la consulta del usuario, marcar como no autenticado
-      this._usuario.set(null);
-      this._token.set(null);
-      this._estadoAutenticacion.set('noAutenticado');
-      this.setToken(null);
-    }
+      console.error('Error en userQuery:', error);
+      this.clearSession();
+    },
   }));
 
   loginMutation = injectMutation(() => ({
     mutationKey: ['login'],
     mutationFn: (creds: CredencialesLogin) => loginAction(this.http, creds),
-    onSuccess: user => {
-      this._usuario.set(user.data || null);
-      this._token.set(user.data?.token || null);
-      this._estadoAutenticacion.set('autenticado');
-      this.qc.setQueryData(['user'], user.data);
+    onSuccess: response => {
+      const user = response.data;
+      if (user) {
+        this.saveUserToStorage(user);
+        this.setToken(user.token);
+        this.updateLastActivity();
+        this._usuario.set(user);
+        this._token.set(user.token);
+        this._estadoAutenticacion.set('autenticado');
+        this.qc.setQueryData(['user'], user);
+      }
     },
   }));
 
@@ -103,9 +111,8 @@ export class AuthService {
       this.clearSession();
     },
     onError: () => {
-      // Aunque falle el logout en el servidor, limpiar sesión local
       this.clearSession();
-    }
+    },
   }));
 
   setLoading(loading: boolean): void {
@@ -114,11 +121,12 @@ export class AuthService {
 
   setToken(token: string | null): void {
     if (token) {
-      localStorage.setItem('token', token);
+      localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      this._token.set(token);
     } else {
-      localStorage.removeItem('token');
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      this._token.set(null);
     }
-    this._token.set(token);
   }
 
   get isLoading(): boolean {
@@ -133,14 +141,15 @@ export class AuthService {
     return logoutAction(this.http);
   }
 
-  /**
-   * Limpia completamente la sesión del usuario
-   */
   clearSession(): void {
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+
     this._usuario.set(null);
     this._token.set(null);
     this._estadoAutenticacion.set('noAutenticado');
-    this.setToken(null);
+
     this.qc.setQueryData(['user'], null);
     this.qc.removeQueries({ queryKey: ['user'] });
   }
@@ -150,7 +159,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem(STORAGE_KEYS.TOKEN);
   }
 
   public setUser(usuario: UsuarioLogueado | null): void {
@@ -161,22 +170,58 @@ export class AuthService {
     return registroAction(this.http, params);
   }
 
-  private checkStoredToken(): void {
+  private initializeFromStorage(): void {
     const token = this.getToken();
-    if (token) {
-      this._token.set(token);
-      // Si hay token, el userQuery se ejecutará automáticamente
-      // y actualizará el estado cuando se resuelva
+    const savedUser = this.getUserFromStorage();
 
-      // Establecer un timeout para evitar que se quede indefinidamente en "chequeando"
+    if (token && savedUser) {
+      this._token.set(token);
+      this._usuario.set(savedUser);
+      this._estadoAutenticacion.set('autenticado');
+
       setTimeout(() => {
         if (this._estadoAutenticacion() === 'chequeando') {
           this._estadoAutenticacion.set('noAutenticado');
-          this.setToken(null);
+          this.clearSession();
         }
-      }, 5000); // 5 segundos máximo para resolver
+      }, AUTH_CONFIG.TOKEN_CHECK_TIMEOUT);
+    } else if (token) {
+      this._token.set(token);
+
+      setTimeout(() => {
+        if (this._estadoAutenticacion() === 'chequeando') {
+          this._estadoAutenticacion.set('noAutenticado');
+          this.clearSession();
+        }
+      }, AUTH_CONFIG.TOKEN_CHECK_TIMEOUT);
     } else {
       this._estadoAutenticacion.set('noAutenticado');
+    }
+  }
+
+  private saveUserToStorage(user: UsuarioLogueado): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error guardando usuario en localStorage:', error);
+    }
+  }
+
+  public getUserFromStorage(): UsuarioLogueado | null {
+    try {
+      const userData = localStorage.getItem(STORAGE_KEYS.USER);
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      console.error('Error obteniendo usuario de localStorage:', error);
+      return null;
+    }
+  }
+
+  private updateLastActivity(): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.LAST_ACTIVITY, Date.now().toString());
+    } catch (error) {
+      console.error('Error actualizando última actividad:', error);
     }
   }
 
@@ -191,5 +236,58 @@ export class AuthService {
     }
 
     return usuario.permisos.some(permiso => permiso.codigo === codigo);
+  }
+
+  public verificarYSincronizarUsuario(): void {
+    const token = this.getToken();
+    if (!token) {
+      this.clearSession();
+      return;
+    }
+
+    this.qc.invalidateQueries({ queryKey: ['user'] });
+  }
+
+  public getUsuarioActual(): UsuarioLogueado | null {
+    const usuarioEnMemoria = this._usuario();
+    if (usuarioEnMemoria) {
+      return usuarioEnMemoria;
+    }
+
+    const usuarioGuardado = this.getUserFromStorage();
+    if (usuarioGuardado && this.getToken()) {
+      this._usuario.set(usuarioGuardado);
+      return usuarioGuardado;
+    }
+
+    return null;
+  }
+
+  public isSessionValid(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+
+    const user = this.getUserFromStorage();
+    if (!user) return false;
+
+    const lastActivity = localStorage.getItem(STORAGE_KEYS.LAST_ACTIVITY);
+    if (lastActivity) {
+      const lastActivityTime = parseInt(lastActivity);
+      const now = Date.now();
+      const timeDiff = now - lastActivityTime;
+
+      if (timeDiff > 8 * 60 * 60 * 1000) {
+        this.clearSession();
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public refreshTokenIfNeeded(): void {
+    if (this.isSessionValid()) {
+      this.verificarYSincronizarUsuario();
+    }
   }
 }

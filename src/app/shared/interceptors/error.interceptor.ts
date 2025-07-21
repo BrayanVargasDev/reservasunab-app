@@ -11,22 +11,25 @@ const RUTAS_PUBLICAS = [
   '/auth/reset-password',
   '/acceso-denegado',
   '/404',
-  '/pagos/reservas'
+  '/pagos/reservas',
 ];
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const toastController = inject(ToastController);
   const router = inject(Router);
   const authService = inject(AuthService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       const currentUrl = router.url;
-      const esRutaPublica = RUTAS_PUBLICAS.some(ruta => currentUrl.includes(ruta));
+      const esRutaPublica = RUTAS_PUBLICAS.some(ruta =>
+        currentUrl.includes(ruta),
+      );
       const esUserCall = req.url.endsWith('/me');
 
       // Manejar errores 401 (no autorizado)
       if (error.status === 401) {
+        console.log('Error 401: Token inválido o expirado');
+
         // Limpiar sesión siempre que haya un 401
         authService.clearSession();
 
@@ -34,7 +37,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         if (!esRutaPublica) {
           router.navigate(['/auth/login'], {
             queryParams: { returnUrl: currentUrl },
-            replaceUrl: true
+            replaceUrl: true,
           });
         }
 
@@ -60,16 +63,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         errorMessage = error.error?.errors
           ? Object.values(error.error.errors).join(', ')
           : error.error?.message || 'Error desconocido';
-      }
-
-      // Mostrar toast de error solo para errores que no sean 401/403 en rutas públicas
-      if (!esRutaPublica || (error.status !== 401 && error.status !== 403)) {
-        toastController.create({
-          message: errorMessage,
-          duration: 3000,
-          position: 'top',
-          color: 'danger'
-        }).then(toast => toast.present());
       }
 
       return throwError(() => error);
