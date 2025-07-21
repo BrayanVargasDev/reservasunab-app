@@ -1,7 +1,5 @@
 <dialog #dreservasModal class="modal p-0 z-50">
-  <div
-    class="modal-box lg:w-[70vw] !max-w-[50rem] min-h-[50vh] relative"
-  >
+  <div class="modal-box lg:w-[70vw] !max-w-[50rem] min-h-[50vh] relative">
     @if (cargando()) {
     <div class="flex flex-row items-center justify-center h-full min-h-[40vh]">
       <span class="loading loading-spinner loading-xl text-primary"></span>
@@ -36,6 +34,32 @@
         [resumen]="estadoResumen()"
       ></dreservas-info-reserva>
     </div>
+    } @else if (!cargando() && miReserva()) {
+    <div class="flex flex-col h-full min-h-[40vh] p-4">
+      <!-- Header del resumen -->
+      <div
+        class="alert mb-6 rounded-lg"
+        [class.alert-success]="miReserva()?.estado === 'pagada'"
+        [class.alert-info]="miReserva()?.estado !== 'pagada'"
+      >
+        <div class="flex items-center justify-center w-full">
+          <app-web-icon
+            [nombreIcono]="
+              miReserva()?.estado === 'pagada'
+                ? 'checkmark-circle-outline'
+                : 'information-circle-outline'
+            "
+            estilos="h-6 w-6 mr-2"
+          ></app-web-icon>
+          <span class="text-xl font-bold">
+            {{ `¡Reserva ${miReserva()?.estado === 'pagada' ? 'Completada!' : 'Resumen de Reserva'}` }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Información de la reserva -->
+      <dreservas-info-reserva [resumen]="miReserva()"></dreservas-info-reserva>
+    </div>
     } @else {
     <div class="h-full flex flex-col mb-2">
       <div class="flex gap-4 w-full mb-4 flex-shrink-0">
@@ -62,7 +86,12 @@
           </p>
           <span class="inline-block text-sm mt-4">
             <span class="font-semibold">Reservar desde: </span>
-            {{ obtenerFechaDeApertura(espacioDetallesQuery?.configuracion!, espacioDetallesQuery?.tipo_usuario_config!) }}
+            {{
+              obtenerFechaDeApertura(
+                espacioDetallesQuery?.configuracion!,
+                espacioDetallesQuery?.tipo_usuario_config!
+              )
+            }}
           </span>
           <br />
         </div>
@@ -74,13 +103,15 @@
         >
         <div class="flex-1 overflow-y-auto pr-2 max-h-[400px] md:max-h-none">
           <div
-            class="grid gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]"
+            class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))]"
           >
             @for (item of espacioDetallesQuery?.disponibilidad; track $index) {
             <button
               type="button"
               (click)="
-                item.disponible
+                item.mi_reserva
+                  ? verMiReserva(item.id_reserva)
+                  : item.disponible
                   ? iniciarReserva(espacioDetallesQuery, item)
                   : null
               "
@@ -133,6 +164,8 @@
         Pagar
       </button>
       }
+
+      @if ()
     </div>
   </div>
 </dialog>

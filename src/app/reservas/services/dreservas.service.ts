@@ -9,7 +9,7 @@ import {
   ReservaEspaciosDetalles,
   ResumenReserva,
 } from '../interfaces';
-import { iniciarReserva, pagarReserva } from '../actions';
+import { iniciarReserva, pagarReserva, getMiReserva } from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -29,11 +29,15 @@ export class DreservasService {
   private _resumen = signal(false);
   private _pago = signal(false);
   private _estadoResumen = signal<ResumenReserva | null>(null);
+  private _miReserva = signal<ResumenReserva | null>(null);
+  private _idMiReserva = signal<number | null>(null);
 
   public cargando = computed(() => this._cargando());
   public resumen = computed(() => this._resumen());
   public pago = computed(() => this._pago());
   public estadoResumen = computed(() => this._estadoResumen());
+  public miReserva = computed(() => this._miReserva());
+  public idMiReserva = computed(() => this._idMiReserva());
 
   public fecha = this._fecha.asReadonly();
 
@@ -65,6 +69,13 @@ export class DreservasService {
     select: (response: GeneralResponse<ReservaEspaciosDetalles>) =>
       response.data,
     disabled: !this._idEspacio(),
+  }));
+
+  miReservaQuery = injectQuery(() => ({
+    queryKey: ['rvespacio', 'miReserva', this._idMiReserva()],
+    queryFn: () => getMiReserva(this.http, this._idMiReserva()),
+    select: (response: GeneralResponse<ResumenReserva>) => response.data,
+    enabled: !!this._idMiReserva(),
   }));
 
   public setFecha(fecha: string | null) {
@@ -134,6 +145,8 @@ export class DreservasService {
     this._resumen.set(false);
     this._pago.set(false);
     this._estadoResumen.set(null);
+    this._miReserva.set(null);
+    this._idMiReserva.set(null);
   }
 
   public setCargando(cargando: boolean) {
@@ -164,6 +177,14 @@ export class DreservasService {
 
   public setEstadoResumen(resumen: ResumenReserva | null) {
     this._estadoResumen.set(resumen);
+  }
+
+  public setMiReserva(reserva: ResumenReserva | null) {
+    this._miReserva.set(reserva);
+  }
+
+  public setIdMiReserva(idReserva: number | null) {
+    this._idMiReserva.set(idReserva);
   }
 
   public pagarReserva(idReserva: number) {

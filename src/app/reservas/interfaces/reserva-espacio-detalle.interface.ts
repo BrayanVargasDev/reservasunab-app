@@ -32,6 +32,7 @@ export interface Disponibilidad {
   hora_fin: string;
   disponible: boolean;
   mi_reserva: boolean;
+  id_reserva: number | null;
   reserva_pasada: boolean;
   valor: null;
   estilos: Estilos;

@@ -65,6 +65,10 @@ export class ModalDreservasComponent {
     return this.dreservasService.resumen();
   });
 
+  public miReserva = computed(() => {
+    return this.dreservasService.miReserva();
+  });
+
   public mensajeCargando = computed(() => {
     return this.dreservasService.resumen()
       ? 'Trabajando en el pago...'
@@ -89,12 +93,15 @@ export class ModalDreservasComponent {
   });
 
   public necesitaPago = computed(() => {
-    const estado = this.dreservasService.estadoResumen();
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+    console.log(
+      '🚀 ✅ ~ ModalDreservasComponent ~ necesitaPago=computed ~ estado:',
+      estado,
+    );
     return (
-      estado &&
-      estado.estado !== 'completada' &&
-      estado.valor &&
-      estado.valor > 0
+      estado && estado.estado !== 'pagada' && estado.valor && estado.valor > 0
     );
   });
 
@@ -223,9 +230,22 @@ export class ModalDreservasComponent {
     this.dreservasService.setCargando(true);
     this.dreservasService.setPago(true);
 
+    const estadoResumen = this.estadoResumen() ?? this.miReserva();
+
+    if (!estadoResumen || !estadoResumen.id) {
+      this.alertaService.error(
+        'No se pudo procesar el pago. Por favor, inténtelo de nuevo.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        'flex justify-center transition-all ease-in-out w-full text-lg',
+      );
+      this.dreservasService.setCargando(false);
+      return;
+    }
+
     setTimeout(() => {
       this.dreservasService
-        .pagarReserva(this.estadoResumen()?.id!)
+        .pagarReserva(estadoResumen.id)
         .then(response => {
           if (!response.data) {
             this.alertaService.error(
@@ -250,6 +270,36 @@ export class ModalDreservasComponent {
 
           this.alertaService.error(
             mensajeError,
+            5 * 1000,
+            this.alertaModalReservas(),
+            'flex justify-center transition-all ease-in-out w-full text-lg',
+          );
+          this.dreservasService.setCargando(false);
+        });
+    }, 1000);
+  }
+
+  public verMiReserva(idReserva: number | null) {
+    if (!idReserva) return;
+
+    this.dreservasService.setCargando(true);
+    this.dreservasService.setIdMiReserva(idReserva);
+    this.dreservasService.setResumen(false);
+    this.dreservasService.setPago(false);
+
+    setTimeout(() => {
+      this.dreservasService.miReservaQuery
+        .refetch()
+        .then(() => {
+          this.dreservasService.setMiReserva(
+            this.dreservasService.miReservaQuery.data() || null,
+          );
+          this.dreservasService.setCargando(false);
+        })
+        .catch(error => {
+          console.error('Error al obtener mi reserva:', error);
+          this.alertaService.error(
+            'Error al obtener la reserva. Por favor, inténtelo de nuevo.',
             5 * 1000,
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
