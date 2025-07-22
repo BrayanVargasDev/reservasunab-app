@@ -124,7 +124,7 @@
         <!-- Información de pago -->
         @if (reserva.pago) {
         <span
-          class="font-semibold text-lg sm:text-xl badge badge-outline h-9 px-3 text-center"
+          class="font-semibold text-lg min-w-28 sm:text-xl badge badge-outline h-9 px-3 text-center"
           [ngClass]="{
             'badge-success': reserva.pago.estado === 'OK',
             'badge-warning': reserva.pago.estado === 'PENDING',

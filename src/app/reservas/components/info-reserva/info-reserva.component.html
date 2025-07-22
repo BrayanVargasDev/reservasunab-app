@@ -1,4 +1,4 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-1 md:gap-2">
   <!-- Espacio -->
   <div class="flex items-center">
     <app-web-icon
@@ -93,6 +93,31 @@
     <span class="text-2xl font-bold text-success">
       ${{ resumen()?.valor?.toLocaleString('es-CO') }}
     </span>
+  </div>
+</div>
+}
+
+<!-- Jugadores agregados -->
+@if (resumen()?.jugadores && resumen()?.jugadores!.length > 0) {
+<div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
+  <div class="flex items-center mb-3">
+    <app-web-icon
+      nombreIcono="people-outline"
+      estilos="h-5 w-5 mr-3 text-info"
+    ></app-web-icon>
+    <span class="text-lg font-semibold">Jugadores agregados ({{ resumen()?.jugadores!.length }}):</span>
+  </div>
+  <div class="space-y-1">
+    @for (jugador of resumen()?.jugadores; track jugador.id) {
+    <div class="flex items-center justify-between bg-info/10 rounded-lg px-3 py-1">
+      <div class="flex flex-col">
+        <span class="font-medium">{{ jugador.nombre }} {{ jugador.apellido }}</span>
+        <span class="text-sm text-base-content/70">{{ jugador.email }}</span>
+        <span class="text-sm font-semibold text-base-content/70">CC: {{ jugador.documento || jugador.codigo_usuario }}</span>
+      </div>
+      <div class="badge badge-info">Confirmado</div>
+    </div>
+    }
   </div>
 </div>
 }

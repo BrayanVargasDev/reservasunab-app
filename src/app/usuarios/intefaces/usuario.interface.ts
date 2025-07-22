@@ -17,4 +17,5 @@ export interface Usuario {
   viendoDetalles?: boolean;
   direccion: string;
   fechaNacimiento: string;
+  codigo_usuario?: string;
 }

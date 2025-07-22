@@ -4,12 +4,19 @@ import { injectQuery } from '@tanstack/angular-query-experimental';
 import { getEspaciosAll, getEspacioDetalles } from '@reservas/actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Espacio } from '@espacios/interfaces';
+import { Usuario } from '@usuarios/intefaces';
 import {
   EspacioReservas,
   ReservaEspaciosDetalles,
   ResumenReserva,
 } from '../interfaces';
-import { iniciarReserva, pagarReserva, getMiReserva } from '../actions';
+import {
+  iniciarReserva,
+  pagarReserva,
+  getMiReserva,
+  buscarJugadores,
+  agregarJugadoresReserva,
+} from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -32,12 +39,24 @@ export class DreservasService {
   private _miReserva = signal<ResumenReserva | null>(null);
   private _idMiReserva = signal<number | null>(null);
 
+  // ? Estado para jugadores
+  private _mostrarJugadores = signal(false);
+  private _termino_busqueda_jugadores = signal<string>('');
+  private _jugadoresSeleccionados = signal<Usuario[]>([]);
+
   public cargando = computed(() => this._cargando());
   public resumen = computed(() => this._resumen());
   public pago = computed(() => this._pago());
   public estadoResumen = computed(() => this._estadoResumen());
   public miReserva = computed(() => this._miReserva());
   public idMiReserva = computed(() => this._idMiReserva());
+  public mostrarJugadores = computed(() => this._mostrarJugadores());
+  public terminoBusquedaJugadores = computed(() =>
+    this._termino_busqueda_jugadores(),
+  );
+  public jugadoresSeleccionados = computed(() =>
+    this._jugadoresSeleccionados(),
+  );
 
   public fecha = this._fecha.asReadonly();
 
@@ -76,6 +95,19 @@ export class DreservasService {
     queryFn: () => getMiReserva(this.http, this._idMiReserva()),
     select: (response: GeneralResponse<ResumenReserva>) => response.data,
     enabled: !!this._idMiReserva(),
+  }));
+
+  jugadoresQuery = injectQuery(() => ({
+    queryKey: ['jugadores', 'buscar', this._termino_busqueda_jugadores()],
+    queryFn: () =>
+      buscarJugadores(this.http, this._termino_busqueda_jugadores()),
+    select: (response: GeneralResponse<Usuario[]>) => response.data,
+    enabled: computed(
+      () =>
+        this._mostrarJugadores() &&
+        this._termino_busqueda_jugadores().trim().length > 0,
+    ),
+    staleTime: 30 * 1000, // 30 segundos
   }));
 
   public setFecha(fecha: string | null) {
@@ -147,6 +179,9 @@ export class DreservasService {
     this._estadoResumen.set(null);
     this._miReserva.set(null);
     this._idMiReserva.set(null);
+    this._mostrarJugadores.set(false);
+    this._termino_busqueda_jugadores.set('');
+    this._jugadoresSeleccionados.set([]);
   }
 
   public setCargando(cargando: boolean) {
@@ -189,5 +224,119 @@ export class DreservasService {
 
   public pagarReserva(idReserva: number) {
     return pagarReserva(this.http, idReserva);
+  }
+
+  // Métodos para jugadores
+  public setMostrarJugadores(mostrar: boolean) {
+    this._mostrarJugadores.set(mostrar);
+  }
+
+  public setTerminoBusquedaJugadores(termino: string) {
+    this._termino_busqueda_jugadores.set(termino);
+  }
+
+  public agregarJugadorSeleccionado(jugador: Usuario) {
+    const jugadoresActuales = this._jugadoresSeleccionados();
+    if (!jugadoresActuales.some(j => j.id === jugador.id)) {
+      this._jugadoresSeleccionados.set([...jugadoresActuales, jugador]);
+    }
+  }
+
+  public removerJugadorSeleccionado(jugadorId: number) {
+    const jugadoresActuales = this._jugadoresSeleccionados();
+    this._jugadoresSeleccionados.set(
+      jugadoresActuales.filter(j => j.id !== jugadorId),
+    );
+  }
+
+  public limpiarJugadoresSeleccionados() {
+    this._jugadoresSeleccionados.set([]);
+  }
+
+  // Métodos de validación para jugadores
+  public puedeAgregarMasJugadores(): boolean {
+    const estado = this._estadoResumen() || this._miReserva();
+    if (!estado) return false;
+
+    const jugadoresActuales = estado.total_jugadores || 0;
+    const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
+    const totalFinal = jugadoresActuales + jugadoresSeleccionados;
+
+    // Permitir agregar uno más si no hemos alcanzado el máximo
+    return totalFinal < estado.maximo_jugadores;
+  }
+
+  public puedeSeleccionarJugador(jugadorId?: number): boolean {
+    const estado = this._estadoResumen() || this._miReserva();
+    if (!estado) return false;
+
+    if (
+      jugadorId &&
+      this._jugadoresSeleccionados().some(j => j.id === jugadorId)
+    ) {
+      return false;
+    }
+
+    const jugadoresActuales = estado.total_jugadores || 0;
+    const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
+    const totalFinal = jugadoresActuales + jugadoresSeleccionados;
+
+    return totalFinal + 1 <= estado.maximo_jugadores;
+  }
+
+  public obtenerLimiteJugadores(): {
+    actual: number;
+    minimo: number;
+    maximo: number;
+    totalFinal: number;
+  } {
+    const estado = this._estadoResumen() || this._miReserva();
+    if (!estado) return { actual: 0, minimo: 0, maximo: 0, totalFinal: 0 };
+
+    const jugadoresActuales = estado.total_jugadores || 0;
+    const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
+    const totalFinal = jugadoresActuales + jugadoresSeleccionados;
+
+    return {
+      actual: jugadoresActuales,
+      minimo: estado.minimo_jugadores,
+      maximo: estado.maximo_jugadores,
+      totalFinal,
+    };
+  }
+
+  public validarAgregarJugadores(): { esValido: boolean; mensaje: string } {
+    const estado = this._estadoResumen() || this._miReserva();
+    if (!estado) {
+      return {
+        esValido: false,
+        mensaje: 'No se encontró información de la reserva',
+      };
+    }
+
+    const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
+    if (jugadoresSeleccionados === 0) {
+      return {
+        esValido: false,
+        mensaje: 'Debe seleccionar al menos un jugador',
+      };
+    }
+
+    const limites = this.obtenerLimiteJugadores();
+
+    if (limites.totalFinal > limites.maximo) {
+      const disponibles = limites.maximo - limites.actual;
+      return {
+        esValido: false,
+        mensaje: `Solo puedes agregar ${disponibles} jugador(es) más. Máximo permitido: ${limites.maximo}`,
+      };
+    }
+
+    return { esValido: true, mensaje: '' };
+  }
+
+  public async agregarJugadores(idReserva: number) {
+    const jugadoresIds = this._jugadoresSeleccionados().map(j => j.id);
+    return agregarJugadoresReserva(this.http, idReserva, jugadoresIds);
   }
 }
