@@ -99,8 +99,14 @@ export class AppService {
 
   private _editando = signal(false);
   public editando = computed(() => this._editando());
+  private _guardando = signal(false);
+  public guardando = computed(() => this._guardando());
 
   public setEditando(value: boolean): void {
     this._editando.set(value);
+  }
+
+  public setGuardando(value: boolean): void {
+    this._guardando.set(value);
   }
 }

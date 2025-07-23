@@ -102,12 +102,14 @@ export class CategoriasComponent implements OnDestroy {
       icono: 'remove-circle-outline',
       color: 'error',
       tooltip: 'Cancelar',
+      disabled: this.appService.guardando(),
       eventoClick: (event: Event) => this.cancelarCreacion(),
     },
     {
       icono: 'save-outline',
       color: 'success',
       tooltip: 'Guardar',
+      disabled: this.appService.guardando(),
       eventoClick: (event: Event) => this.onGuardarNuevo(),
     },
   ]);
@@ -116,7 +118,7 @@ export class CategoriasComponent implements OnDestroy {
     {
       id: 'expansor',
       header: '',
-      size: 55,
+      size: 40,
       cell: context =>
         flexRenderComponent(TableExpansorComponent, {
           inputs: {
@@ -132,7 +134,7 @@ export class CategoriasComponent implements OnDestroy {
       id: 'nombre',
       accessorKey: 'nombre',
       header: 'Nombre',
-      size: 200,
+      size: 100,
       cell: this.nombreCell,
     },
     {
@@ -145,7 +147,7 @@ export class CategoriasComponent implements OnDestroy {
     {
       accessorKey: 'creado_en',
       header: `Creado en`,
-      size: 200,
+      size: 150,
       accessorFn: row => {
         const date = moment(row.creado_en);
         return date.isValid()
@@ -158,6 +160,7 @@ export class CategoriasComponent implements OnDestroy {
       id: 'estado',
       accessorKey: 'eliminado_en',
       header: 'Estado',
+      size: 200,
       cell: this.estadoCell,
     },
     {
@@ -176,12 +179,14 @@ export class CategoriasComponent implements OnDestroy {
                   tooltip: 'Cancelar',
                   icono: 'remove-circle-outline',
                   color: 'error',
+                  disabled: this.appService.guardando(),
                   eventoClick: (event: Event) => this.cancelarCreacion(),
                 },
                 {
                   tooltip: 'Guardar',
                   icono: 'save-outline',
                   color: 'success',
+                  disabled: this.appService.guardando(),
                   eventoClick: (event: Event) => this.onGuardarNuevo(),
                 },
               ],
@@ -198,7 +203,7 @@ export class CategoriasComponent implements OnDestroy {
             tooltip: 'Editar',
             icono: 'pencil-outline',
             color: 'accent',
-            disabled: this.appService.editando(),
+            disabled: this.appService.editando() || this.appService.guardando(),
             eventoClick: (event: Event) => this.iniciarEdicion(context.row),
           });
         }
@@ -209,6 +214,7 @@ export class CategoriasComponent implements OnDestroy {
                 tooltip: 'Cancelar',
                 icono: 'remove-circle-outline',
                 color: 'error',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onCancelarEdicion(context.row),
               },
@@ -216,6 +222,7 @@ export class CategoriasComponent implements OnDestroy {
                 tooltip: 'Guardar',
                 icono: 'save-outline',
                 color: 'success',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onGuardarEdicion(context.row),
               },
@@ -485,6 +492,9 @@ export class CategoriasComponent implements OnDestroy {
       return;
     }
 
+    // Activar estado de guardado
+    this.appService.setGuardando(true);
+
     const nuevaCategoria: Partial<Categoria> = {
       nombre: this.nombre.value?.trim(),
       id_grupo: this.grupo.value ?? 0,
@@ -521,6 +531,9 @@ export class CategoriasComponent implements OnDestroy {
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      // Desactivar estado de guardado
+      this.appService.setGuardando(false);
     }
   }
 
@@ -537,6 +550,9 @@ export class CategoriasComponent implements OnDestroy {
       );
       return;
     }
+
+    // Activar estado de guardado
+    this.appService.setGuardando(true);
 
     const categoria = row.original;
 
@@ -592,6 +608,9 @@ export class CategoriasComponent implements OnDestroy {
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      // Desactivar estado de guardado
+      this.appService.setGuardando(false);
     }
   }
 
@@ -624,6 +643,7 @@ export class CategoriasComponent implements OnDestroy {
     this.appService.setEditando(false);
     this.configService.setEditandoFilaCategoria(0, false);
     this.categoriaEnEdicion.set(null);
+    this.appService.setGuardando(false);
 
     // Limpiar todos los controles de formulario
     this.nombre.reset(null);

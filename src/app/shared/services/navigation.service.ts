@@ -21,7 +21,7 @@ export class NavigationService {
         const primeraPantalla = pantallasDisponibles[0];
         this.router.navigate([primeraPantalla.ruta]);
       } else {
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/reservas']);
       }
     }, 500);
   }

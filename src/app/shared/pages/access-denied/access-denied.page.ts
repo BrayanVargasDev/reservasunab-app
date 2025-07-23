@@ -2,26 +2,23 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { NavigationService } from '@shared/services/navigation.service';
-import { WebIconComponent } from "@app/shared/components/web-icon/web-icon.component";
+import { WebIconComponent } from '@app/shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'app-access-denied',
   template: `
-    <ion-content class="ion-padding">
+    <div class="w-screen h-screen flex items-center justify-center">
       <div class="error-container">
         <app-web-icon
           nombreIcono="lock-closed-outline"
-          class="error-icon"></app-web-icon>
+          class="error-icon"
+        ></app-web-icon>
         <h1>403</h1>
         <h2>Acceso Denegado</h2>
         <p>No tienes los permisos necesarios para acceder a esta página.</p>
-        <ion-button
-          (click)="volverAlInicio()"
-          expand="block">
-          Volver al inicio
-        </ion-button>
+        <button class="btn btn-primary h-11" (click)="volverAlInicio()">Volver al inicio</button>
       </div>
-    </ion-content>
+    </div>
   `,
   styles: [
     `

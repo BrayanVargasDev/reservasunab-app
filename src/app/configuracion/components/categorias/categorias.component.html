@@ -34,7 +34,7 @@
     type="text"
   />
   } @else {
-  <span class="font-semibold">{{ context.getValue() | upperFirst }}</span>
+  <span class="font-semibold text-sm md:text-base">{{ context.getValue() | upperFirst }}</span>
   }
 </ng-template>
 
@@ -53,7 +53,7 @@
     }
   </select>
   } @else {
-  <span>{{ context.getValue() | upperFirst }}</span>
+  <span class="text-sm md:text-base">{{ context.getValue() | upperFirst }}</span>
   }
 </ng-template>
 
@@ -100,38 +100,6 @@
     }
   </thead>
   <tbody>
-    <!-- @if (modoCreacion()) {
-    <tr class="bg-base-100">
-      <td class="p-2">
-        <input
-          [formControl]="nombre"
-          placeholder="Inserte nombre"
-          pattern="[a-zA-Z0-9áéíóú ]*"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="text"
-        />
-      </td>
-      <td class="p-2">
-        <select
-          [formControl]="grupo"
-          class="select input-sm h-9 placeholder:text-gray-400"
-        >
-          <option value="" disabled selected>Seleccione</option>
-          @for (grupo of appService.gruposQuery.data(); track $index) {
-          <option [value]="grupo.id">
-            {{ grupo.nombre | upperFirst }}
-          </option>
-          }
-        </select>
-      </td>
-      <td class="p-2">
-        {{ fechaActual() }}
-      </td>
-      <td class="p-2">
-        <span class="text-sm"></span>
-      </td>
-    </tr>
-    }  -->
     @if (!categoriasQuery.length && !modoCreacion()) {
     <tr>
       <td

@@ -2,7 +2,7 @@
   class="flex flex-col md:flex-row mt-2 pr-2 sm:pl-3 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
   <div class="flex items-center gap-2">
-    <h2 class="font-bold text-4xl mb-2 md:mb-0">Configuración general</h2>
+    <h2 class="font-bold text-4xl mb-2 md:mb-0">Configuración</h2>
     <!-- @if (configService.filtroTexto() && configService.pestana() === 'permiso') {
     <div class="badge badge-secondary h-6 badge-sm my-auto text-base">
       Filtrando: "{{ configService.filtroTexto() }}"
@@ -43,7 +43,7 @@
       [checked]="categoriasChecked()"
       (change)="cambiarPestana('categorias')"
     />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]">
+    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100dvh_-_16.75rem)]">
       <config-categorias
         [ngClass]="'flex flex-col h-full overflow-y-auto'"
       ></config-categorias>
@@ -59,7 +59,7 @@
       (change)="cambiarPestana('grupos')"
     />
     <div
-      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100vh_-_14.75rem)]"
+      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100dvh_-_16.75rem)]"
     >
       <config-grupos
         [ngClass]="'flex flex-col h-full overflow-y-auto'"

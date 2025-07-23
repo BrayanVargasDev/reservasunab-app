@@ -1,152 +1,7 @@
-@if (appService.esMovil()) {
-<ion-content [fullscreen]="true">
-  <ion-grid class="auth-grid ion-no-padding">
-    <ion-row
-      class="ion-justify-content-center ion-align-items-center full-height">
-      <ion-col
-        size="12"
-        size-sm="10"
-        size-md="8"
-        size-lg="6"
-        size-xl="4"
-        class="ion-padding">
-        <ion-row class="ion-justify-content-center ion-align-items-center">
-          <ion-col class="ion-text-center">
-            <ion-text color="primary">
-              <h1 class="auth-title ion-padding-bottom">Ingresar</h1>
-            </ion-text>
-            <ion-text
-              color="dark"
-              class="ion-margin-bottom auth-subtitle">
-              <h2 class="welcome-text">Bienvenido!</h2>
-            </ion-text>
-          </ion-col>
-        </ion-row>
-
-        <form
-          (ngSubmit)="onLogin()"
-          [formGroup]="loginForm"
-          autocomplete="off">
-          <ion-col size="12">
-            <ion-item
-              lines="none"
-              [ngClass]="{
-                'auth-item': true,
-                'auth-item--invalid': formUtils.esCampoInvalido(loginForm, 'email'),
-                }">
-              <ion-icon
-                name="mail-outline"
-                slot="start"
-                [color]="obtenerColorIcono('email')"
-                class="auth-icon"></ion-icon>
-              <ion-input
-                class="auth-input"
-                color="primary"
-                labelPlacement="stacked"
-                label="Correo"
-                placeholder="Ingresa tu correo..."
-                type="email"
-                formControlName="email"
-                name="email"
-                email>
-              </ion-input>
-            </ion-item>
-            <div class="error-container">
-              <ion-text
-                class="error-text"
-                [class.visible]="formUtils.esCampoInvalido(loginForm, 'email')">
-                {{ formUtils.esCampoInvalido(loginForm, 'email') ?
-                formUtils.obtenerErrorDelCampo(loginForm, 'email') : ' ' }}
-              </ion-text>
-            </div>
-          </ion-col>
-
-          <ion-item
-            lines="none"
-            [ngClass]="{
-              'auth-item': true,
-              'auth-item--invalid': formUtils.esCampoInvalido(loginForm, 'password'),
-            }">
-            <ion-icon
-              name="key-outline"
-              [color]="obtenerColorIcono('password')"
-              slot="start"
-              class="auth-icon"></ion-icon>
-            <ion-input
-              labelPlacement="stacked"
-              label="Contraseña"
-              placeholder="Ingresa tu contraseña..."
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              name="password"
-              required
-              minlength="6"></ion-input>
-            <ion-icon
-              class="auth-icon eye-icon"
-              [color]="obtenerColorIcono('password')"
-              [name]="showPassword() ? 'eye-outline' : 'eye-off-outline'"
-              slot="end"
-              (click)="togglePasswordVisibility()"></ion-icon>
-          </ion-item>
-          <div class="error-container">
-            <ion-text
-              class="error-text"
-              [class.visible]="formUtils.esCampoInvalido(loginForm, 'password')">
-              {{ formUtils.esCampoInvalido(loginForm, 'password') ?
-              formUtils.obtenerErrorDelCampo(loginForm, 'password') : ' ' }}
-            </ion-text>
-          </div>
-
-          <ion-row>
-            <ion-col
-              size="12"
-              class="ion-text-right">
-              <ion-button
-                fill="clear"
-                color="dark"
-                size="small"
-                class="ion-no-padding auth-text-button"
-                routerLink="/auth/reset-password">
-                Olvidaste tu clave?
-              </ion-button>
-            </ion-col>
-          </ion-row>
-
-          <div class="ion-padding-top ion-padding-bottom">
-            <app-action-button
-              [texto]="'Ingresar'"
-              [tipo]="'submit'"
-              [color]="'primary'"
-              [tamano]="'large'"
-              [ngClass]="'w-100'"
-              [disabled]="loginForm.invalid || false">
-            </app-action-button>
-          </div>
-        </form>
-
-        <ion-row class="ion-text-center ion-padding-top">
-          <ion-col class="auth-link-container">
-            <div
-              class="ion-align-items-center ion-justify-content-center responsive-link">
-              <ion-text color="dark">No tienes una cuenta?</ion-text>
-              <ion-button
-                color="primary"
-                fill="clear"
-                routerLink="/auth/registro"
-                class="auth-text-button">
-                Registrate.
-              </ion-button>
-            </div>
-          </ion-col>
-        </ion-row>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
-</ion-content>
-} @else {
 <div
-  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-amber-50 p-4">
-  <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-amber-50 p-4"
+>
+  <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-4 md:p-8">
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-base-content mb-2">Ingresar</h1>
       <p class="text-gray-600">Bienvenido nuevamente</p>
@@ -156,25 +11,28 @@
       (click)="loginSaml()"
       [disabled]="authService.isLoading"
       type="button"
-      class="w-full mb-6 py-3 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center justify-center gap-3">
+      class="w-full mb-6 py-3 px-4 border border-gray-300 rounded-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center justify-center gap-3"
+    >
       @if (authService.isLoading) {
       <span class="loading loading-spinner loading-lg"></span>
       } @else {
-      <svg
-        class="w-5 h-5"
-        viewBox="0 0 24 24">
+      <svg class="w-5 h-5" viewBox="0 0 24 24">
         <path
           fill="#4285F4"
-          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+        />
         <path
           fill="#34A853"
-          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+        />
         <path
           fill="#FBBC05"
-          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+        />
         <path
           fill="#EA4335"
-          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+        />
       </svg>
       Continuar con Google }
     </button>
@@ -188,30 +46,32 @@
       </div>
     </div>
 
-    <form
-      [formGroup]="loginForm"
-      (ngSubmit)="onLogin()"
-      class="space-y-6">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-6">
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700"
           >Correo electrónico</label
         >
         <div class="relative">
           <div
-            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
             <app-web-icon
               nombreIcono="at-outline"
-              estilos="h-5 w-5 text-gray-400"></app-web-icon>
+              estilos="h-5 w-5 text-gray-400"
+            ></app-web-icon>
           </div>
           <input
             type="email"
             formControlName="email"
             placeholder="tu@email.com"
             [ngClass]="{
-                    'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
-                    'border-error focus:ring-error focus:border-error': formUtils.esCampoInvalido(loginForm, 'email'),
-                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoInvalido(loginForm, 'email')
-                  }" />
+              'w-full pl-10 pr-3 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error':
+                formUtils.esCampoInvalido(loginForm, 'email'),
+              'border-gray-300 focus:ring-primary focus:border-primary':
+                !formUtils.esCampoInvalido(loginForm, 'email')
+            }"
+          />
         </div>
         @if (formUtils.esCampoInvalido(loginForm, 'email')) {
         <div class="text-sm text-error">
@@ -226,33 +86,41 @@
         >
         <div class="relative">
           <div
-            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+          >
             <app-web-icon
               nombreIcono="lock-closed-outline"
-              estilos="flex h-5 items-center pointer-events-none text-gray-400 w-5"></app-web-icon>
+              estilos="flex h-5 items-center pointer-events-none text-gray-400 w-5"
+            ></app-web-icon>
           </div>
           <input
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
             placeholder="••••••••"
             [ngClass]="{
-                    'w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
-                    'border-error focus:ring-error focus:border-error': formUtils.esCampoInvalido(loginForm, 'password'),
-                    'border-gray-300 focus:ring-primary focus:border-primary': !formUtils.esCampoInvalido(loginForm, 'password')
-                  }" />
+              'w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
+              'border-error focus:ring-error focus:border-error':
+                formUtils.esCampoInvalido(loginForm, 'password'),
+              'border-gray-300 focus:ring-primary focus:border-primary':
+                !formUtils.esCampoInvalido(loginForm, 'password')
+            }"
+          />
           <button
             type="button"
             [disabled]="authService.isLoading"
             (click)="togglePasswordVisibility()"
-            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-base-content cursor-pointer">
+            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-base-content cursor-pointer"
+          >
             @if (!showPassword()) {
             <app-web-icon
               nombreIcono="eye-off-outline"
-              estilos="h-5 w-5 items-center text-gray-400 hover:text-gray-600 cursor-pointer"></app-web-icon>
+              estilos="h-5 w-5 items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+            ></app-web-icon>
             } @else {
             <app-web-icon
               nombreIcono="eye-outline"
-              estilos="h-5 w-5 items-center text-gray-400 hover:text-gray-600 cursor-pointer"></app-web-icon>
+              estilos="h-5 w-5 items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+            ></app-web-icon>
             }
           </button>
         </div>
@@ -266,7 +134,8 @@
       <div class="text-right">
         <a
           routerLink="/auth/reset-password"
-          class="text-sm text-primary transition-colors">
+          class="text-sm text-primary transition-colors"
+        >
           ¿Olvidaste tu contraseña?
         </a>
       </div>
@@ -278,25 +147,31 @@
         [disabled]="loginForm.invalid || authService.isLoading"
         [ngClass]="{
           'w-full py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2': true,
-          'disabled:btn disabled:btn-soft disabled:btn-outline': loginForm.invalid,
+          'disabled:btn disabled:btn-soft disabled:btn-outline':
+            loginForm.invalid,
           'btn btn-primary btn-soft': !loginForm.invalid
-        }">
+        }"
+      >
         Iniciar Sesión
       </button>
     </form>
 
     <div
       class=""
-      [ngClass]="{ 'mt-8 text-center': true, 'pointer-events-none': authService.isLoading }">
+      [ngClass]="{
+        'mt-8 text-center': true,
+        'pointer-events-none': authService.isLoading
+      }"
+    >
       <p class="text-sm text-gray-600">
         ¿No tienes cuenta?
         <a
           routerLink="/auth/registro"
-          class="text-primary font-medium transition-colors">
+          class="text-primary font-medium transition-colors"
+        >
           Regístrate aquí
         </a>
       </p>
     </div>
   </div>
 </div>
-}
