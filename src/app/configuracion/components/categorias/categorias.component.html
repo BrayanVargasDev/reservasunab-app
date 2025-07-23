@@ -10,6 +10,7 @@
       'badge-error': context.getValue() !== null,
       'opacity-50 pointer-events-none badge-ghost': appService.editando()
     }"
+    [attr.disabled]="appService.guardando()"
     (click)="
       authService.tienePermisos('ESP000012')
         ? appService.editando()

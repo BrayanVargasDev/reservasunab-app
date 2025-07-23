@@ -87,12 +87,14 @@ export class GruposComponent implements OnInit, OnDestroy {
       icono: 'remove-circle-outline',
       color: 'error',
       tooltip: 'Cancelar',
+      disabled: this.appService.guardando(),
       eventoClick: (event: Event) => this.cancelarCreacion(),
     },
     {
       icono: 'save-outline',
       color: 'success',
       tooltip: 'Guardar',
+      disabled: this.appService.guardando(),
       eventoClick: (event: Event) => this.onGuardarNuevo(),
     },
   ]);
@@ -103,7 +105,7 @@ export class GruposComponent implements OnInit, OnDestroy {
       accessorKey: 'nombre',
       header: 'Nombre',
       cell: info =>
-        `<span class="font-semibold">${this.upperFirstPipe.transform(
+        `<span class="font-semibold text-sm md:text-base">${this.upperFirstPipe.transform(
           info.getValue() as unknown as string,
         )}</span>`,
     },
@@ -138,7 +140,7 @@ export class GruposComponent implements OnInit, OnDestroy {
             tooltip: 'Editar',
             icono: 'pencil-outline',
             color: 'accent',
-            disabled: this.appService.editando(),
+            disabled: this.appService.guardando() || this.appService.editando(),
             eventoClick: (event: Event) => this.iniciarEdicion(context.row),
           });
         }
@@ -149,6 +151,7 @@ export class GruposComponent implements OnInit, OnDestroy {
                 tooltip: 'Cancelar',
                 icono: 'remove-circle-outline',
                 color: 'error',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onCancelarEdicion(context.row),
               },
@@ -156,6 +159,7 @@ export class GruposComponent implements OnInit, OnDestroy {
                 tooltip: 'Guardar',
                 icono: 'save-outline',
                 color: 'success',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onGuardarEdicion(context.row),
               },
@@ -248,6 +252,8 @@ export class GruposComponent implements OnInit, OnDestroy {
     const nuevoEstado = grupo.eliminado_en === null ? 'inactivo' : 'activo';
     const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
 
+    this.appService.setGuardando(true);
+    this.cdr.detectChanges();
     this.alertaService
       .confirmarAccion(
         `¿Estás seguro de que quieres ${accion} el grupo <strong>${grupo.nombre}</strong>?`,
@@ -279,7 +285,14 @@ export class GruposComponent implements OnInit, OnDestroy {
                 this.configService.alertaConfig()!,
                 'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
               );
+            })
+            .finally(() => {
+              this.appService.setGuardando(false);
+              this.cdr.detectChanges();
             });
+        } else {
+          this.appService.setGuardando(false);
+          this.cdr.detectChanges();
         }
       });
   }
@@ -346,6 +359,9 @@ export class GruposComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.appService.setGuardando(true);
+    this.cdr.detectChanges();
+
     const nuevoGrupo: Partial<Grupo> = {
       nombre: this.nombre.value?.trim(),
     };
@@ -371,6 +387,8 @@ export class GruposComponent implements OnInit, OnDestroy {
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      this.appService.setGuardando(false);
     }
   }
 
@@ -386,6 +404,9 @@ export class GruposComponent implements OnInit, OnDestroy {
       );
       return;
     }
+
+    this.appService.setGuardando(true);
+    this.cdr.detectChanges();
 
     const grupo = row.original;
 
@@ -422,6 +443,9 @@ export class GruposComponent implements OnInit, OnDestroy {
         this.configService.alertaConfig()!,
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      this.appService.setGuardando(false);
+      this.cdr.detectChanges();
     }
   }
 
@@ -430,7 +454,7 @@ export class GruposComponent implements OnInit, OnDestroy {
     this.appService.setEditando(false);
     this.configService.setEditandoFilaGrupo(0, false);
     this.grupoEnEdicion.set(null);
+    this.appService.setGuardando(false);
     this.nombre.reset();
-    this.cdr.detectChanges();
   }
 }

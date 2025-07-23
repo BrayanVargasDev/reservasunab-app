@@ -348,6 +348,9 @@ export class CategoriasComponent implements OnDestroy {
     const nuevoEstado = categoria.eliminado_en === null ? 'inactivo' : 'activo';
     const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
 
+    this.appService.setGuardando(true);
+    this.cdr.detectChanges();
+
     this.alertaService
       .confirmarAccion(
         `¿Estás seguro de que quieres ${accion} a la categoría para <strong>${categoria.nombre}</strong>?`,
@@ -379,7 +382,14 @@ export class CategoriasComponent implements OnDestroy {
                 this.configService.alertaConfig()!,
                 'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
               );
+            })
+            .finally(() => {
+              this.appService.setGuardando(false);
+              this.cdr.detectChanges();
             });
+        } else {
+          this.appService.setGuardando(false);
+          this.cdr.detectChanges();
         }
       });
   }
