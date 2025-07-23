@@ -82,7 +82,10 @@ export class ConfigService {
       getCategorias(this.http, {
         ...this.paginacionCategorias(),
       }),
-    select: (response: PaginatedResponse<Categoria>) => response.data,
+    select: (response: PaginatedResponse<Categoria>) => {
+      this._datosPaginadorCategorias.set(response.meta);
+      return response.data;
+    },
   }));
 
   public gruposQuery = injectQuery(() => ({

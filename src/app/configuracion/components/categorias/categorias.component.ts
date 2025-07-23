@@ -8,6 +8,8 @@ import {
   ChangeDetectorRef,
   OnDestroy,
   Injector,
+  effect,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -38,7 +40,6 @@ import { ResponsiveTableDirective } from '@shared/directives/responsive-table.di
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { UpperFirstPipe } from '@shared/pipes';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
-import { effect } from '@angular/core';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -57,6 +58,8 @@ interface Util {
   ],
   templateUrl: './categorias.component.html',
   styleUrl: './categorias.component.scss',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoriasComponent implements OnDestroy {
   private injector = inject(Injector);
@@ -332,18 +335,6 @@ export class CategoriasComponent implements OnDestroy {
     this.configService.setPaginacionCategorias(estado);
   }
 
-  public esColumnaEditable(columnId: string): boolean {
-    const columnasEditables = [
-      'nombre',
-      'grupo',
-      'reservas_estudiante',
-      'reservas_administrativo',
-      'reservas_externo',
-      'reservas_egresado',
-    ];
-    return columnasEditables.includes(columnId);
-  }
-
   public cambiarEstadoConfig(categoria: Categoria) {
     const nuevoEstado = categoria.eliminado_en === null ? 'inactivo' : 'activo';
     const accion = nuevoEstado === 'activo' ? 'activar' : 'desactivar';
@@ -438,7 +429,7 @@ export class CategoriasComponent implements OnDestroy {
       this.reservasAdministrativo.markAsPristine();
       this.reservasExterno.markAsPristine();
       this.reservasEgresado.markAsPristine();
-
+      this.onToggleRow(row, true);
       this.cdr.detectChanges();
     }, 0);
   }

@@ -22,7 +22,6 @@ export class PermisosService {
   private appService = inject(AppService);
   private queryClient = inject(QueryClient);
   private _appService = inject(AppService);
-  private _pestana = signal<'rol' | 'permiso'>('permiso');
   private _estadoModal = signal({
     titulo: '',
     edicion: false,
@@ -38,22 +37,23 @@ export class PermisosService {
     pageIndex: 0,
     pageSize: 10,
   });
+
+  private _datosPaginador = signal<Meta | null>(null);
+  private _filtroTexto = signal<string>('');
+
+  private _modoCreacionRol = signal<boolean>(false);
+  private _filaRolEditando = signal<{ [id: number]: boolean }>({});
   private _paginacionRoles = signal<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-  private _datosPaginador = signal<Meta | null>(null);
   private _datosPaginadorRoles = signal<Meta | null>(null);
-  private _filtroTexto = signal<string>('');
 
-  public paginacion = computed(() => this._paginacion());
+  public modoCreacionRol = computed(() => this._modoCreacionRol());
+  public filaRolEditando = computed(() => this._filaRolEditando());
   public paginacionRoles = computed(() => this._paginacionRoles());
-  public datosPaginador = computed(() => this._datosPaginador());
   public datosPaginadorRoles = computed(() => this._datosPaginadorRoles());
-  public pestana = computed(() => this._pestana());
-  public estadoModal = computed(() => this._estadoModal());
-  public modoCreacion = computed(() => this._modoCreacion());
-  public filaPermisosEditando = computed(() => this._filaPermisosEditando());
+
   public pantallaSeleccionada = computed(() => this._pantallaSeleccionada());
   public filtroTexto = computed(() => this._filtroTexto());
   public permisosSeleccionados = computed(() => this._permisosSeleccionados());
@@ -62,28 +62,33 @@ export class PermisosService {
     this._permisosUsuarioEditando(),
   );
 
-  public setPestana(value: 'rol' | 'permiso') {
+  private _pestana = signal<'rol'>('rol');
+  public pestana = computed(() => this._pestana());
+
+  public setPestana(value: 'rol') {
     this._pestana.set(value);
   }
 
-  public permisosQuery = injectQuery(() => ({
-    queryKey: ['permisos', this.paginacion(), this._filtroTexto()],
-    queryFn: () => {
-      const params = this.paginacion();
-      return getPermisos(this.http, { ...params, search: this._filtroTexto() });
-    },
-    select: (response: PaginatedResponse<PermisosUsuario>) => {
-      this._datosPaginador.set(response.meta);
-      return response.data;
-    },
-  }));
+  public permisosQuery = [];
+
+  // public permisosQuery = injectQuery(() => ({
+  //   queryKey: ['permisos', this.paginacionRoles(), this._filtroTexto()],
+  //   queryFn: () => {
+  //     const params = this.paginacionRoles();
+  //     return getPermisos(this.http, { ...params, search: this._filtroTexto() });
+  //   },
+  //   select: (response: PaginatedResponse<PermisosUsuario>) => {
+  //     this._datosPaginador.set(response.meta);
+  //     return response.data;
+  //   },
+  // }));
 
   public rolesPermisosQuery = injectQuery(() => ({
-    queryKey: ['roles-permisos', this.paginacion()],
-    queryFn: () => {
-      const params = this.paginacion();
-      return getRolesPermisos(this.http, params);
-    },
+    queryKey: ['roles-permisos', this.paginacionRoles()],
+    queryFn: () =>
+      getRolesPermisos(this.http, {
+        ...this.paginacionRoles(),
+      }),
     select: (response: PaginatedResponse<RolPermisos>) => {
       this._datosPaginadorRoles.set(response.meta);
       return response.data;
@@ -116,10 +121,6 @@ export class PermisosService {
     this._paginacion.set(paginacion);
   }
 
-  public setPaginacionRoles(paginacion: PaginationState) {
-    this._paginacionRoles.set(paginacion);
-  }
-
   public setFiltroTexto(filtro: string) {
     this._filtroTexto.set(filtro);
     this.setPaginacion({
@@ -130,16 +131,6 @@ export class PermisosService {
 
   public limpiarFiltro() {
     this._filtroTexto.set('');
-  }
-
-  public setDatosPaginador(datos: Partial<Meta>) {
-    this._datosPaginador.update(
-      state =>
-        ({
-          ...state,
-          ...datos,
-        } as Meta),
-    );
   }
 
   public resetFilaPermisosEditando() {
@@ -240,11 +231,36 @@ export class PermisosService {
   }
 
   resetAllexceptPaginacion() {
-    this._modoCreacion.set(false);
-    this._filaPermisosEditando.set({});
+    this._modoCreacionRol.set(false);
+    this._filaRolEditando.set({});
     this._pantallaSeleccionada.set(null);
     this._permisosSeleccionados.set({});
     this._permisosNuevoRol.set([]);
-    this._permisosUsuarioEditando.set({});
+    this._paginacionRoles.set({
+      pageIndex: 0,
+      pageSize: 10,
+    });
+    this._datosPaginadorRoles.set(null);
+  }
+
+  public setPaginacionRoles(paginacion: PaginationState) {
+    this._paginacionRoles.set(paginacion);
+  }
+
+  public setModoCreacionRol(estado: boolean) {
+    this._modoCreacionRol.set(estado);
+  }
+
+  public setEditandoFilaRol(id: number, estado: boolean) {
+    this._filaRolEditando.set({
+      ...this._filaRolEditando(),
+      [id]: estado,
+    });
+  }
+
+  public iniciarCrearRol() {
+    this.setModoCreacionRol(true);
+    this.setEditandoFilaRol(0, true);
+    this.setPestana('rol');
   }
 }

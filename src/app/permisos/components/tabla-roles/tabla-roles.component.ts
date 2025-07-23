@@ -1,6 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   signal,
   inject,
   input,
@@ -60,7 +61,6 @@ interface Util {
     ResponsiveTableDirective,
     FlexRenderDirective,
     PaginadorComponent,
-    AccionesTablaComponent,
     WebIconComponent,
     ListaPermisosPantallaComponent,
   ],
@@ -72,14 +72,17 @@ interface Util {
     class: 'flex flex-col grow w-full overflow-hidden',
   },
 })
-export class TablaRolesComponent implements OnDestroy, OnInit {
+export class TablaRolesComponent implements OnInit, OnDestroy {
   private injector = inject(Injector);
   private alertasService = inject(AlertasService);
-  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+  private rolEnEdicion = signal<RolPermisos | null>(null);
+
   public permisosService = inject(PermisosService);
+  public appService = inject(AppService);
+  public authService = inject(AuthService);
 
-  public modoCreacion = input<boolean>(false);
-
+  public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
   public nombre = new FormControl<string>('', [
     Validators.required,
     Validators.minLength(3),
@@ -89,36 +92,39 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     Validators.minLength(3),
   ]);
 
-  private rolEnEdicion = signal<RolPermisos | null>(null);
+  public modoCreacion = computed(() => this.permisosService.modoCreacionRol());
 
   public alertaRoles = viewChild.required('alertaRoles', {
     read: ViewContainerRef,
   });
 
-  public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
+  public nombreCell = viewChild.required<TemplateRef<Util>>('nombreCell');
+  public fechaCell = viewChild.required<TemplateRef<Util>>('fechaCell');
+  public descripcionCell =
+    viewChild.required<TemplateRef<Util>>('descripcionCell');
 
   public accionesNuevoRol = computed(() => [
     {
       icono: 'remove-circle-outline',
       color: 'error',
       tooltip: 'Cancelar',
-      eventoClick: (event: Event) => {
-        this.cancelarCreacion();
-      },
+      disabled: this.appService.guardando(),
+      eventoClick: (event: Event) => this.cancelarCreacion(),
     },
     {
       icono: 'save-outline',
       color: 'success',
       tooltip: 'Guardar',
+      disabled: this.appService.guardando(),
       eventoClick: (event: Event) => this.onGuardarNuevoRol(),
     },
   ]);
 
-  columnasPorDefecto = signal<ColumnDef<RolPermisos>[]>([
+  private columnasPorDefecto = signal<ColumnDef<RolPermisos>[]>([
     {
       id: 'expansor',
       header: '',
-      size: 55,
+      size: 40,
       cell: context =>
         flexRenderComponent(TableExpansorComponent, {
           inputs: {
@@ -132,14 +138,17 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     },
     {
       id: 'nombre',
+      size: 100,
       accessorKey: 'nombre',
       header: 'Nombre',
+      cell: this.nombreCell,
     },
     {
       id: 'descripcion',
       accessorKey: 'descripcion',
+      size: 150,
       header: 'Descripción',
-      cell: info => info.getValue(),
+      cell: this.descripcionCell,
     },
     {
       accessorKey: 'creadoEn',
@@ -150,13 +159,52 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
           ? date.format('DD/MM/YYYY HH:mm a')
           : 'Fecha inválida';
       },
+      cell: this.fechaCell,
     },
     {
       id: 'acciones',
       header: 'Acciones',
       cell: context => {
-        const id = context.row.original.id;
-        const enEdicion = this.permisosService.filaPermisosEditando()[id];
+        const rol = context.row.original;
+        const id = rol.id;
+
+        // Si es la fila de creación (ID = -1)
+        if (id === -1) {
+          return flexRenderComponent(AccionesTablaComponent, {
+            inputs: {
+              acciones: [
+                {
+                  tooltip: 'Cancelar',
+                  icono: 'remove-circle-outline',
+                  color: 'error',
+                  disabled: this.appService.guardando(),
+                  eventoClick: (event: Event) => this.cancelarCreacion(),
+                },
+                {
+                  tooltip: 'Guardar',
+                  icono: 'save-outline',
+                  color: 'success',
+                  disabled: this.appService.guardando(),
+                  eventoClick: (event: Event) => this.onGuardarNuevoRol(),
+                },
+              ],
+            },
+          });
+        }
+
+        // Para filas normales
+        const enEdicion = this.permisosService.filaRolEditando()[id];
+        const accionesVerificadas = [];
+
+        if (this.authService.tienePermisos('PER000002')) {
+          accionesVerificadas.push({
+            tooltip: 'Editar',
+            icono: 'pencil-outline',
+            color: 'accent',
+            disabled: this.appService.editando() || this.appService.guardando(),
+            eventoClick: (event: Event) => this.iniciarEdicion(context.row),
+          });
+        }
 
         const acciones: BotonAcciones[] = enEdicion
           ? [
@@ -164,6 +212,7 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
                 tooltip: 'Cancelar',
                 icono: 'remove-circle-outline',
                 color: 'error',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onCancelarEdicion(context.row),
               },
@@ -171,26 +220,12 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
                 tooltip: 'Guardar',
                 icono: 'save-outline',
                 color: 'success',
+                disabled: this.appService.guardando(),
                 eventoClick: (event: Event) =>
                   this.onGuardarEdicion(context.row),
               },
             ]
-          : this.authService.tienePermisos('PER000002')
-          ? [
-              {
-                tooltip: 'Editar',
-                icono: 'pencil-outline',
-                color: 'accent',
-                disabled:
-                  this.appService.editando() ||
-                  this.permisosService.modoCreacion(),
-                eventoClick: (event: Event) =>
-                  this.authService.tienePermisos('PER000002')
-                    ? this.iniciarEdicion(context.row)
-                    : null,
-              },
-            ]
-          : [];
+          : accionesVerificadas;
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -201,33 +236,12 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     },
   ]);
 
-  ngOnInit() {
-    effect(
-      () => {
-        this.permisosService.pestana();
-        this.permisosService.paginacionRoles();
-        this.tableState.update(state => ({
-          ...state,
-          expanded: {},
-        }));
-        this.permisosService.resetAllexceptPaginacion();
-      },
-      {
-        injector: this.injector,
-      },
-    );
-  }
-
-  public appService = inject(AppService);
-  public celdaAcciones = viewChild.required<TemplateRef<Util>>('celdaAcciones');
-
   public tableState = signal({
     expanded: {} as ExpandedState,
-    globalFilter: '',
   });
 
   readonly tablaRoles = createAngularTable(() => ({
-    data: this.rolesQuery.data() ?? [],
+    data: this.rolesQuery ?? [],
     columns: this.columnasPorDefecto(),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -238,20 +252,8 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     manualPagination: true,
     autoResetPageIndex: false,
     state: {
-      pagination: this.permisosService.paginacionRoles(),
       expanded: this.tableState().expanded,
-      globalFilter: this.tableState().globalFilter,
-    },
-    onPaginationChange: estado => {
-      const newPagination =
-        typeof estado === 'function'
-          ? estado(this.permisosService.paginacionRoles())
-          : estado;
-
-      this.permisosService.setPaginacionRoles({
-        pageIndex: newPagination.pageIndex,
-        pageSize: newPagination.pageSize,
-      });
+      pagination: this.permisosService.paginacionRoles(),
     },
     onExpandedChange: estado => {
       const newExpanded =
@@ -264,56 +266,154 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
         expanded: newExpanded,
       }));
     },
+    onPaginationChange: estado => {
+      const newPagination =
+        typeof estado === 'function'
+          ? estado(this.permisosService.paginacionRoles())
+          : estado;
+
+      this.permisosService.setPaginacionRoles({
+        pageIndex: newPagination.pageIndex,
+        pageSize: newPagination.pageSize,
+      });
+    },
   }));
 
+  ngOnInit() {
+    effect(
+      () => {
+        this.permisosService.pestana();
+
+        if (this.permisosService.pestana() !== 'rol') {
+          this.nombre.reset();
+          this.descripcion.reset();
+          this.permisosService.setPermisosNuevoRol([]);
+          this.permisosService.setPantallaSeleccionada(null);
+          this.rolEnEdicion.set(null);
+          this.permisosService.resetAllexceptPaginacion();
+        }
+      },
+      {
+        injector: this.injector,
+      },
+    );
+  }
+
   get rolesQuery() {
-    return this.permisosService.rolesPermisosQuery;
+    const roles = this.permisosService.rolesPermisosQuery.data() || [];
+
+    if (this.modoCreacion()) {
+      const rolVacio: RolPermisos = {
+        id: -1, // ID negativo para identificar la fila de creación, igual que categorías
+        nombre: '',
+        descripcion: '',
+        activo: null,
+        creadoEn: this.fechaActual(),
+        actualizadoEn: null,
+        permisos: [],
+      };
+      return [rolVacio, ...roles];
+    }
+    return roles;
   }
 
   get pantallas() {
     return (
       this.appService.pantallasQuery
         .data()
+        ?.filter(pantalla => pantalla.visible)
         ?.sort((a, b) => a.orden - b.orden) ?? []
     );
   }
 
+  public onPageChange(estado: PaginationState): void {
+    this.permisosService.setPaginacionRoles(estado);
+  }
+
+  public crearRol() {
+    this.permisosService.setModoCreacionRol(true);
+    this.appService.setEditando(true);
+    this.permisosService.setEditandoFilaRol(0, true);
+    this.rolEnEdicion.set(null);
+
+    // Limpiar todos los controles de formulario
+    this.nombre.reset('');
+    this.descripcion.reset('');
+    this.permisosService.setPermisosNuevoRol([]);
+    this.permisosService.setPantallaSeleccionada(null);
+
+    this.cdr.detectChanges();
+  }
+
   private cancelarCreacion() {
-    this.permisosService.setModoCreacion(false);
+    this.permisosService.setModoCreacionRol(false);
     this.appService.setEditando(false);
+
+    // Colapsar todas las filas expandidas
+    this.tableState.update(state => ({
+      ...state,
+      expanded: {},
+    }));
+
     this.nombre.reset();
     this.descripcion.reset();
     this.permisosService.setPermisosNuevoRol([]);
     this.permisosService.setPantallaSeleccionada(null);
+
+    // Forzar detección de cambios
+    this.cdr.detectChanges();
   }
 
   public onCancelarEdicion(row: Row<RolPermisos>) {
     const id = row.original.id;
-    this.permisosService.setEditandoFilaPermisos(id, false);
-    this.onToggleRow(row);
-    this.permisosService.setModoCreacion(false);
+    this.permisosService.setEditandoFilaRol(id, false);
     this.appService.setEditando(false);
 
     this.permisosService.limpiarPermisosSeleccionados(id);
     this.rolEnEdicion.set(null);
+
+    // Colapsar todas las filas expandidas
+    this.tableState.update(state => ({
+      ...state,
+      expanded: {},
+    }));
+
     this.nombre.reset();
     this.descripcion.reset();
+    this.permisosService.setPantallaSeleccionada(null);
+
+    this.cdr.detectChanges();
   }
 
   private iniciarEdicion(row: Row<RolPermisos>) {
     const rol = row.original;
     const id = rol.id;
 
-    this.permisosService.setEditandoFilaPermisos(id, true);
+    this.permisosService.setEditandoFilaRol(id, true);
     this.rolEnEdicion.set(rol);
     this.appService.setEditando(true);
 
-    this.nombre.setValue(rol.nombre);
-    this.descripcion.setValue(rol.descripcion);
-
-    this.permisosService.setPermisosSeleccionados(id, rol.permisos);
-
+    // Expandir la fila automáticamente al iniciar edición
     this.onToggleRow(row, true);
+
+    setTimeout(() => {
+      this.nombre.setValue(rol.nombre);
+      this.descripcion.setValue(rol.descripcion);
+
+      this.nombre.markAsPristine();
+      this.descripcion.markAsPristine();
+
+      // Seleccionar primera pantalla si no hay ninguna seleccionada
+      if (
+        !this.permisosService.pantallaSeleccionada() &&
+        this.pantallas.length > 0
+      ) {
+        this.permisosService.setPantallaSeleccionada(this.pantallas[0]);
+      }
+
+      this.cdr.detectChanges();
+    }, 0);
+    this.permisosService.setPermisosSeleccionados(id, rol.permisos);
   }
 
   private async onGuardarEdicion(row: Row<RolPermisos>) {
@@ -351,17 +451,27 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
 
-      this.permisosService.setEditandoFilaPermisos(rol.id, false);
-      this.onToggleRow(row);
+      // Colapsar todas las filas expandidas
+      this.tableState.update(state => ({
+        ...state,
+        expanded: {},
+      }));
+
+      this.permisosService.setEditandoFilaRol(rol.id, false);
       this.appService.setEditando(false);
+
       this.rolEnEdicion.set(null);
       this.nombre.reset();
       this.descripcion.reset();
       this.permisosService.limpiarPermisosSeleccionados(rol.id);
+      this.permisosService.setPantallaSeleccionada(null);
 
-      this.rolesQuery.refetch();
+      // Forzar detección de cambios
+      this.cdr.detectChanges();
+
+      this.permisosService.rolesPermisosQuery.refetch();
     } catch (error) {
-      console.error('Error al actualizar rol HOLA:', error);
+      console.error('Error al actualizar rol:', error);
       this.alertasService.error(
         `Error al actualizar el rol. ${
           (error as HttpErrorResponse).error.message
@@ -405,8 +515,18 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
 
+      // Colapsar todas las filas expandidas
+      this.tableState.update(state => ({
+        ...state,
+        expanded: {},
+      }));
+
       this.cancelarCreacion();
-      this.rolesQuery.refetch();
+
+      // Forzar detección de cambios antes del refetch
+      this.cdr.detectChanges();
+
+      this.permisosService.rolesPermisosQuery.refetch();
     } catch (error) {
       console.error('Error al crear rol:', error);
       this.alertasService.error(
@@ -440,6 +560,19 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
       ...state,
       expanded: newExpanded,
     }));
+
+    // Si es la fila de creación y se está expandiendo, seleccionar automáticamente la primera pantalla
+    if (
+      row.original.id === -1 &&
+      newExpanded[rowId] &&
+      this.pantallas.length > 0
+    ) {
+      setTimeout(() => {
+        if (!this.permisosService.pantallaSeleccionada()) {
+          this.permisosService.setPantallaSeleccionada(this.pantallas[0]);
+        }
+      }, 100);
+    }
   }
 
   public obtenerPermisos(row: RolPermisos): Permiso[] {
@@ -447,7 +580,29 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     if (!pantallaSeleccionada) return [];
 
     const rolId = row.id;
-    const enEdicion = this.permisosService.filaPermisosEditando()[rolId];
+
+    // Caso especial para la fila de creación
+    if (rolId === -1) {
+      const permisosDisponibles =
+        this.pantallas.find(
+          pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
+        )?.permisos || [];
+
+      const permisosSeleccionados = this.permisosService.permisosNuevoRol();
+
+      return permisosDisponibles
+        .filter(
+          permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
+        )
+        .map(permiso => ({
+          ...permiso,
+          concedido: permisosSeleccionados.some(
+            p => p.id_permiso === permiso.id_permiso && p.concedido,
+          ),
+        }));
+    }
+
+    const enEdicion = this.permisosService.filaRolEditando()[rolId];
 
     if (enEdicion) {
       const permisosDisponibles =
@@ -475,42 +630,11 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     }
   }
 
-  public obtenerPermisosNuevoRol(): Permiso[] {
-    const pantallaSeleccionada = this.permisosService.pantallaSeleccionada();
-    if (!pantallaSeleccionada) return [];
-
-    const permisosDisponibles =
-      this.pantallas.find(
-        pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
-      )?.permisos || [];
-
-    const permisosSeleccionados = this.permisosService.permisosNuevoRol();
-
-    return permisosDisponibles
-      .filter(
-        permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
-      )
-      .map(permiso => ({
-        ...permiso,
-        concedido: permisosSeleccionados.some(
-          p => p.id_permiso === permiso.id_permiso && p.concedido,
-        ),
-      }));
-  }
-
-  public onPermisosChange(permisos: Permiso[], rolId: number) {
-    if (this.permisosService.modoCreacion()) {
-      this.permisosService.setPermisosNuevoRol(permisos);
-    } else {
-      this.permisosService.setPermisosSeleccionados(rolId, permisos);
-    }
-  }
-
   public onPermisoToggle(
     evento: { permiso: Permiso; activo: boolean },
     rolId: number,
   ) {
-    if (this.permisosService.modoCreacion()) {
+    if (this.modoCreacion()) {
       const permisosActuales = this.permisosService.permisosNuevoRol();
       let nuevosPermisos: Permiso[];
 
@@ -578,13 +702,19 @@ export class TablaRolesComponent implements OnDestroy, OnInit {
     }
   }
 
-  onPageChange(estado: PaginationState): void {
-    this.permisosService.setPaginacion(estado);
-  }
-
   ngOnDestroy() {
-    this.permisosService.setModoCreacion(false);
+    this.permisosService.setModoCreacionRol(false);
     this.appService.setEditando(false);
+    this.permisosService.setEditandoFilaRol(0, false);
     this.permisosService.resetPermisosSeleccionados();
+    this.rolEnEdicion.set(null);
+    this.appService.setGuardando(false);
+
+    this.nombre.reset(null);
+    this.descripcion.reset(null);
+    this.permisosService.setPermisosNuevoRol([]);
+    this.permisosService.setPantallaSeleccionada(null);
+
+    this.cdr.detectChanges();
   }
 }

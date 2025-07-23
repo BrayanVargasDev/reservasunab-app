@@ -33,7 +33,7 @@ import { AppService } from '../../../app.service';
         <label class="cursor-pointer label">
           <input
             type="checkbox"
-            [disabled]="!appService.editando()"
+            [disabled]="disabled()"
             [checked]="permisoActivo(permiso)"
             (change)="onPermisoToggle(permiso, $event)"
             class="checkbox checkbox-primary checkbox-sm "
@@ -67,6 +67,7 @@ export class ListaPermisosPantallaComponent {
   readonly appService = inject(AppService);
   permisos = input.required<Permiso[]>();
   permisosActivos = input<number[]>([]);
+  disabled = input<boolean>(true);
 
   permisoToggle = output<{ permiso: Permiso; activo: boolean }>();
 

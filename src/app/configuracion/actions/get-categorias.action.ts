@@ -2,10 +2,8 @@ import { PaginationState } from '@tanstack/angular-table';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
-import { Categoria } from '@shared/interfaces';
-import {
-  PaginatedResponse,
-} from '@shared/interfaces/paginatd-response.interface';
+import { type Categoria } from '@shared/interfaces';
+import { PaginatedResponse } from '@shared/interfaces';
 
 const BASE_URL = environment.apiUrl;
 

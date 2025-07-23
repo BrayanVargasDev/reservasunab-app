@@ -71,7 +71,7 @@ export class PermisosMainPage implements OnInit {
     return this.appService.rolesQuery;
   }
 
-  cambiarPestana(pestana: 'rol' | 'permiso') {
+  cambiarPestana(pestana: 'rol') {
     this.appService.setEditando(false);
     this.permisosService.setModoCreacion(false);
     this.permisosService.setPestana(pestana);
@@ -94,8 +94,7 @@ export class PermisosMainPage implements OnInit {
   }
 
   crearRol() {
-    this.appService.setEditando(true);
-    this.permisosService.setModoCreacion(true);
+    this.permisosService.iniciarCrearRol();
   }
 
   ngOnDestroy() {

@@ -1,8 +1,51 @@
+<ng-template #nombreCell let-context>
+  @if(context.row.original.id === -1 ||
+  permisosService.filaRolEditando()[context.row.original.id]) {
+  <input
+    [formControl]="nombre"
+    placeholder="Inserte nombre"
+    pattern="[a-zA-Z0-9áéíóú ]*"
+    class="input input-sm h-9 placeholder:text-gray-400"
+    type="text"
+  />
+  } @else {
+  <span class="font-semibold text-sm md:text-base">{{
+    context.getValue()
+  }}</span>
+  }
+</ng-template>
+
+<ng-template #descripcionCell let-context>
+  @if(context.row.original.id === -1 ||
+  permisosService.filaRolEditando()[context.row.original.id]) {
+  <input
+    [formControl]="descripcion"
+    placeholder="Inserte descripción"
+    pattern="[a-zA-Z0-9áéíóú ]*"
+    class="input input-sm h-9 placeholder:text-gray-400"
+    type="text"
+  />
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #fechaCell let-context>
+  @if (context.row.original.id === -1 ||
+  permisosService.filaRolEditando()[context.row.original.id]) {
+  <span>{{ fechaActual() }}</span>
+  } @else {
+  <span>
+    {{ context.getValue() }}
+  </span>
+  }
+</ng-template>
+
 <table
   responsiveTable
   #tablaRol="responsiveTable"
   [table]="tablaRoles()"
-  class="table w-full rounded-md table-sm sm:table-md"
+  class="table w-full rounded-md table-sm sm:table-md border-t border-base-200"
 >
   <thead class="sticky top-0 z-20 bg-base-100">
     @for (headerGroup of tablaRoles.getHeaderGroups(); track headerGroup.id) {
@@ -29,79 +72,19 @@
     }
   </thead>
   <tbody>
-    @if (modoCreacion()) {
-    <tr class="bg-base-100">
-      <td></td>
-      <td class="p-2">
-        <input
-          [formControl]="nombre"
-          placeholder="Inserte nombre"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="text"
-        />
-      </td>
-      <td class="p-2">
-        <input
-          [formControl]="descripcion"
-          placeholder="Inserte descripción"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="text"
-        />
-      </td>
-      <td class="p-2">
-        <span class="text-sm">{{ fechaActual() }}</span>
-      </td>
-      <td class="p-2">
-        <acciones-tabla
-          [acciones]="accionesNuevoRol()"
-          [ngClass]="'flex justify-between'"
-        ></acciones-tabla>
+    @if (!rolesQuery.length && !modoCreacion()) {
+    <tr>
+      <td
+        [attr.colspan]="
+          tablaRoles().getAllColumns().length +
+          (tablaRol.hiddenColumnIds().size > 0 ? 1 : 0)
+        "
+        class="text-center text-gray-500"
+      >
+        <span>No hay roles aún...</span>
       </td>
     </tr>
-    <!-- Fila expandida para selección de permisos del nuevo rol -->
-    <tr class="bg-base-300 border-none">
-      <td colspan="5">
-        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
-          <h3 class="text-base font-bold text-center mt-3 mb-2">
-            Asignar permisos al nuevo rol
-          </h3>
-
-          <div class="w-full flex flex-col lg:flex-row gap-1 lg:gap-3 p-4">
-            <div class="flex flex-row lg:flex-col gap-1 w-fit flex-wrap">
-              @for(pantalla of pantallas; track pantalla.id_pantalla) {
-              <button
-                [ngClass]="{'flex justify-between items-center font-semibold px-2 h-[2.75rem] md:h-[3.125rem] md:px-3 cursor-pointer btn btn-secondary btn-soft grow md:w-[12rem] group': true,
-                  'btn-active': pantalla.id_pantalla === permisosService.pantallaSeleccionada()?.id_pantalla,
-                }"
-                (click)="permisosService.setPantallaSeleccionada(pantalla)"
-              >
-                <div
-                  [ngClass]="{
-                    'flex w-full items-center gap-1 md:gap-2 justify-between': true,
-                    'btn-active': pantalla.id_pantalla === permisosService.pantallaSeleccionada()?.id_pantalla,
-                  }"
-                >
-                  <div class="flex items-center gap-1 md:gap-2">
-                    <app-web-icon
-                      [nombreIcono]="pantalla.icono"
-                      [estilos]="'h-4 w-4 md:h-5 md:w-5'"
-                    ></app-web-icon>
-                    <span class="text-sm">{{ pantalla.nombre }}</span>
-                  </div>
-                </div>
-              </button>
-              }
-            </div>
-            <lista-permisos-pantalla
-              [ngClass]="'w-full lg:max-h-[20rem] lg:overflow-hidden'"
-              [permisos]="obtenerPermisosNuevoRol()"
-              (permisoToggle)="onPermisoToggle($event, -1)"
-            ></lista-permisos-pantalla>
-          </div>
-        </div>
-      </td>
-    </tr>
-    } @for (row of tablaRoles.getRowModel().rows; track row.id) {
+    } @else { @for (row of tablaRoles().getRowModel().rows; track row.id) {
     <tr class="bg-base-100">
       @for (cell of row.getVisibleCells(); track cell.id) {
       <td class="py-1">
@@ -123,7 +106,7 @@
         <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
           @if (tablaRol.hiddenColumnIds().size !== 0) {
           <ul>
-            @for (col of tablaRoles.getAllLeafColumns(); track $index) { @if
+            @for (col of tablaRoles().getAllLeafColumns(); track $index) { @if
             (tablaRol.hiddenColumnIds().has(col.id)) {
             <li class="flex my-2 flex-row gap-2 items-center">
               <span class="font-bold text-base-content">
@@ -147,7 +130,8 @@
           }
 
           <h3 class="text-base font-bold text-center mt-3 mb-2">
-            Asignar permisos al usuario
+            @if (row.original.id === -1) { Asignar permisos al nuevo rol } @else
+            { Asignar permisos al rol }
           </h3>
 
           <div class="w-full flex flex-col lg:flex-row gap-1 lg:gap-3 p-4">
@@ -179,13 +163,14 @@
             <lista-permisos-pantalla
               [ngClass]="'w-full lg:max-h-[20rem] lg:overflow-hidden'"
               [permisos]="obtenerPermisos(row.original)"
+              [disabled]="!permisosService.filaRolEditando()[row.original.id] && row.original.id !== -1"
               (permisoToggle)="onPermisoToggle($event, row.original.id)"
             ></lista-permisos-pantalla>
           </div>
         </div>
       </td>
     </tr>
-    } }
+    } } }
   </tbody>
 </table>
 
@@ -200,7 +185,7 @@
   [mostrarInfo]="true"
   [mostrarSelectorTamano]="true"
   [mostrarExtremos]="true"
-  [deshabilitado]="rolesQuery.isFetching()"
+  [deshabilitado]="permisosService.rolesPermisosQuery.isFetching()"
   (prefetchFunction)="permisosService.prefetchRoles($event)"
 >
 </app-paginador>
