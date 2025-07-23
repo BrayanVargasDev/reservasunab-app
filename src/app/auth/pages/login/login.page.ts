@@ -16,28 +16,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-
-import {
-  IonButton,
-  IonContent,
-  IonInput,
-  IonItem,
-  IonIcon,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonText,
-} from '@ionic/angular/standalone';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
-import { addIcons } from 'ionicons';
-import {
-  mailOutline,
-  lockClosedOutline,
-  eyeOffOutline,
-  arrowForwardOutline,
-  keyOutline,
-  eyeOutline,
-} from 'ionicons/icons';
+
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from '@app/app.service';
@@ -53,19 +33,9 @@ import { NavigationService } from '@shared/services/navigation.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    IonText,
-    IonItem,
-    IonInput,
-    IonIcon,
-    IonCol,
-    IonRow,
-    IonGrid,
     CommonModule,
     FormsModule,
     RouterLink,
-    IonContent,
-    IonButton,
-    ActionButtonComponent,
     ReactiveFormsModule,
     WebIconComponent,
   ],
@@ -93,17 +63,6 @@ export class LoginPage {
   });
 
   showPassword = signal(false);
-
-  constructor() {
-    addIcons({
-      mailOutline,
-      lockClosedOutline,
-      keyOutline,
-      eyeOffOutline,
-      eyeOutline,
-      arrowForwardOutline,
-    });
-  }
 
   togglePasswordVisibility(): void {
     this.showPassword.set(!this.showPassword());

@@ -7,20 +7,8 @@ import {
   Validators,
   AbstractControl,
 } from '@angular/forms';
-import {
-  IonButton,
-  IonCol,
-  IonContent,
-  IonGrid,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonRow,
-  IonText,
-  IonIcon,
-} from '@ionic/angular/standalone';
+
 import { RouterLink } from '@angular/router';
-import { addIcons } from 'ionicons';
 import { mailOutline, checkmarkCircle } from 'ionicons/icons';
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
@@ -32,21 +20,7 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
   templateUrl: './reset-password.page.html',
   styleUrls: ['./reset-password.page.scss'],
   standalone: true,
-  imports: [
-    IonIcon,
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    IonContent,
-    IonItem,
-    IonInput,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonText,
-    ActionButtonComponent,
-    WebIconComponent,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, WebIconComponent],
 })
 export class ResetPasswordPage implements OnInit {
   resetForm!: FormGroup;
@@ -57,7 +31,6 @@ export class ResetPasswordPage implements OnInit {
   fb = inject(FormBuilder);
 
   ngOnInit() {
-    addIcons({ mailOutline, checkmarkCircle });
     this.resetForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
@@ -106,10 +79,6 @@ export class ResetPasswordPage implements OnInit {
 
   onReset() {
     if (this.resetForm.valid) {
-      console.log(
-        'Solicitud de restablecimiento para:',
-        this.resetForm.value.email,
-      );
       // Aquí iría la lógica para enviar el correo de restablecimiento
       this.emailEnviado = true;
     } else {

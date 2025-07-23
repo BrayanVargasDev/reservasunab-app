@@ -110,7 +110,6 @@ export class PagosMainPage implements OnInit {
   }
 
   procesarPago(id: number) {
-    console.log('Procesar pago ID:', id);
     // Implementación real: llamar al servicio que procesa el pago
   }
 }

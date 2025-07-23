@@ -430,6 +430,7 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.appService.setGuardando(true);
     const rol = row.original;
     const permisosSeleccionados = this.permisosService.getPermisosSeleccionados(
       rol.id,
@@ -480,6 +481,8 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
         this.alertaRoles(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      this.appService.setGuardando(false);
     }
   }
 
@@ -497,6 +500,7 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.appService.setGuardando(true);
     const permisosSeleccionados = this.permisosService.permisosNuevoRol();
 
     const nuevoRol = {
@@ -535,6 +539,8 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
         this.alertaRoles(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    } finally {
+      this.appService.setGuardando(false);
     }
   }
 

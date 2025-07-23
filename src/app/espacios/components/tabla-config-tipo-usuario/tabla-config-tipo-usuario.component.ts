@@ -430,12 +430,6 @@ export class TablaConfigTipoUsuarioComponent {
     this.porcentaje_descuento.markAsTouched();
     this.minutos_retraso.markAsTouched();
 
-    console.log({
-      tipo_usuario: this.tipo_usuario.value,
-      porcentaje_descuento: this.porcentaje_descuento.value,
-      minutos_retraso: this.minutos_retraso.value,
-    });
-
     if (
       this.tipo_usuario.invalid ||
       this.porcentaje_descuento.invalid ||

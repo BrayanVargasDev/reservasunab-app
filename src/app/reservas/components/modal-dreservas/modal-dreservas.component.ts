@@ -396,13 +396,6 @@ export class ModalDreservasComponent {
   public esJugadorSeleccionado(jugadorId: number): boolean {
     const seleccionados = this.dreservasService.jugadoresSeleccionados();
     const estaSeleccionado = seleccionados.some(j => j.id === jugadorId);
-
-    // Debug temporal
-    console.log(`🔍 esJugadorSeleccionado(${jugadorId}):`, {
-      estaSeleccionado,
-      jugadoresSeleccionados: seleccionados,
-    });
-
     return estaSeleccionado;
   }
 

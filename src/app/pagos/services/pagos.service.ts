@@ -32,7 +32,6 @@ export class PagosService {
   }
 
   formatearFecha(fecha: string): string {
-    console.log('Formateando fecha:', fecha);
     return moment(fecha).format('MMMM DD YYYY, h:mm a');
   }
 

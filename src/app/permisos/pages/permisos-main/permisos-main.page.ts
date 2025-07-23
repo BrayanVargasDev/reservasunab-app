@@ -81,10 +81,6 @@ export class PermisosMainPage implements OnInit {
     this.rolSeleccionado = rol;
   }
 
-  guardarCambios() {
-    console.log('Guardando cambios del rol:', this.rolSeleccionado);
-  }
-
   limpiarFiltro() {
     this.permisosService.limpiarFiltro();
   }

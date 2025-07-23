@@ -15,25 +15,9 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import {
-  IonButton,
-  IonCol,
-  IonContent,
-  IonGrid,
-  IonInput,
-  IonItem,
-  IonRow,
-  IonText,
-  IonIcon,
-} from '@ionic/angular/standalone';
+
 import { RouterLink, Router } from '@angular/router';
-import { addIcons } from 'ionicons';
-import {
-  keyOutline,
-  mailOutline,
-  personOutline,
-  phonePortraitOutline,
-} from 'ionicons/icons';
+
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from '@app/app.service';
@@ -47,25 +31,11 @@ import { AlertasService } from '@shared/services/alertas.service';
   templateUrl: './registro.page.html',
   styleUrl: './registro.page.scss',
   standalone: true,
-  imports: [
-    IonIcon,
-    IonText,
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    IonContent,
-    IonItem,
-    IonInput,
-    IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
-    ActionButtonComponent,
-    WebIconComponent,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, WebIconComponent],
 })
 export class RegistroPage implements OnInit {
   private router = inject(Router);
+  private fb = inject(FormBuilder);
   private estilosAlerta = signal(
     'flex justify-center p-4 transition-all ease-in-out w-full',
   ).asReadonly();
@@ -79,15 +49,6 @@ export class RegistroPage implements OnInit {
   public alertaRegistro = viewChild.required('alertaRegistro', {
     read: ViewContainerRef,
   });
-
-  constructor(private fb: FormBuilder) {
-    addIcons({
-      mailOutline,
-      keyOutline,
-      personOutline,
-      phonePortraitOutline,
-    });
-  }
 
   ngOnInit() {
     this.registroForm = this.fb.group(
