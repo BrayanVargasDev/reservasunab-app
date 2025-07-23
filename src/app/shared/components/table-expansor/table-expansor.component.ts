@@ -5,7 +5,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '../web-icon/web-icon.component';
@@ -16,7 +15,7 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
   styleUrls: ['./table-expansor.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, IonIcon, IonButton, WebIconComponent],
+  imports: [CommonModule, WebIconComponent],
 })
 export class TableExpansorComponent {
   appService = inject(AppService);

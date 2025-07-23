@@ -36,7 +36,6 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    console.log('✅ Acceso permitido a:', rutaActual);
     return true;
   }
 }

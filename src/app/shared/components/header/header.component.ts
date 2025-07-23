@@ -9,16 +9,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
-import { IonicModule, Platform } from '@ionic/angular';
-
-import { addIcons } from 'ionicons';
-import {
-  chevronDownOutline,
-  logOutOutline,
-  menuOutline,
-  notificationsOutline,
-  personOutline,
-} from 'ionicons/icons';
 
 import { AuthService } from '@auth/services/auth.service';
 import { AppService } from '@app/app.service';
@@ -32,13 +22,7 @@ import { UpperFirstPipe } from '@shared/pipes';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [
-    IonicModule,
-    RouterLink,
-    CommonModule,
-    WebIconComponent,
-    UpperFirstPipe,
-  ],
+  imports: [RouterLink, CommonModule, WebIconComponent, UpperFirstPipe],
 })
 export class HeaderComponent implements OnInit {
   title = signal('Reservas UNAB');
@@ -46,7 +30,6 @@ export class HeaderComponent implements OnInit {
   appService = inject(AppService);
 
   private authServicio = inject(AuthService);
-  private plataforma = inject(Platform);
   private navigationService = inject(NavigationService);
   private router = inject(Router);
 
@@ -54,17 +37,7 @@ export class HeaderComponent implements OnInit {
   isMobile = signal(false);
   screenWidth = signal(window.innerWidth);
 
-  constructor() {
-    addIcons({
-      notificationsOutline,
-      menuOutline,
-      logOutOutline,
-      personOutline,
-      chevronDownOutline,
-    });
-
-    this.chequearPlataforma();
-  }
+  constructor() {}
 
   ngOnInit() {
     this.actualizarIsMobile();
@@ -76,21 +49,8 @@ export class HeaderComponent implements OnInit {
     this.actualizarIsMobile();
   }
 
-  chequearPlataforma() {
-    if (
-      this.plataforma.is('mobile') ||
-      this.plataforma.is('mobileweb') ||
-      window.innerWidth <= 768
-    ) {
-      this.isMobile.set(true);
-    }
-  }
-
   actualizarIsMobile() {
-    const esMobile =
-      this.plataforma.is('mobile') ||
-      this.plataforma.is('mobileweb') ||
-      window.innerWidth <= 768;
+    const esMobile = window.innerWidth <= 768;
     this.isMobile.set(esMobile);
   }
 

@@ -28,8 +28,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Manejar errores 401 (no autorizado)
       if (error.status === 401) {
-        console.log('Error 401: Token inválido o expirado');
-
         // Limpiar sesión siempre que haya un 401
         authService.clearSession();
 

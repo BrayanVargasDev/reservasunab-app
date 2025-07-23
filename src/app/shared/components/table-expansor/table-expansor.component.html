@@ -1,18 +1,3 @@
-@if (appService.esMovil()) {
-<ion-button fill="outline" color="primary" size="small" (click)="toggle()">
-  @if (isExpanded()) {
-  <ion-icon
-    slot="icon-only"
-    [name]="isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'"
-  ></ion-icon>
-  } @else {
-  <ion-icon
-    slot="icon-only"
-    [name]="isExpanded() ? 'chevron-up-outline' : 'chevron-down-outline'"
-  ></ion-icon>
-  }
-</ion-button>
-} @else{
 <div class="flex justify-center">
   @if (isExpanded()) {
   <app-web-icon
@@ -28,4 +13,3 @@
   ></app-web-icon>
   }
 </div>
-}
