@@ -1,20 +1,10 @@
 <!-- Drawer móvil para pantallas pequeñas - Siempre presente en el DOM -->
 <app-mobile-drawer></app-mobile-drawer>
 
-@if (appService.esMovil()) {
-<ion-content id="wrapper-principal">
-  <ion-row class="app-content">
-    <ion-col class="menu-wrapper" size="1"> </ion-col>
-    <ion-col size="11" class="ion-no-padding" id="main-content-col">
-      <ion-router-outlet id="main-content"></ion-router-outlet>
-    </ion-col>
-  </ion-row>
-</ion-content>
-} @else {
-<div class="flex flex-col w-full h-screen bg-base-300 relative">
+<div class="flex flex-col w-dvw h-dvh bg-base-300 !pt-[var(--ion-safe-area-top)]">
   <app-header></app-header>
 
-  <div class="flex grow gap-1 w-full p-2 md:p-4 overflow-hidden">
+  <div class="flex grow gap-1 w-full px-2 md:p-4 overflow-hidden">
     <div class="hidden md:flex md:col-span-1 flex-col h-full">
       <app-side-menu></app-side-menu>
     </div>
@@ -25,4 +15,3 @@
     </div>
   </div>
 </div>
-}
