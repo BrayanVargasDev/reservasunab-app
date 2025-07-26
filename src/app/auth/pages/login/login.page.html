@@ -3,8 +3,11 @@
 >
   <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl p-4 md:p-8">
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-base-content mb-2">Ingresar</h1>
-      <p class="text-gray-600">Bienvenido nuevamente</p>
+      <img
+        src="assets/icon/logo-universidad-unab.png"
+        alt="Logo de la Universidad Autónoma de Bucaramanga"
+        class="mx-auto h-16 w-auto"
+      />
     </div>
 
     <button
@@ -62,6 +65,7 @@
           </div>
           <input
             type="email"
+            autocomplete="email"
             formControlName="email"
             placeholder="tu@email.com"
             [ngClass]="{
@@ -96,6 +100,7 @@
           <input
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
+            autocomplete="current-password"
             placeholder="••••••••"
             [ngClass]="{
               'w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors placeholder:text-gray-400': true,
@@ -131,14 +136,14 @@
         }
       </div>
 
-      <div class="text-right">
+      <!-- <div class="text-right">
         <a
           routerLink="/auth/reset-password"
           class="text-sm text-primary transition-colors"
         >
           ¿Olvidaste tu contraseña?
         </a>
-      </div>
+      </div> -->
 
       <ng-template #alertaLogin></ng-template>
 
@@ -156,7 +161,7 @@
       </button>
     </form>
 
-    <div
+    <!-- <div
       class=""
       [ngClass]="{
         'mt-8 text-center': true,
@@ -172,6 +177,6 @@
           Regístrate aquí
         </a>
       </p>
-    </div>
+    </div> -->
   </div>
 </div>

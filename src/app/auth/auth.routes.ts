@@ -11,19 +11,19 @@ export const authRoutes: Routes = [
         loadComponent: () =>
           import('@auth/pages/login/login.page').then((m) => m.LoginPage),
       },
-      {
-        path: 'registro',
-        canActivate: [NoAuthGuard],
-        loadComponent: () =>
-          import('@auth/pages/registro/registro.page').then((m) => m.RegistroPage),
-      },
-      {
-        path: 'reset-password',
-        loadComponent: () =>
-          import('@auth/pages/reset-password/reset-password.page').then(
-            (m) => m.ResetPasswordPage,
-          ),
-      },
+      // {
+      //   path: 'registro',
+      //   canActivate: [NoAuthGuard],
+      //   loadComponent: () =>
+      //     import('@auth/pages/registro/registro.page').then((m) => m.RegistroPage),
+      // },
+      // {
+      //   path: 'reset-password',
+      //   loadComponent: () =>
+      //     import('@auth/pages/reset-password/reset-password.page').then(
+      //       (m) => m.ResetPasswordPage,
+      //     ),
+      // },
       {
         path: '**',
         redirectTo: 'login',

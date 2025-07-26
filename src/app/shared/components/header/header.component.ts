@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
+import { QueryClient } from '@tanstack/angular-query-experimental';
 
 import { AuthService } from '@auth/services/auth.service';
 import { AppService } from '@app/app.service';
@@ -25,17 +26,19 @@ import { UpperFirstPipe } from '@shared/pipes';
   imports: [RouterLink, CommonModule, WebIconComponent, UpperFirstPipe],
 })
 export class HeaderComponent implements OnInit {
-  title = signal('Reservas UNAB');
+  title = signal(' Reservas');
 
   appService = inject(AppService);
 
   private authServicio = inject(AuthService);
   private navigationService = inject(NavigationService);
   private router = inject(Router);
+  private queryClient = inject(QueryClient);
 
   usuario = computed(() => this.authServicio.usuario());
   isMobile = signal(false);
   screenWidth = signal(window.innerWidth);
+  isRefreshing = signal(false);
 
   constructor() {}
 
@@ -100,5 +103,40 @@ export class HeaderComponent implements OnInit {
 
   navegarAlInicio() {
     this.navigationService.navegarAPrimeraPaginaDisponible();
+  }
+
+  async recargarAplicacion() {
+    if (this.isRefreshing()) return;
+
+    this.isRefreshing.set(true);
+
+    try {
+      // Invalidar todas las queries del AppService
+      await Promise.all([
+        this.queryClient.invalidateQueries({ queryKey: ['tipoDocumento'] }),
+        this.queryClient.invalidateQueries({ queryKey: ['pantallas'] }),
+        this.queryClient.invalidateQueries({ queryKey: ['roles'] }),
+        this.queryClient.invalidateQueries({ queryKey: ['sedes'] }),
+        this.queryClient.invalidateQueries({ queryKey: ['categorias'] }),
+        this.queryClient.invalidateQueries({ queryKey: ['grupos'] }),
+        // Invalidar la query de usuario para verificar la sesión
+        this.queryClient.invalidateQueries({ queryKey: ['user'] }),
+      ]);
+
+      // Refetch de todas las queries para asegurar que se ejecuten inmediatamente
+      await Promise.all([
+        this.queryClient.refetchQueries({ queryKey: ['tipoDocumento'] }),
+        this.queryClient.refetchQueries({ queryKey: ['pantallas'] }),
+        this.queryClient.refetchQueries({ queryKey: ['roles'] }),
+        this.queryClient.refetchQueries({ queryKey: ['sedes'] }),
+        this.queryClient.refetchQueries({ queryKey: ['categorias'] }),
+        this.queryClient.refetchQueries({ queryKey: ['grupos'] }),
+        this.queryClient.refetchQueries({ queryKey: ['user'] }),
+      ]);
+    } catch (error) {
+      console.error('Error al recargar la aplicación:', error);
+    } finally {
+      this.isRefreshing.set(false);
+    }
   }
 }

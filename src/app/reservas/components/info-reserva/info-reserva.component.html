@@ -59,7 +59,7 @@
     ></app-web-icon>
     <div>
       <span class="text-sm text-base-content/70">Duración:</span>
-      <p class="font-medium">{{ resumen()?.duracion }} hora(s)</p>
+      <p class="font-medium">{{ resumen()?.duracion | formatearDuracion }}</p>
     </div>
   </div>
 
@@ -81,7 +81,7 @@
 
 <!-- Valor si existe -->
 @if (resumen()?.valor && resumen()?.valor! > 0) {
-<div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
+<div class="mt-2 p-2 bg-base-100 rounded-lg border border-base-300">
   <div class="flex items-center justify-between">
     <div class="flex items-center">
       <app-web-icon
@@ -99,7 +99,7 @@
 
 <!-- Jugadores agregados -->
 @if (resumen()?.jugadores && resumen()?.jugadores!.length > 0) {
-<div class="mt-4 p-4 bg-base-100 rounded-lg border border-base-300">
+<div class="mt-2 p-2 md:p-4 bg-base-100 rounded-lg border border-base-300">
   <div class="flex items-center mb-3">
     <app-web-icon
       nombreIcono="people-outline"
@@ -110,9 +110,8 @@
   <div class="space-y-1">
     @for (jugador of resumen()?.jugadores; track jugador.id) {
     <div class="flex items-center justify-between bg-info/10 rounded-lg px-3 py-1">
-      <div class="flex flex-col">
-        <span class="font-medium">{{ jugador.nombre }} {{ jugador.apellido }}</span>
-        <span class="text-sm text-base-content/70">{{ jugador.email }}</span>
+      <div class="flex flex-col max-[380px]:max-w-1/2">
+        <span class="font-medium text-wrap">{{ jugador.nombre }} {{ jugador.apellido }}</span>
         <span class="text-sm font-semibold text-base-content/70">CC: {{ jugador.documento || jugador.codigo_usuario }}</span>
       </div>
       <div class="badge badge-info">Confirmado</div>

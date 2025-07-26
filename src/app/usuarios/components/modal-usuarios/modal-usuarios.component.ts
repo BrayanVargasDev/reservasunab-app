@@ -35,7 +35,7 @@ import { SaveUsuarioResponse } from '@usuarios/intefaces';
   templateUrl: './modal-usuarios.component.html',
   styleUrls: ['./modal-usuarios.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputSoloNumerosDirective],
+  imports: [CommonModule, ReactiveFormsModule, InputSoloNumerosDirective, WebIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {},
 })

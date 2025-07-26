@@ -42,3 +42,10 @@ ion-toast.toast-error {
 
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.safe-area-padding {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}

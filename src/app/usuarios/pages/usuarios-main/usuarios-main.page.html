@@ -1,4 +1,3 @@
-@if (!appService.esMovil()) {
 <ng-template #ionChip let-context>
   <ion-chip
     [color]="context.getValue() === 'Activo' ? 'success' : 'danger'"
@@ -265,4 +264,4 @@
 <usuarios-gestion-modal
   (guardadoExitoso)="usuarioGuardadoExitoso($event)"
 ></usuarios-gestion-modal>
-} }
+}

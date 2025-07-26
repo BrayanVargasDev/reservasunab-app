@@ -1,211 +1,257 @@
 <dialog #usuariosModal class="modal p-0 z-50">
-  <div class="modal-box overflow-visible">
-    <h3 class="text-lg font-bold mb-4">{{ usuarioService.tituloModal() }}</h3>
-    <form [formGroup]="usuarioForm" (ngSubmit)="enviarFormulario()">
-      <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
-        <div class="flex flex-col w-full md:w-1/2">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="nombre"
-          >
-            Nombre <span class="text-error">*</span>
-          </label>
-          <input
-            type="text"
-            id="nombre"
-            formControlName="nombre"
-            placeholder="Nombre"
-            [ngClass]="{
-              'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(usuarioForm, 'nombre')
-            }"
-          />
-          @if (formUtils.esCampoInvalido(usuarioForm, 'nombre')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'nombre') }}
+  <div
+    class="modal-box p-0 max-w-[95dvw] md:max-w-3xl w-full max-h-[95dvh] md:max-h-[90dvh] overflow-hidden relative"
+  >
+    <div
+      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 md:px-6 py-4"
+    >
+      <h3 class="text-lg font-bold">{{ usuarioService.tituloModal() }}</h3>
+    </div>
+    <div class="overflow-x-auto overflow-y-auto max-h-[calc(95vh-10rem)]">
+      <div class="px-2 md:px-6 md:py-4 w-full h-full">
+        <form
+          id="usuarioFormId"
+          [formGroup]="usuarioForm"
+          (ngSubmit)="enviarFormulario()"
+        >
+          <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="nombre"
+              >
+                Nombre <span class="text-error">*</span>
+              </label>
+              <input
+                type="text"
+                id="nombre"
+                formControlName="nombre"
+                placeholder="Nombre"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    usuarioForm,
+                    'nombre'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(usuarioForm, 'nombre')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'nombre') }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="apellido"
+              >
+                Apellido <span class="text-error">*</span>
+              </label>
+              <input
+                type="text"
+                id="apellido"
+                formControlName="apellido"
+                placeholder="Apellido"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    usuarioForm,
+                    'apellido'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(usuarioForm, 'apellido')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'apellido') }}
+              </div>
+              }
+            </div>
           </div>
-          }
-        </div>
-        <div class="flex flex-col w-full md:w-1/2">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="apellido"
-          >
-            Apellido <span class="text-error">*</span>
-          </label>
-          <input
-            type="text"
-            id="apellido"
-            formControlName="apellido"
-            placeholder="Apellido"
-            [ngClass]="{
-              'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(usuarioForm, 'apellido')
-            }"
-          />
-          @if (formUtils.esCampoInvalido(usuarioForm, 'apellido')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'apellido') }}
+          <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+            <div class="flex flex-col w-full md:w-2/6">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="tipoDocumento"
+              >
+                Tipo Doc. <span class="text-error">*</span>
+              </label>
+              <select
+                type="text"
+                id="tipoDocumento"
+                formControlName="tipoDocumento"
+                [ngClass]="{
+                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    usuarioForm,
+                    'tipoDocumento'
+                  )
+                }"
+              >
+                <option value="" disabled selected>Seleccione</option>
+                @for (tipoDoc of appService.tipoDocQuery.data(); track
+                tipoDoc.id) {
+                <option [value]="tipoDoc.id">
+                  {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
+                </option>
+                }
+              </select>
+              @if (formUtils.esCampoInvalido(usuarioForm, 'tipoDocumento')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(usuarioForm, 'tipoDocumento')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-4/6">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="documento"
+              >
+                Documento <span class="text-error">*</span>
+              </label>
+              <input
+                type="text"
+                id="documento"
+                inputSoloNumeros
+                inputmode="numeric"
+                formControlName="documento"
+                placeholder="123456789"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    usuarioForm,
+                    'documento'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(usuarioForm, 'documento')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'documento') }}
+              </div>
+              }
+            </div>
           </div>
-          }
-        </div>
-      </div>
-      <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
-        <div class="flex flex-col w-full md:w-2/6">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="tipoDocumento"
-          >
-            Tipo Doc. <span class="text-error">*</span>
-          </label>
-          <select
-            type="text"
-            id="tipoDocumento"
-            formControlName="tipoDocumento"
-            [ngClass]="{
-              'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(
-                usuarioForm,
-                'tipoDocumento'
-              )
-            }"
-          >
-            <option value="" disabled selected>Seleccione</option>
-            @for (tipoDoc of appService.tipoDocQuery.data(); track tipoDoc.id) {
-            <option [value]="tipoDoc.id">
-              {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
-            </option>
+          <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="fechaNacimiento"
+              >
+                Fecha de Nacimiento <span class="text-error">*</span>
+              </label>
+              <label class="input input-bordered w-full h-11 rounded-box">
+                <input
+                  type="text"
+                  #fechaNacimientoPicker
+                  id="fechaNacimiento"
+                  placeholder="dd/mm/yyyy"
+                  formControlName="fechaNacimiento"
+                  [ngClass]="{
+                    'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      usuarioForm,
+                      'fechaNacimiento'
+                    )
+                  }"
+                />
+                <app-web-icon
+                  [nombreIcono]="'calendar-outline'"
+                  [estilos]="'h-5 w-5'"
+                ></app-web-icon>
+              </label>
+              <div #contenedorCalendario class="w-full relative z-20"></div>
+              @if (formUtils.esCampoInvalido(usuarioForm, 'fechaNacimiento')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(usuarioForm, 'fechaNacimiento')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+                for="telefono"
+              >
+                Teléfono <span class="text-error">*</span>
+              </label>
+              <input
+                type="tel"
+                id="telefono"
+                inputSoloNumeros
+                formControlName="telefono"
+                placeholder="1234567890"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    usuarioForm,
+                    'telefono'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(usuarioForm, 'telefono')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'telefono') }}
+              </div>
+              }
+            </div>
+          </div>
+          <div class="my-4 flex flex-col w-full">
+            <label
+              class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+              >Email <span class="text-error">*</span></label
+            >
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              placeholder="micorreo@unab.edu.co"
+              [ngClass]="{
+                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                'input-error': formUtils.esCampoInvalido(usuarioForm, 'email')
+              }"
+            />
+            @if (formUtils.esCampoInvalido(usuarioForm, 'email')) {
+            <div class="text-sm text-error">
+              {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'email') }}
+            </div>
             }
-          </select>
-          @if (formUtils.esCampoInvalido(usuarioForm, 'tipoDocumento')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'tipoDocumento') }}
           </div>
-          }
-        </div>
-        <div class="flex flex-col w-full md:w-4/6">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="documento"
-          >
-            Documento <span class="text-error">*</span>
-          </label>
-          <input
-            type="text"
-            id="documento"
-            inputSoloNumeros
-            inputmode="numeric"
-            formControlName="documento"
-            placeholder="123456789"
-            [ngClass]="{
-              'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(usuarioForm, 'documento')
-            }"
-          />
-          @if (formUtils.esCampoInvalido(usuarioForm, 'documento')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'documento') }}
+          <div class="my-4 flex flex-col w-full">
+            <label
+              class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
+              >Dirección <span class="text-error">*</span></label
+            >
+            <input
+              type="text"
+              id="direccion"
+              formControlName="direccion"
+              placeholder="Calle X # 123A-45"
+              [ngClass]="{
+                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
+                'input-error': formUtils.esCampoInvalido(
+                  usuarioForm,
+                  'direccion'
+                )
+              }"
+            />
+            @if (formUtils.esCampoInvalido(usuarioForm, 'direccion')) {
+            <div class="text-sm text-error">
+              {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'direccion') }}
+            </div>
+            }
           </div>
-          }
-        </div>
-      </div>
-      <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
-        <div class="flex flex-col w-full md:w-1/2">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="telefono"
-          >
-            Teléfono <span class="text-error">*</span>
-          </label>
-          <input
-            type="tel"
-            id="telefono"
-            inputSoloNumeros
-            formControlName="telefono"
-            placeholder="1234567890"
-            [ngClass]="{
-              'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(usuarioForm, 'telefono')
-            }"
-          />
-          @if (formUtils.esCampoInvalido(usuarioForm, 'telefono')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'telefono') }}
-          </div>
-          }
-        </div>
-        <div class="flex flex-col w-full md:w-1/2">
-          <label
-            class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-            for="fechaNacimiento"
-          >
-            Fecha de Nacimiento <span class="text-error">*</span>
-          </label>
-          <input
-            type="text"
-            #fechaNacimientoPicker
-            id="fechaNacimiento"
-            formControlName="fechaNacimiento"
-            [ngClass]="{
-              'input input-bordered pika-single w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(
-                usuarioForm,
-                'fechaNacimiento'
-              )
-            }"
-          />
-          <div #contenedorCalendario class="w-full relative"></div>
-          @if (formUtils.esCampoInvalido(usuarioForm, 'fechaNacimiento')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'fechaNacimiento') }}
-          </div>
-          }
-        </div>
-      </div>
-      <div class="my-4 flex flex-col w-full">
-        <label class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-          >Email <span class="text-error">*</span></label
-        >
-        <input
-          type="email"
-          id="email"
-          formControlName="email"
-          placeholder="micorreo@unab.edu.co"
-          [ngClass]="{
-            'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-            'input-error': formUtils.esCampoInvalido(usuarioForm, 'email')
-          }"
-        />
-        @if (formUtils.esCampoInvalido(usuarioForm, 'email')) {
-        <div class="text-sm text-error">
-          {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'email') }}
-        </div>
-        }
-      </div>
-      <div class="my-4 flex flex-col w-full">
-        <label class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
-          >Dirección <span class="text-error">*</span></label
-        >
-        <input
-          type="text"
-          id="direccion"
-          formControlName="direccion"
-          placeholder="Calle X # 123A-45"
-          [ngClass]="{
-            'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
-            'input-error': formUtils.esCampoInvalido(usuarioForm, 'direccion')
-          }"
-        />
-        @if (formUtils.esCampoInvalido(usuarioForm, 'direccion')) {
-        <div class="text-sm text-error">
-          {{ formUtils.obtenerErrorDelCampo(usuarioForm, 'direccion') }}
-        </div>
-        }
-      </div>
 
-      <ng-template #alertaFormUsuario></ng-template>
-
-      <div class="modal-action">
+          <ng-template #alertaFormUsuario></ng-template>
+        </form>
+      </div>
+    </div>
+    <div
+      class="sticky bottom-0 bg-base-100 border-t border-base-300 px-6 py-2 z-10"
+    >
+      <div class="modal-action !mt-1">
         <button
           type="button"
           class="btn btn-ghost h-11 rounded-box"
@@ -215,12 +261,13 @@
         </button>
         <button
           type="submit"
+          form="usuarioFormId"
           [disabled]="usuarioForm.invalid || false"
           [class]="`btn btn-${ usuarioService.colorModal()}  btn-soft h-11 rounded-box`"
         >
           {{ usuarioService.modoEdicion() ? 'Actualizar' : 'Guardar' }}
         </button>
       </div>
-    </form>
+    </div>
   </div>
 </dialog>

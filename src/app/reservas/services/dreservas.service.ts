@@ -18,6 +18,18 @@ import {
   agregarJugadoresReserva,
 } from '../actions';
 
+// Definir tipos para el estado del modal
+const EstadoModal = {
+  DISPONIBILIDAD: 'disponibilidad',
+  CARGANDO: 'cargando',
+  RESUMEN_NUEVA: 'resumen_nueva',
+  RESUMEN_EXISTENTE: 'resumen_existente',
+  AGREGAR_JUGADORES: 'agregar_jugadores',
+  PROCESANDO_PAGO: 'procesando_pago',
+} as const;
+
+type EstadoModalType = (typeof EstadoModal)[keyof typeof EstadoModal];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -31,26 +43,23 @@ export class DreservasService {
   private _idEspacio = signal<number | null>(null);
   private _modalAbierta = signal(false);
 
-  // ? Estado para las reservas
-  private _cargando = signal(false);
-  private _resumen = signal(false);
-  private _pago = signal(false);
+  // ? Estado unificado para las reservas
+  private _estadoModal = signal<EstadoModalType>(EstadoModal.DISPONIBILIDAD);
+  private _mensajeCargando = signal<string>('');
   private _estadoResumen = signal<ResumenReserva | null>(null);
   private _miReserva = signal<ResumenReserva | null>(null);
   private _idMiReserva = signal<number | null>(null);
 
   // ? Estado para jugadores
-  private _mostrarJugadores = signal(false);
   private _termino_busqueda_jugadores = signal<string>('');
   private _jugadoresSeleccionados = signal<Usuario[]>([]);
 
-  public cargando = computed(() => this._cargando());
-  public resumen = computed(() => this._resumen());
-  public pago = computed(() => this._pago());
+  // Computed properties para el estado
+  public estadoModal = computed(() => this._estadoModal());
+  public mensajeCargando = computed(() => this._mensajeCargando());
   public estadoResumen = computed(() => this._estadoResumen());
   public miReserva = computed(() => this._miReserva());
   public idMiReserva = computed(() => this._idMiReserva());
-  public mostrarJugadores = computed(() => this._mostrarJugadores());
   public terminoBusquedaJugadores = computed(() =>
     this._termino_busqueda_jugadores(),
   );
@@ -58,8 +67,33 @@ export class DreservasService {
     this._jugadoresSeleccionados(),
   );
 
-  public fecha = this._fecha.asReadonly();
+  // Estados derivados para compatibilidad y claridad
+  public cargando = computed(
+    () =>
+      this._estadoModal() === EstadoModal.CARGANDO ||
+      this._estadoModal() === EstadoModal.PROCESANDO_PAGO,
+  );
+  public mostrandoDisponibilidad = computed(
+    () => this._estadoModal() === EstadoModal.DISPONIBILIDAD,
+  );
+  public mostrandoResumenNueva = computed(
+    () => this._estadoModal() === EstadoModal.RESUMEN_NUEVA,
+  );
+  public mostrandoResumenExistente = computed(
+    () => this._estadoModal() === EstadoModal.RESUMEN_EXISTENTE,
+  );
+  public mostrandoJugadores = computed(
+    () => this._estadoModal() === EstadoModal.AGREGAR_JUGADORES,
+  );
+  public procesandoPago = computed(
+    () => this._estadoModal() === EstadoModal.PROCESANDO_PAGO,
+  );
 
+  // Para compatibilidad con el código existente
+  public resumen = computed(() => this.mostrandoResumenNueva());
+  public mostrarJugadores = computed(() => this.mostrandoJugadores());
+
+  public fecha = this._fecha.asReadonly();
   public modalAbierta = this._modalAbierta.asReadonly();
 
   allEspaciosQuery = injectQuery(() => ({
@@ -104,7 +138,7 @@ export class DreservasService {
     select: (response: GeneralResponse<Usuario[]>) => response.data,
     enabled: computed(
       () =>
-        this._mostrarJugadores() &&
+        this._estadoModal() === EstadoModal.AGREGAR_JUGADORES &&
         this._termino_busqueda_jugadores().trim().length > 0,
     ),
     staleTime: 30 * 1000, // 30 segundos
@@ -173,27 +207,78 @@ export class DreservasService {
   public cerrarModal() {
     this._modalAbierta.set(false);
     this._idEspacio.set(null);
-    this._cargando.set(false);
-    this._resumen.set(false);
-    this._pago.set(false);
+    this._estadoModal.set(EstadoModal.DISPONIBILIDAD);
+    this._mensajeCargando.set('');
     this._estadoResumen.set(null);
     this._miReserva.set(null);
     this._idMiReserva.set(null);
-    this._mostrarJugadores.set(false);
     this._termino_busqueda_jugadores.set('');
     this._jugadoresSeleccionados.set([]);
   }
 
-  public setCargando(cargando: boolean) {
-    this._cargando.set(cargando);
+  // Métodos para cambiar el estado del modal
+  public setCargando(): void;
+  public setCargando(mensaje: string): void;
+  public setCargando(cargando: boolean): void;
+  public setCargando(param?: string | boolean) {
+    if (typeof param === 'boolean') {
+      // Compatibilidad con método anterior
+      if (param) {
+        this._mensajeCargando.set('Cargando...');
+        this._estadoModal.set(EstadoModal.CARGANDO);
+      } else {
+        this.setMostrarDisponibilidad();
+      }
+    } else {
+      // Nuevo comportamiento
+      this._mensajeCargando.set(param || 'Cargando...');
+      this._estadoModal.set(EstadoModal.CARGANDO);
+    }
+  }
+
+  public setMostrarDisponibilidad() {
+    this._estadoModal.set(EstadoModal.DISPONIBILIDAD);
+    this._mensajeCargando.set('');
+  }
+
+  public setMostrarResumenNueva(resumen: ResumenReserva) {
+    this._estadoResumen.set(resumen);
+    this._miReserva.set(null);
+    this._estadoModal.set(EstadoModal.RESUMEN_NUEVA);
+    this._mensajeCargando.set('');
+  }
+
+  public setMostrarResumenExistente(reserva: ResumenReserva) {
+    this._miReserva.set(reserva);
+    this._estadoResumen.set(null);
+    this._estadoModal.set(EstadoModal.RESUMEN_EXISTENTE);
+    this._mensajeCargando.set('');
+  }
+
+  public setMostrarJugadores() {
+    this._estadoModal.set(EstadoModal.AGREGAR_JUGADORES);
+    this._termino_busqueda_jugadores.set('');
+    this._jugadoresSeleccionados.set([]);
+    this._mensajeCargando.set('');
+  }
+
+  public setProcesandoPago() {
+    this._mensajeCargando.set('Procesando pago...');
+    this._estadoModal.set(EstadoModal.PROCESANDO_PAGO);
   }
 
   public setResumen(resumen: boolean) {
-    this._resumen.set(resumen);
+    // Este método se mantiene por compatibilidad pero debería usarse setMostrarResumenNueva
+    if (!resumen) {
+      this.setMostrarDisponibilidad();
+    }
   }
 
   public setPago(pago: boolean) {
-    this._pago.set(pago);
+    // Este método se mantiene por compatibilidad
+    if (pago) {
+      this.setProcesandoPago();
+    }
   }
 
   public iniciarReserva(
@@ -211,11 +296,19 @@ export class DreservasService {
   }
 
   public setEstadoResumen(resumen: ResumenReserva | null) {
-    this._estadoResumen.set(resumen);
+    if (resumen) {
+      this.setMostrarResumenNueva(resumen);
+    } else {
+      this._estadoResumen.set(null);
+    }
   }
 
   public setMiReserva(reserva: ResumenReserva | null) {
-    this._miReserva.set(reserva);
+    if (reserva) {
+      this.setMostrarResumenExistente(reserva);
+    } else {
+      this._miReserva.set(null);
+    }
   }
 
   public setIdMiReserva(idReserva: number | null) {
@@ -227,10 +320,6 @@ export class DreservasService {
   }
 
   // Métodos para jugadores
-  public setMostrarJugadores(mostrar: boolean) {
-    this._mostrarJugadores.set(mostrar);
-  }
-
   public setTerminoBusquedaJugadores(termino: string) {
     this._termino_busqueda_jugadores.set(termino);
   }

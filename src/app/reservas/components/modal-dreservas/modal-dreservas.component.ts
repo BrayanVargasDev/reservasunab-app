@@ -7,6 +7,7 @@ import {
   ElementRef,
   ViewContainerRef,
   computed,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
@@ -27,6 +28,7 @@ import {
 } from '@reservas/interfaces/reserva-espacio-detalle.interface';
 import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
 import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
+import { ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'modal-dreservas',
@@ -38,12 +40,15 @@ import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.inte
   ],
   templateUrl: './modal-dreservas.component.html',
   styleUrl: './modal-dreservas.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
 })
 export class ModalDreservasComponent {
   private injector = inject(Injector);
   private environment = environment;
   private authService = inject(AuthService);
   private alertaService = inject(AlertasService);
+  private cdr = inject(ChangeDetectorRef);
   public dreservasService = inject(DreservasService);
 
   constructor() {
@@ -61,20 +66,6 @@ export class ModalDreservasComponent {
     return this.dreservasService.cargando();
   });
 
-  public resumen = computed(() => {
-    return this.dreservasService.resumen();
-  });
-
-  public miReserva = computed(() => {
-    return this.dreservasService.miReserva();
-  });
-
-  public mensajeCargando = computed(() => {
-    return this.dreservasService.resumen()
-      ? 'Trabajando en el pago...'
-      : 'Trabajando en la reserva...';
-  });
-
   public estadoResumen = computed(() => {
     const estado = this.dreservasService.estadoResumen();
     if (estado && estado.fecha) {
@@ -88,8 +79,17 @@ export class ModalDreservasComponent {
     return estado;
   });
 
-  public pago = computed(() => {
-    return this.dreservasService.pago();
+  public miReserva = computed(() => {
+    const reserva = this.dreservasService.miReserva();
+    if (reserva && reserva.fecha) {
+      return {
+        ...reserva,
+        fecha: moment(reserva.fecha + ' 12:00', 'YYYY-MM-DD HH:mm').format(
+          'dddd, D [de] MMMM [de] YYYY',
+        ),
+      };
+    }
+    return reserva;
   });
 
   public necesitaPago = computed(() => {
@@ -231,7 +231,7 @@ export class ModalDreservasComponent {
     item: Disponibilidad,
   ) {
     if (!base) return;
-    this.dreservasService.setCargando(true);
+    this.dreservasService.setCargando('Creando reserva...');
 
     const fechaFiltro = this.dreservasService.fecha();
     const fechaBase = fechaFiltro
@@ -250,13 +250,11 @@ export class ModalDreservasComponent {
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
           );
-          this.dreservasService.setCargando(false);
+          this.dreservasService.setMostrarDisponibilidad();
           return;
         }
 
-        this.dreservasService.setEstadoResumen(response.data);
-        this.dreservasService.setResumen(true);
-        this.dreservasService.setCargando(false);
+        this.dreservasService.setMostrarResumenNueva(response.data);
       })
       .catch(error => {
         const mensajeError =
@@ -269,13 +267,12 @@ export class ModalDreservasComponent {
           this.alertaModalReservas(),
           'flex justify-center transition-all ease-in-out w-full text-lg',
         );
-        this.dreservasService.setCargando(false);
+        this.dreservasService.setMostrarDisponibilidad();
       });
   }
 
   public procesarPago() {
-    this.dreservasService.setCargando(true);
-    this.dreservasService.setPago(true);
+    this.dreservasService.setProcesandoPago();
 
     const estadoResumen = this.estadoResumen() ?? this.miReserva();
 
@@ -286,7 +283,12 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         'flex justify-center transition-all ease-in-out w-full text-lg',
       );
-      this.dreservasService.setCargando(false);
+      // Volver al resumen correcto
+      if (this.dreservasService.estadoResumen()) {
+        this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+      } else if (this.dreservasService.miReserva()) {
+        this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+      }
       return;
     }
 
@@ -301,13 +303,17 @@ export class ModalDreservasComponent {
               this.alertaModalReservas(),
               'flex justify-center transition-all ease-in-out w-full text-lg',
             );
-            this.dreservasService.setCargando(false);
+            // Volver al resumen correcto
+            if (this.dreservasService.estadoResumen()) {
+              this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+            } else if (this.dreservasService.miReserva()) {
+              this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+            }
             return;
           }
 
-          this.dreservasService.setPago(false);
-          this.dreservasService.setEstadoResumen(null);
-          this.dreservasService.setResumen(false);
+          // Cerrar modal y redirigir al gateway de pago
+          this.dreservasService.cerrarModal();
           window.location.href = response.data;
         })
         .catch(error => {
@@ -321,7 +327,12 @@ export class ModalDreservasComponent {
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
           );
-          this.dreservasService.setCargando(false);
+          // Volver al resumen correcto
+          if (this.dreservasService.estadoResumen()) {
+            this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+          } else if (this.dreservasService.miReserva()) {
+            this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+          }
         });
     }, 1000);
   }
@@ -329,19 +340,25 @@ export class ModalDreservasComponent {
   public verMiReserva(idReserva: number | null) {
     if (!idReserva) return;
 
-    this.dreservasService.setCargando(true);
+    this.dreservasService.setCargando('Cargando reserva...');
     this.dreservasService.setIdMiReserva(idReserva);
-    this.dreservasService.setResumen(false);
-    this.dreservasService.setPago(false);
 
     setTimeout(() => {
       this.dreservasService.miReservaQuery
         .refetch()
         .then(() => {
-          this.dreservasService.setMiReserva(
-            this.dreservasService.miReservaQuery.data() || null,
-          );
-          this.dreservasService.setCargando(false);
+          const reserva = this.dreservasService.miReservaQuery.data();
+          if (reserva) {
+            this.dreservasService.setMostrarResumenExistente(reserva);
+          } else {
+            this.alertaService.error(
+              'No se pudo cargar la reserva.',
+              5 * 1000,
+              this.alertaModalReservas(),
+              'flex justify-center transition-all ease-in-out w-full text-lg',
+            );
+            this.dreservasService.setMostrarDisponibilidad();
+          }
         })
         .catch(error => {
           console.error('Error al obtener mi reserva:', error);
@@ -351,15 +368,14 @@ export class ModalDreservasComponent {
             this.alertaModalReservas(),
             'flex justify-center transition-all ease-in-out w-full text-lg',
           );
-          this.dreservasService.setCargando(false);
+          this.dreservasService.setMostrarDisponibilidad();
         });
     }, 1000);
   }
 
-  // Métodos para jugadores
+    // Métodos para jugadores
   public mostrarAgregarJugadores() {
-    this.dreservasService.setMostrarJugadores(true);
-    this.dreservasService.limpiarJugadoresSeleccionados();
+    this.dreservasService.setMostrarJugadores();
   }
 
   public onBuscarJugadores(event: Event) {
@@ -400,7 +416,12 @@ export class ModalDreservasComponent {
   }
 
   public cancelarAgregarJugadores() {
-    this.dreservasService.setMostrarJugadores(false);
+    // Regresar al resumen correcto
+    if (this.dreservasService.estadoResumen()) {
+      this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+    } else if (this.dreservasService.miReserva()) {
+      this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+    }
     this.dreservasService.limpiarJugadoresSeleccionados();
     this.dreservasService.setTerminoBusquedaJugadores('');
   }
@@ -432,7 +453,12 @@ export class ModalDreservasComponent {
       return;
     }
 
-    this.dreservasService.setCargando(true);
+    // Guardar información necesaria antes de limpiar
+    const numJugadoresAAgregar = this.dreservasService.jugadoresSeleccionados().length;
+    const esNuevaReserva = !!this.dreservasService.estadoResumen();
+    const esReservaExistente = !!this.dreservasService.miReserva();
+
+    this.dreservasService.setCargando('Agregando jugadores...');
 
     try {
       const response = await this.dreservasService.agregarJugadores(estado.id);
@@ -444,29 +470,39 @@ export class ModalDreservasComponent {
           this.alertaModalReservas(),
           'flex justify-center transition-all ease-in-out w-full text-lg',
         );
+        // Regresar al estado correcto sin limpiar
+        if (esNuevaReserva) {
+          this.dreservasService.setMostrarResumenNueva(estado);
+        } else if (esReservaExistente) {
+          this.dreservasService.setMostrarResumenExistente(estado);
+        }
         return;
       }
 
-      // Actualizar el estado con la reserva actualizada
-      if (this.dreservasService.estadoResumen()) {
-        this.dreservasService.setEstadoResumen(response.data);
-      } else if (this.dreservasService.miReserva()) {
-        this.dreservasService.setMiReserva(response.data);
-      }
-
-      // Ocultar la vista de agregar jugadores
-      this.dreservasService.setMostrarJugadores(false);
+      // Limpiar datos de jugadores seleccionados DESPUÉS de tener la respuesta
       this.dreservasService.limpiarJugadoresSeleccionados();
       this.dreservasService.setTerminoBusquedaJugadores('');
 
-      this.alertaService.success(
-        `Se agregaron ${
-          this.dreservasService.jugadoresSeleccionados().length
-        } jugador(es) exitosamente.`,
-        5 * 1000,
-        this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
-      );
+      // Actualizar los datos y regresar al resumen apropiado
+      if (esNuevaReserva) {
+        this.dreservasService.setMostrarResumenNueva(response.data);
+      } else if (esReservaExistente) {
+        this.dreservasService.setMostrarResumenExistente(response.data);
+      }
+
+      // Forzar detección de cambios y mostrar alerta después
+      this.cdr.detectChanges();
+
+      // Usar setTimeout con tiempo mínimo para que la alerta aparezca después del render
+      setTimeout(() => {
+        this.alertaService.success(
+          `Se agregaron ${numJugadoresAAgregar} jugador(es) exitosamente. Total actual: ${response.data.jugadores?.length || 0}`,
+          5 * 1000,
+          this.alertaModalReservas(),
+          'flex justify-center transition-all ease-in-out w-full text-lg',
+        );
+      }, 50);
+
     } catch (error: any) {
       console.error('Error al agregar jugadores:', error);
       const mensajeError =
@@ -479,8 +515,13 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         'flex justify-center transition-all ease-in-out w-full text-lg',
       );
-    } finally {
-      this.dreservasService.setCargando(false);
+
+      // En caso de error, regresar al resumen correcto sin limpiar jugadores seleccionados
+      if (esNuevaReserva) {
+        this.dreservasService.setMostrarResumenNueva(estado);
+      } else if (esReservaExistente) {
+        this.dreservasService.setMostrarResumenExistente(estado);
+      }
     }
   }
 }
