@@ -271,7 +271,7 @@
               <p class="text-sm mt-4">
                 {{ espacioDetallesQuery?.descripcion || 'No hay descripción' }}
               </p>
-              <span class="inline-block text-sm mt-4">
+              <span class="inline-block text-sm mt-4 mb-3">
                 <span class="font-semibold">Reservar desde: </span>
                 {{
                   obtenerFechaDeApertura(
@@ -280,7 +280,12 @@
                   )
                 }}
               </span>
-              <br />
+              <span class="inline-block text-sm align-middle">
+                <span class="font-bold">Fecha de reserva: </span>
+                <span class="badge badge-info font-bold badge-outline badge-lg">
+                  {{ dreservasService.fecha() | date: 'dd/MM/yyyy' }}
+                </span>
+              </span>
             </div>
           </div>
 
