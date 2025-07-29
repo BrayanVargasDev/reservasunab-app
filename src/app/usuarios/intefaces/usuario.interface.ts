@@ -18,4 +18,9 @@ export interface Usuario {
   direccion: string;
   fechaNacimiento: string;
   codigo_usuario?: string;
+  ciudadExpedicion: number;
+  ciudadResidencia: number;
+  tipoPersona: string;
+  regimenTributario?: number;
+  digitoVerificacion?: number;
 }

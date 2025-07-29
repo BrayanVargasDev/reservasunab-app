@@ -9,9 +9,15 @@ import { Usuario } from '@usuarios/intefaces';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AlertasService } from '@shared/services/alertas.service';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
-import { getPerfil } from '../actions/get-perfil.action';
+import { getPerfil, cambiarPassword, CambiarPasswordRequest } from '../actions';
 import { AuthService } from '@auth/services/auth.service';
 import { saveUsuario } from '@usuarios/actions';
+import { getCiudades, getRegimenesTributarios } from '@shared/actions';
+import {
+  PaginatedResponse,
+  RegimenTributario,
+  Ciudad,
+} from '@shared/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -45,6 +51,21 @@ export class PerfilService {
     gcTime: 10 * 60 * 1000,
   }));
 
+  public ciudadesQuery = injectQuery(() => ({
+    queryKey: ['ciudades'],
+    queryFn: () => getCiudades(this.http),
+    staleTime: 30 * 60 * 1000, // 30 minutos - las ciudades no cambian frecuentemente
+    gcTime: 60 * 60 * 1000, // 1 hora
+  }));
+
+  public regimenesTributariosQuery = injectQuery(() => ({
+    queryKey: ['regimenes-tributarios'],
+    queryFn: () => getRegimenesTributarios(this.http),
+    select: (response: PaginatedResponse<RegimenTributario>) => response,
+    staleTime: 60 * 60 * 1000, // 1 hora - los regímenes tributarios cambian muy raramente
+    gcTime: 2 * 60 * 60 * 1000, // 2 horas
+  }));
+
   public actualizarPerfilMutation = injectMutation(() => ({
     mutationFn: async (datosUsuario: Usuario) => {
       return await saveUsuario(this.http, datosUsuario, true, true);
@@ -58,13 +79,41 @@ export class PerfilService {
     },
   }));
 
+  public cambiarPasswordMutation = injectMutation(() => ({
+    mutationFn: async (datosPassword: CambiarPasswordRequest) => {
+      return await cambiarPassword(this.http, datosPassword);
+    },
+    onSuccess: data => {
+      console.log('Contraseña cambiada exitosamente:', data.message);
+    },
+    onError: error => {
+      console.error('Error al cambiar la contraseña:', error);
+      throw error;
+    },
+  }));
+
   public usuario = computed(() => this.perfilQuery.data());
+  public ciudades = computed(() => this.ciudadesQuery.data()?.data || []);
+  public ciudadesCargando = computed(() => this.ciudadesQuery.isLoading());
+  public ciudadesError = computed(() => this.ciudadesQuery.error());
+
+  public regimenesTributarios = computed(
+    () => this.regimenesTributariosQuery.data()?.data || [],
+  );
+  public regimenesTributariosCargando = computed(() =>
+    this.regimenesTributariosQuery.isLoading(),
+  );
+  public regimenesTributariosError = computed(() =>
+    this.regimenesTributariosQuery.error(),
+  );
+
   public cargando = computed(
     () =>
-      this.perfilQuery.isLoading() || this.actualizarPerfilMutation.isPending(),
+      this.perfilQuery.isLoading() ||
+      this.actualizarPerfilMutation.isPending() ||
+      this.cambiarPasswordMutation.isPending(),
   );
   public error = computed(() => this.perfilQuery.error());
-
   public async obtenerPerfilUsuario(): Promise<Usuario | null> {
     try {
       await this.perfilQuery.refetch();
@@ -92,5 +141,68 @@ export class PerfilService {
 
   public async refrescarPerfil() {
     return await this.perfilQuery.refetch();
+  }
+
+  public async cambiarPassword(
+    datosPassword: CambiarPasswordRequest,
+  ): Promise<boolean> {
+    try {
+      const result = await this.cambiarPasswordMutation.mutateAsync(
+        datosPassword,
+      );
+
+      if (result.status === 'success') {
+        return true;
+      } else {
+        // Si el servidor responde con status diferente a 'success', mostrar el mensaje de error
+        throw new Error(
+          result.message || result.error || 'Error al cambiar la contraseña',
+        );
+      }
+    } catch (error: any) {
+      console.error('Error al cambiar la contraseña:', error);
+
+      // Re-lanzar el error para que el componente pueda manejarlo
+      if (error?.error?.message) {
+        throw new Error(error.error.message);
+      } else if (error?.message) {
+        throw new Error(error.message);
+      } else {
+        throw new Error(
+          'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.',
+        );
+      }
+    }
+  }
+
+  // Métodos para manejo de ciudades
+  public filtrarCiudades(termino: string): Ciudad[] {
+    const todasLasCiudades = this.ciudades();
+
+    if (!termino || termino.trim() === '') {
+      return todasLasCiudades;
+    }
+
+    return todasLasCiudades.filter(ciudad =>
+      ciudad.nombre.toLowerCase().includes(termino.toLowerCase()),
+    );
+  }
+
+  public buscarCiudadPorId(id: number): Ciudad | undefined {
+    return this.ciudades().find(ciudad => ciudad.id === id);
+  }
+
+  public buscarCiudadPorNombre(nombre: string): Ciudad | undefined {
+    return this.ciudades().find(
+      ciudad => ciudad.nombre.toLowerCase() === nombre.toLowerCase(),
+    );
+  }
+
+  public async refrescarCiudades() {
+    return await this.ciudadesQuery.refetch();
+  }
+
+  public invalidarCiudades() {
+    this.queryClient.invalidateQueries({ queryKey: ['ciudades'] });
   }
 }

@@ -4,9 +4,15 @@ import { Platform } from '@ionic/angular';
 import { environment } from '@environments/environment';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 
-import { getTiposDocumentos, getPantallas, getGrupos } from '@shared/actions';
 import { getRoles } from '@permisos/actions';
-import { getSedes, getCategorias } from '@shared/actions';
+import {
+  getSedes,
+  getCategorias,
+  getTiposDocumentos,
+  getPantallas,
+  getGrupos,
+  getCiudades,
+} from '@shared/actions';
 import {
   GeneralResponse,
   Grupo,
@@ -94,6 +100,13 @@ export class AppService {
     queryKey: ['grupos'],
     queryFn: () => getGrupos(this.http),
     select: (response: GeneralResponse<Grupo[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
+  }));
+
+  public ciudadesQuery = injectQuery(() => ({
+    queryKey: ['ciudades'],
+    queryFn: () => getCiudades(this.http),
+    select: (response: any) => response.data,
     enabled: this.authService.estaAutenticado(),
   }));
 
