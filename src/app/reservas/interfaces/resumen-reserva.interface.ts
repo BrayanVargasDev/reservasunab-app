@@ -8,6 +8,7 @@ export interface ResumenReserva {
   fecha: string;
   hora_inicio: string;
   valor: number;
+  valor_descuento: number;
   estado: string;
   usuario_reserva: string;
   codigo_usuario: string;
@@ -17,6 +18,7 @@ export interface ResumenReserva {
   maximo_jugadores: number;
   jugadores?: Usuario[];
   total_jugadores: number;
+  puede_cancelar: boolean;
   puede_agregar_jugadores: boolean;
 }
 

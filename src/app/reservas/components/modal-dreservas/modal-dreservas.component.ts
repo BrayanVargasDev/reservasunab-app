@@ -49,6 +49,8 @@ export class ModalDreservasComponent {
   private authService = inject(AuthService);
   private alertaService = inject(AlertasService);
   private cdr = inject(ChangeDetectorRef);
+  private estilosAlerta =
+    'flex justify-center transition-all mx-auto ease-in-out w-[80%] text-lg';
   public dreservasService = inject(DreservasService);
 
   constructor() {
@@ -99,6 +101,13 @@ export class ModalDreservasComponent {
     return (
       estado && estado.estado !== 'pagada' && estado.valor && estado.valor > 0
     );
+  });
+
+  public pudeCancelar = computed(() => {
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+    return estado?.puede_cancelar;
   });
 
   public puedeAgregarJugadores = computed(() => {
@@ -248,7 +257,7 @@ export class ModalDreservasComponent {
             `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
             5 * 1000,
             this.alertaModalReservas(),
-            'flex justify-center transition-all ease-in-out w-full text-lg',
+            this.estilosAlerta,
           );
           this.dreservasService.setMostrarDisponibilidad();
           return;
@@ -265,7 +274,7 @@ export class ModalDreservasComponent {
           mensajeError,
           5 * 1000,
           this.alertaModalReservas(),
-          'flex justify-center transition-all ease-in-out w-full text-lg',
+          this.estilosAlerta,
         );
         this.dreservasService.setMostrarDisponibilidad();
       });
@@ -281,13 +290,17 @@ export class ModalDreservasComponent {
         'No se pudo procesar el pago. Por favor, inténtelo de nuevo.',
         5 * 1000,
         this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
+        this.estilosAlerta,
       );
       // Volver al resumen correcto
       if (this.dreservasService.estadoResumen()) {
-        this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+        this.dreservasService.setMostrarResumenNueva(
+          this.dreservasService.estadoResumen()!,
+        );
       } else if (this.dreservasService.miReserva()) {
-        this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+        this.dreservasService.setMostrarResumenExistente(
+          this.dreservasService.miReserva()!,
+        );
       }
       return;
     }
@@ -301,13 +314,17 @@ export class ModalDreservasComponent {
               `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
               5 * 1000,
               this.alertaModalReservas(),
-              'flex justify-center transition-all ease-in-out w-full text-lg',
+              this.estilosAlerta,
             );
             // Volver al resumen correcto
             if (this.dreservasService.estadoResumen()) {
-              this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+              this.dreservasService.setMostrarResumenNueva(
+                this.dreservasService.estadoResumen()!,
+              );
             } else if (this.dreservasService.miReserva()) {
-              this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+              this.dreservasService.setMostrarResumenExistente(
+                this.dreservasService.miReserva()!,
+              );
             }
             return;
           }
@@ -325,13 +342,17 @@ export class ModalDreservasComponent {
             mensajeError,
             5 * 1000,
             this.alertaModalReservas(),
-            'flex justify-center transition-all ease-in-out w-full text-lg',
+            this.estilosAlerta,
           );
           // Volver al resumen correcto
           if (this.dreservasService.estadoResumen()) {
-            this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+            this.dreservasService.setMostrarResumenNueva(
+              this.dreservasService.estadoResumen()!,
+            );
           } else if (this.dreservasService.miReserva()) {
-            this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+            this.dreservasService.setMostrarResumenExistente(
+              this.dreservasService.miReserva()!,
+            );
           }
         });
     }, 1000);
@@ -355,7 +376,7 @@ export class ModalDreservasComponent {
               'No se pudo cargar la reserva.',
               5 * 1000,
               this.alertaModalReservas(),
-              'flex justify-center transition-all ease-in-out w-full text-lg',
+              this.estilosAlerta,
             );
             this.dreservasService.setMostrarDisponibilidad();
           }
@@ -366,14 +387,14 @@ export class ModalDreservasComponent {
             'Error al obtener la reserva. Por favor, inténtelo de nuevo.',
             5 * 1000,
             this.alertaModalReservas(),
-            'flex justify-center transition-all ease-in-out w-full text-lg',
+            this.estilosAlerta,
           );
           this.dreservasService.setMostrarDisponibilidad();
         });
     }, 1000);
   }
 
-    // Métodos para jugadores
+  // Métodos para jugadores
   public mostrarAgregarJugadores() {
     this.dreservasService.setMostrarJugadores();
   }
@@ -397,7 +418,7 @@ export class ModalDreservasComponent {
         `No puedes seleccionar más jugadores. Límite máximo alcanzado: ${limites.maximo}`,
         3 * 1000,
         this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
+        this.estilosAlerta,
       );
       return;
     }
@@ -418,9 +439,13 @@ export class ModalDreservasComponent {
   public cancelarAgregarJugadores() {
     // Regresar al resumen correcto
     if (this.dreservasService.estadoResumen()) {
-      this.dreservasService.setMostrarResumenNueva(this.dreservasService.estadoResumen()!);
+      this.dreservasService.setMostrarResumenNueva(
+        this.dreservasService.estadoResumen()!,
+      );
     } else if (this.dreservasService.miReserva()) {
-      this.dreservasService.setMostrarResumenExistente(this.dreservasService.miReserva()!);
+      this.dreservasService.setMostrarResumenExistente(
+        this.dreservasService.miReserva()!,
+      );
     }
     this.dreservasService.limpiarJugadoresSeleccionados();
     this.dreservasService.setTerminoBusquedaJugadores('');
@@ -436,7 +461,7 @@ export class ModalDreservasComponent {
         'No se pudo agregar los jugadores. Por favor, inténtelo de nuevo.',
         5 * 1000,
         this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
+        this.estilosAlerta,
       );
       return;
     }
@@ -448,13 +473,14 @@ export class ModalDreservasComponent {
         validacion.mensaje,
         5 * 1000,
         this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
+        this.estilosAlerta,
       );
       return;
     }
 
     // Guardar información necesaria antes de limpiar
-    const numJugadoresAAgregar = this.dreservasService.jugadoresSeleccionados().length;
+    const numJugadoresAAgregar =
+      this.dreservasService.jugadoresSeleccionados().length;
     const esNuevaReserva = !!this.dreservasService.estadoResumen();
     const esReservaExistente = !!this.dreservasService.miReserva();
 
@@ -468,7 +494,7 @@ export class ModalDreservasComponent {
           'Error al agregar jugadores. Por favor, inténtelo de nuevo.',
           5 * 1000,
           this.alertaModalReservas(),
-          'flex justify-center transition-all ease-in-out w-full text-lg',
+          this.estilosAlerta,
         );
         // Regresar al estado correcto sin limpiar
         if (esNuevaReserva) {
@@ -496,13 +522,14 @@ export class ModalDreservasComponent {
       // Usar setTimeout con tiempo mínimo para que la alerta aparezca después del render
       setTimeout(() => {
         this.alertaService.success(
-          `Se agregaron ${numJugadoresAAgregar} jugador(es) exitosamente. Total actual: ${response.data.jugadores?.length || 0}`,
+          `Se agregaron ${numJugadoresAAgregar} jugador(es) exitosamente. Total actual: ${
+            response.data.jugadores?.length || 0
+          }`,
           5 * 1000,
           this.alertaModalReservas(),
-          'flex justify-center transition-all ease-in-out w-full text-lg',
+          this.estilosAlerta,
         );
       }, 50);
-
     } catch (error: any) {
       console.error('Error al agregar jugadores:', error);
       const mensajeError =
@@ -513,7 +540,7 @@ export class ModalDreservasComponent {
         mensajeError,
         5 * 1000,
         this.alertaModalReservas(),
-        'flex justify-center transition-all ease-in-out w-full text-lg',
+        this.estilosAlerta,
       );
 
       // En caso de error, regresar al resumen correcto sin limpiar jugadores seleccionados
@@ -522,6 +549,94 @@ export class ModalDreservasComponent {
       } else if (esReservaExistente) {
         this.dreservasService.setMostrarResumenExistente(estado);
       }
+    }
+  }
+
+  public cancelarReserva() {
+    this.dreservasService.setCancelandoReserva();
+
+    const estadoResumen = this.estadoResumen() ?? this.miReserva();
+
+    if (!estadoResumen || !estadoResumen.id) {
+      this.alertaService.error(
+        'No se pudo cancelar la reserva. Por favor, inténtelo de nuevo.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      // Volver al resumen correcto
+      if (this.dreservasService.estadoResumen()) {
+        this.dreservasService.setMostrarResumenNueva(
+          this.dreservasService.estadoResumen()!,
+        );
+      } else if (this.dreservasService.miReserva()) {
+        this.dreservasService.setMostrarResumenExistente(
+          this.dreservasService.miReserva()!,
+        );
+      }
+      return;
+    }
+
+    setTimeout(() => {
+      this.dreservasService
+        .pagarReserva(estadoResumen.id)
+        .then(response => {
+          if (!response.data) {
+            this.alertaService.error(
+              `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
+              5 * 1000,
+              this.alertaModalReservas(),
+              this.estilosAlerta,
+            );
+            // Volver al resumen correcto
+            if (this.dreservasService.estadoResumen()) {
+              this.dreservasService.setMostrarResumenNueva(
+                this.dreservasService.estadoResumen()!,
+              );
+            } else if (this.dreservasService.miReserva()) {
+              this.dreservasService.setMostrarResumenExistente(
+                this.dreservasService.miReserva()!,
+              );
+            }
+            return;
+          }
+          // TODO: Manejar el éxito del pago
+        })
+        .catch(error => {
+          const mensajeError =
+            error.error?.error ||
+            'Error al cancelar. Por favor, inténtelo de nuevo.';
+
+          this.alertaService.error(
+            mensajeError,
+            5 * 1000,
+            this.alertaModalReservas(),
+            this.estilosAlerta,
+          );
+          // Volver al resumen correcto
+          if (this.dreservasService.estadoResumen()) {
+            this.dreservasService.setMostrarResumenNueva(
+              this.dreservasService.estadoResumen()!,
+            );
+          } else if (this.dreservasService.miReserva()) {
+            this.dreservasService.setMostrarResumenExistente(
+              this.dreservasService.miReserva()!,
+            );
+          }
+        });
+    }, 1000);
+  }
+
+  public manejarCierreModal(): void {
+    // Si estamos en la pantalla de disponibilidad (estado por defecto), cerrar completamente
+    if (
+      !this.dreservasService.mostrandoResumenNueva() &&
+      !this.dreservasService.mostrandoResumenExistente() &&
+      !this.dreservasService.mostrandoJugadores()
+    ) {
+      this.dreservasService.cerrarModal();
+    } else {
+      this.dreservasService.setMostrarDisponibilidad();
     }
   }
 }

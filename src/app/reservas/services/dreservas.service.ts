@@ -26,6 +26,7 @@ const EstadoModal = {
   RESUMEN_EXISTENTE: 'resumen_existente',
   AGREGAR_JUGADORES: 'agregar_jugadores',
   PROCESANDO_PAGO: 'procesando_pago',
+  CANCELANDO_RESERVA: 'cancelando_reserva',
 } as const;
 
 type EstadoModalType = (typeof EstadoModal)[keyof typeof EstadoModal];
@@ -239,6 +240,7 @@ export class DreservasService {
   public setMostrarDisponibilidad() {
     this._estadoModal.set(EstadoModal.DISPONIBILIDAD);
     this._mensajeCargando.set('');
+    this.espacioDetallesQuery.refetch();
   }
 
   public setMostrarResumenNueva(resumen: ResumenReserva) {
@@ -265,6 +267,11 @@ export class DreservasService {
   public setProcesandoPago() {
     this._mensajeCargando.set('Procesando pago...');
     this._estadoModal.set(EstadoModal.PROCESANDO_PAGO);
+  }
+
+  public setCancelandoReserva() {
+    this._mensajeCargando.set('Cancelando reserva...');
+    this._estadoModal.set(EstadoModal.CANCELANDO_RESERVA);
   }
 
   public setResumen(resumen: boolean) {
