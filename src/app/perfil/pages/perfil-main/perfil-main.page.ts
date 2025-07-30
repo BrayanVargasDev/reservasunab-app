@@ -394,10 +394,6 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private cargarDatosEnFormulario(usuario: Usuario) {
-    console.log(
-      '🚀 ✅ ~ PerfilMainPage ~ cargarDatosEnFormulario ~ usuario:',
-      usuario,
-    );
     let fechaFormateada = '';
     if (usuario.fechaNacimiento) {
       const fechaTmp = usuario.fechaNacimiento.split('T')[0];

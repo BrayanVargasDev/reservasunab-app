@@ -25,6 +25,7 @@ import { ConfigPorFechaComponent } from '@espacios/components/config-por-fecha/c
 import { ConfigBaseComponent } from '@espacios/components/config-base/config-base.component';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import { UpperFirstPipe } from '@shared/pipes';
+import { NovedadesComponent } from "@app/espacios/components/novedades/novedades.component";
 
 @Component({
   selector: 'app-configuracion',
@@ -40,7 +41,8 @@ import { UpperFirstPipe } from '@shared/pipes';
     ConfigBaseComponent,
     BreadcrumbsComponent,
     UpperFirstPipe,
-  ],
+    NovedadesComponent
+],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative',
   },

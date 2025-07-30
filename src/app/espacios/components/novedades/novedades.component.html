@@ -1,1 +1,256 @@
-<p>novedades works!</p>,
+<!-- Templates para las celdas -->
+<ng-template #estadoCell let-context>
+  @if(context.row.original.id === -1) {
+  <span class="badge badge-outline badge-info">Nuevo</span>
+  } @else {
+  <div
+    [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
+    [ngClass]="{
+      'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge-success': context.getValue() === null,
+      'badge-error': context.getValue() !== null,
+      'opacity-50 pointer-events-none badge-ghost': appService.editando()
+    }"
+    [attr.disabled]="appService.guardando()"
+    (click)="
+      authService.tienePermisos('ESP000012')
+        ? appService.editando()
+          ? null
+          : cambiarEstadoNovedad(context.row.original)
+        : null
+    "
+  >
+    {{ (context.getValue() === null ? 'activo' : 'inactivo') | upperFirst }}
+  </div>
+  }
+</ng-template>
+
+<ng-template #fechaInicioCell let-context>
+  @if(context.row.original.id === -1 ||
+  novedadesService.filaEditando()[context.row.original.id]) {
+  <label class="input input-bordered w-full h-11 rounded-box">
+    <input
+      type="text"
+      #fechaInicioPicker
+      id="fechaInicio"
+      placeholder="dd/mm/yyyy"
+      [formControl]="fechaInicio"
+      [ngClass]="{
+        'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
+      }"
+    />
+    <app-web-icon
+      [nombreIcono]="'calendar-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+  </label>
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #fechaFinCell let-context>
+  @if(context.row.original.id === -1 ||
+  novedadesService.filaEditando()[context.row.original.id]) {
+  <label class="input input-bordered w-full h-11 rounded-box">
+    <input
+      type="text"
+      #fechaFinPicker
+      id="fechaFin"
+      placeholder="dd/mm/yyyy"
+      [formControl]="fechaFin"
+      [ngClass]="{
+        'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
+      }"
+    />
+    <app-web-icon
+      [nombreIcono]="'calendar-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+  </label>
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #horaInicioCell let-context>
+  @if(context.row.original.id === -1 ||
+  novedadesService.filaEditando()[context.row.original.id]) {
+  <input
+    [formControl]="horaInicio"
+    type="time"
+    class="input input-bordered w-full h-11 rounded-box"
+  />
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #horaFinCell let-context>
+  @if(context.row.original.id === -1 ||
+  novedadesService.filaEditando()[context.row.original.id]) {
+  <input
+    [formControl]="horaFin"
+    type="time"
+    class="input input-bordered w-full h-11 rounded-box"
+  />
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #descripcionCell let-context>
+  @if(context.row.original.id === -1 ||
+  novedadesService.filaEditando()[context.row.original.id]) {
+  <textarea
+    [formControl]="descripcion"
+    placeholder="Descripción de la novedad"
+    class="textarea grow w-full h-11 rounded-box"
+    rows="2"
+  ></textarea>
+  } @else {
+  <span class="text-sm md:text-base line-clamp-2">{{
+    context.getValue()
+  }}</span>
+  }
+</ng-template>
+
+<!-- Botón para crear nueva novedad -->
+<div class="flex justify-end mb-6">
+  @if (authService.tienePermisos('ESP000010')) {
+  <button
+    class="btn btn-primary h-11 rounded-box"
+    [disabled]="
+      appService.editando() ||
+      appService.guardando() ||
+      novedadesService.novedadesQuery.isFetching()
+    "
+    (click)="novedadesService.iniciarCrearNovedad()"
+  >
+    <app-web-icon
+      [nombreIcono]="'add-outline'"
+      [estilos]="'h-5 w-5'"
+    ></app-web-icon>
+    Nueva Novedad
+  </button>
+  }
+</div>
+
+<!-- Tabla de novedades -->
+<table
+  responsiveTable
+  #tablaNov="responsiveTable"
+  [table]="tablaNovedades()"
+  class="table w-full rounded-md table-sm sm:table-md border-t border-base-200"
+>
+  <thead class="sticky top-0 z-20 bg-base-100">
+    @for (headerGroup of tablaNovedades().getHeaderGroups(); track
+    headerGroup.id) {
+    <tr>
+      @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left max-sm:text-sm" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (!novedadesQuery.length && !modoCreacion()) {
+    <tr>
+      <td
+        [attr.colspan]="
+          tablaNovedades().getAllColumns().length +
+          (tablaNov.hiddenColumnIds().size > 0 ? 1 : 0)
+        "
+        class="text-center max-sm:text-sm text-base text-gray-500 py-8"
+      >
+        <span>No hay novedades registradas</span>
+      </td>
+    </tr>
+    } @else { @for (row of tablaNovedades().getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div [innerHTML]="cell"></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+
+    <!-- Fila expandida con detalles adicionales -->
+    @if (row.getIsExpanded()) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-4 shadow-md w-full">
+          <!-- Campos ocultos en responsive -->
+          @if (tablaNov.hiddenColumnIds().size !== 0) {
+          <div class="divider my-4"></div>
+          <div class="space-y-2">
+            <ul>
+              @for (col of tablaNovedades().getAllLeafColumns(); track $index) {
+              @if (tablaNov.hiddenColumnIds().has(col.id)) {
+              <li class="flex my-2 flex-row gap-2 items-center w-full">
+                <span class="inline-flex w-3/12 font-bold text-base-content">
+                  {{ col.columnDef.header }}:
+                </span>
+                <span class="inline-flex w-9/12">
+                  <ng-container
+                    *flexRender="
+                      tablaNov.getCell(col, row).column.columnDef.cell;
+                      props: tablaNov.getCell(col, row).getContext();
+                      let cell
+                    "
+                  >
+                    <div [innerHTML]="cell"></div>
+                  </ng-container>
+                </span>
+              </li>
+              } }
+            </ul>
+          </div>
+          }
+        </div>
+      </td>
+    </tr>
+    } } }
+  </tbody>
+</table>
+
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between max-md:gap-2 gap-4 max-md:p-2 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="paginacion()"
+  [paginacion]="null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="novedadesService.novedadesQuery.isFetching()"
+>
+</app-paginador>
+
+<!-- Template para alertas -->
+<ng-template #alertaRef></ng-template>

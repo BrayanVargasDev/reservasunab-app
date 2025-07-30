@@ -83,9 +83,7 @@ export class PerfilService {
     mutationFn: async (datosPassword: CambiarPasswordRequest) => {
       return await cambiarPassword(this.http, datosPassword);
     },
-    onSuccess: data => {
-      console.log('Contraseña cambiada exitosamente:', data.message);
-    },
+    onSuccess: data => {},
     onError: error => {
       console.error('Error al cambiar la contraseña:', error);
       throw error;

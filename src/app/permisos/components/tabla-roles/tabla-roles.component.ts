@@ -103,22 +103,22 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
   public descripcionCell =
     viewChild.required<TemplateRef<Util>>('descripcionCell');
 
-  public accionesNuevoRol = computed(() => [
-    {
-      icono: 'remove-circle-outline',
-      color: 'error',
-      tooltip: 'Cancelar',
-      disabled: this.appService.guardando(),
-      eventoClick: (event: Event) => this.cancelarCreacion(),
-    },
-    {
-      icono: 'save-outline',
-      color: 'success',
-      tooltip: 'Guardar',
-      disabled: this.appService.guardando(),
-      eventoClick: (event: Event) => this.onGuardarNuevoRol(),
-    },
-  ]);
+  // public accionesNuevoRol = computed(() => [
+  //   {
+  //     icono: 'remove-circle-outline',
+  //     color: 'error',
+  //     tooltip: 'Cancelar',
+  //     disabled: this.appService.guardando(),
+  //     eventoClick: (event: Event) => this.cancelarCreacion(),
+  //   },
+  //   {
+  //     icono: 'save-outline',
+  //     color: 'success',
+  //     tooltip: 'Guardar',
+  //     disabled: this.appService.guardando(),
+  //     eventoClick: (event: Event) => this.onGuardarNuevoRol(),
+  //   },
+  // ]);
 
   private columnasPorDefecto = signal<ColumnDef<RolPermisos>[]>([
     {
@@ -330,20 +330,20 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
     this.permisosService.setPaginacionRoles(estado);
   }
 
-  public crearRol() {
-    this.permisosService.setModoCreacionRol(true);
-    this.appService.setEditando(true);
-    this.permisosService.setEditandoFilaRol(0, true);
-    this.rolEnEdicion.set(null);
+  // public crearRol() {
+  //   this.permisosService.setModoCreacionRol(true);
+  //   this.appService.setEditando(true);
+  //   this.permisosService.setEditandoFilaRol(0, true);
+  //   this.rolEnEdicion.set(null);
 
-    // Limpiar todos los controles de formulario
-    this.nombre.reset('');
-    this.descripcion.reset('');
-    this.permisosService.setPermisosNuevoRol([]);
-    this.permisosService.setPantallaSeleccionada(null);
+  //   // Limpiar todos los controles de formulario
+  //   this.nombre.reset('');
+  //   this.descripcion.reset('');
+  //   this.permisosService.setPermisosNuevoRol([]);
+  //   this.permisosService.setPantallaSeleccionada(null);
 
-    this.cdr.detectChanges();
-  }
+  //   this.cdr.detectChanges();
+  // }
 
   private cancelarCreacion() {
     this.permisosService.setModoCreacionRol(false);
