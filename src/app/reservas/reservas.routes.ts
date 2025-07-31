@@ -3,13 +3,11 @@ import { Routes } from '@angular/router';
 export const dreservasRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'd',
-    pathMatch: 'full'
+    loadComponent: () => import('./pages/dreservas-main/dreservas-main.page'),
   },
   {
-    path: 'd',
-    loadComponent: () =>
-      import('./pages/dreservas-main/dreservas-main.page'),
+    path: 'admin',
+    loadComponent: () => import('./pages/reservas-main/reservas-main.page'),
   },
   {
     path: 'mis-reservas',

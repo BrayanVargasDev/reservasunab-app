@@ -2,45 +2,71 @@
   class="flex flex-col gap-2 md:pl-4 w-full h-full max-h-[calc(100vh_-_7rem)]"
 >
   <div
-    class="flex flex-col sm:flex-row justify-start items-center flex-wrap gap-x-4 gap-y-2"
+    class="flex flex-col sm:flex-row justify-start items-center flex-wrap gap-x-4 gap-y-1"
   >
     <div class="flex flex-row w-full justify-between my-2 gap-1">
-      <div class="w-1/2 sm:w-auto">
-        <h1
-          class="font-bold text-4xl text-left text-base-content mb-2"
-        >
+      <div
+        class="w-1/2 flex flex-col md:flex-row justify-between md:justify-start"
+      >
+        <h1 class="font-bold text-4xl text-left text-base-content md:mr-4 mb-2">
           Reservas
         </h1>
-        <p class="text-base-content/70 text-sm md:text-base text-left wrap-break-word">
-          Seleccione una fecha para consultar.
-        </p>
+        @if (authService.usuario()?.rol?.nombre?.toLowerCase() ===
+        'administrador') {
+        <button
+          (click)="navegarAdminReservas()"
+          class="btn btn-accent max-sm:btn-sm md:h-11 rounded-box"
+        >
+          <app-web-icon
+            nombreIcono="calendar-number-outline"
+            estilos="h-5 w-5 mr-1 max-sm:hidden"
+          >
+          </app-web-icon>
+          <span class="max-lg:hidden text-sm md:text-base"
+            >Administrar reservas</span
+          >
+          <span class="hidden max-lg:inline text-sm md:text-base"
+            >Administrar</span
+          >
+        </button>
+        }
       </div>
-      <div class="flex flex-col md:flex-row gap-2 w-1/2 sm:w-auto justify-center md:justify-end">
+      <div
+        class="flex flex-col md:flex-row gap-2 w-1/2 justify-between md:justify-end"
+      >
         @if (hasFilters()) {
         <button
-          class="btn btn-warning btn-sm rounded-box"
+          class="btn btn-warning max-sm:btn-sm md:h-11 rounded-box"
           (click)="limpiarTodosFiltros()"
           [attr.title]="'Limpiar filtros: ' + filtrosActivos().join(', ')"
         >
           <app-web-icon
-            [nombreIcono]="'close-circle-outline'"
-            [estilos]="'h-5 w-5 mr-1'"
+            nombreIcono="close-circle-outline"
+            estilos="h-5 w-5 mr-1 max-sm:hidden"
           >
           </app-web-icon>
-          Limpiar filtros
+          <span class="max-lg:hidden text-sm md:text-base"
+            >Limpiar filtros</span
+          >
+          <span class="hidden max-lg:inline text-sm md:text-base">Limpiar</span>
         </button>
         }
 
         <button
           (click)="navegarMisReservas()"
-          class="btn btn-primary btn-sm rounded-box"
+          class="btn btn-primary max-sm:btn-sm md:h-11 rounded-box"
         >
           <app-web-icon
-            [nombreIcono]="'file-tray-full-outline'"
-            [estilos]="'h-5 w-5 mr-2'"
+            nombreIcono="file-tray-full-outline"
+            estilos="h-5 w-5 mr-1 max-sm:hidden"
           >
           </app-web-icon>
-          Historial de reservas
+          <span class="max-lg:hidden text-sm md:text-base"
+            >Historial de reservas</span
+          >
+          <span class="hidden max-lg:inline text-sm md:text-base"
+            >Historial</span
+          >
         </button>
       </div>
     </div>
@@ -51,14 +77,14 @@
     >
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
-          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
+          class="label w-full text-sm font-[600] text-base-content mb-0 px-1"
           for="fecha"
         >
           Seleccione la fecha:
         </label>
         <div class="flex items-center w-full px-1">
           <label
-            class="input input-bordered w-full h-11 rounded-box"
+            class="input max-sm:input-sm input-bordered w-full md:h-11 rounded-box"
             [ngClass]="{ 'text-gray-400': !filtrosForm.value.fecha }"
           >
             <input
@@ -77,26 +103,12 @@
             >
             </app-web-icon>
           </label>
-
-          @if (filtrosForm.value.fecha) {
-          <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
-            data-tip="Limpiar fecha"
-            (click)="limpiarFecha()"
-          >
-            <app-web-icon
-              [nombreIcono]="'close-circle-outline'"
-              [estilos]="'h-6 w-6'"
-            >
-            </app-web-icon>
-          </button>
-          }
         </div>
       </div>
 
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
-          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
+          class="label w-full text-sm font-[600] text-base-content mb-0 px-1"
           for="grupo"
         >
           Grupo:
@@ -106,7 +118,7 @@
             id="grupo"
             name="grupo"
             formControlName="grupo"
-            class="select grow input-bordered w-full h-11 rounded-box"
+            class="select max-sm:select-sm grow input-bordered w-full md:h-11 rounded-box"
           >
             <option value="" disabled>Seleccione</option>
             @for (grupo of appService.gruposQuery.data(); track grupo.id) {
@@ -118,13 +130,13 @@
 
           @if (filtrosForm.value.grupo) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
+            class="btn max-sm:btn-xs btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar grupo"
             (click)="limpiarGrupo()"
           >
             <app-web-icon
-              [nombreIcono]="'close-circle-outline'"
-              [estilos]="'h-6 w-6'"
+              nombreIcono="close-circle-outline"
+              estilos="max-sm:h-5 max-sm:w-5 h-6 w-6"
             >
             </app-web-icon>
           </button>
@@ -134,7 +146,7 @@
 
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
-          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
+          class="label w-full text-sm font-[600] text-base-content mb-0 px-1"
           for="categoria"
         >
           Categoría:
@@ -144,7 +156,7 @@
             id="categoria"
             name="categoria"
             formControlName="categoria"
-            class="select grow input-bordered w-full h-11 rounded-box"
+            class="select max-sm:select-sm grow input-bordered w-full md:h-11 rounded-box"
           >
             <option value="" disabled>Seleccione</option>
             @for (categoria of appService.categoriasQuery.data(); track
@@ -157,13 +169,13 @@
 
           @if (filtrosForm.value.categoria) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
+            class="btn max-sm:btn-xs btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar tipo de espacio"
             (click)="limpiarCategoria()"
           >
             <app-web-icon
-              [nombreIcono]="'close-circle-outline'"
-              [estilos]="'h-6 w-6'"
+              nombreIcono="close-circle-outline"
+              estilos="max-sm:h-5 max-sm:w-5 h-6 w-6"
             >
             </app-web-icon>
           </button>
@@ -173,7 +185,7 @@
 
       <div class="flex flex-col items-center flex-1 md:max-w-56">
         <label
-          class="label w-full text-sm font-[600] text-base-content mb-1 md:mb-0 px-1"
+          class="label w-full text-sm font-[600] text-base-content mb-0 px-1"
           for="sede"
         >
           Ubicación:
@@ -183,7 +195,7 @@
             id="sede"
             name="sede"
             formControlName="sede"
-            class="select grow input-bordered w-full h-11 rounded-box"
+            class="select max-sm:select-sm grow input-bordered w-full md:h-11 rounded-box"
           >
             <option value="" disabled>Seleccione</option>
             @for (sede of appService.sedesQuery.data(); track sede.id) {
@@ -195,13 +207,13 @@
 
           @if (filtrosForm.value.sede) {
           <button
-            class="btn btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
+            class="btn max-sm:btn-xs btn-sm btn-error btn-soft btn-circle tooltip tooltip-left lg:tooltip-right ml-1 xl:ml-2"
             data-tip="Limpiar ubicación"
             (click)="limpiarUbicacion()"
           >
             <app-web-icon
-              [nombreIcono]="'close-circle-outline'"
-              [estilos]="'h-6 w-6'"
+              nombreIcono="close-circle-outline"
+              estilos="max-sm:h-5 max-sm:w-5 h-6 w-6"
             >
             </app-web-icon>
           </button>

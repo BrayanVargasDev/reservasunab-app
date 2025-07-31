@@ -34,6 +34,7 @@ import { environment } from '@environments/environment';
 import { Imagen } from '@espacios/interfaces/imagen.interface';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
 import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/tabla-dreservas.component';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-dreservas-main',
@@ -57,6 +58,8 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   private dreservasService = inject(DreservasService);
   private espacioConfigService = inject(EspaciosConfigService);
   public appService = inject(AppService);
+
+  public authService = inject(AuthService);
 
   public readonly environment = environment;
   private readonly DEFAULT_IMAGE =
@@ -194,8 +197,12 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
     this.dreservasService.setIdEspacio(espacioId);
   }
 
-  navegarMisReservas(): void {
+  public navegarMisReservas(): void {
     this.router.navigate(['reservas', 'mis-reservas']);
+  }
+
+  public navegarAdminReservas(): void {
+    this.router.navigate(['reservas', 'admin']);
   }
 
   public ngOnDestroy(): void {
