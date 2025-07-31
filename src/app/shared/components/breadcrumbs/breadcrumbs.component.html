@@ -1,4 +1,4 @@
-<nav class="breadcrumbs text-sm py-2" aria-label="Breadcrumb">
+<nav [class]="`breadcrumbs text-sm ${estilos()}`" aria-label="Breadcrumb">
   <ul>
     @for (breadcrumb of breadcrumbs(); track breadcrumb.label) {
     <li>
@@ -13,7 +13,7 @@
       </button>
       } @else {
       <span
-        class="text-base-content font-medium"
+        class="text-base-content font-semibold underline"
         [class.text-primary]="breadcrumb.isActive"
         aria-current="page"
       >

@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter, map, startWith } from 'rxjs/operators';
@@ -19,6 +19,8 @@ export interface BreadcrumbItem {
 export class BreadcrumbsComponent {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
+
+  estilos = input('py-2');
 
   private navigationEnd$ = this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),

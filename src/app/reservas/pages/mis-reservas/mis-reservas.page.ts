@@ -1,5 +1,15 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import moment from 'moment';
 
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { MisReservasService } from '@reservas/services/mis-reservas.service';
@@ -20,9 +30,21 @@ import { Reserva } from '@reservas/interfaces';
   styleUrl: './mis-reservas.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export default class MisReservasPage {
-  private misReservasService = inject(MisReservasService);
+export default class MisReservasPage implements OnInit, OnDestroy {
+  public misReservasService = inject(MisReservasService);
+  private router = inject(Router);
   private environment = environment;
+
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
+
+  ngOnInit() {
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((texto: string) => {
+        this.misReservasService.setFiltroTexto(texto);
+      });
+  }
 
   get misReservas() {
     return this.misReservasService.misReservasQuery.data();
@@ -35,5 +57,22 @@ export default class MisReservasPage {
 
   public sePuedeCancelar(reserva: Reserva): boolean {
     return reserva.puede_cancelar && reserva.estado === 'pendiente';
+  }
+
+  public navegarReservas() {
+    this.router.navigate(['reservas']);
+  }
+
+  public formatearFechaReserva(fecha: string | Date): string {
+    return moment(fecha).format('DD/MM/YYYY');
+  }
+
+  aplicarFiltro(texto: string) {
+    this.searchSubject.next(texto);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
