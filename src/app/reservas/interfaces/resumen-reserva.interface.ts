@@ -19,6 +19,7 @@ export interface ResumenReserva {
   jugadores?: Usuario[];
   total_jugadores: number;
   puede_cancelar: boolean;
+  es_pasada: boolean;
   puede_agregar_jugadores: boolean;
 }
 

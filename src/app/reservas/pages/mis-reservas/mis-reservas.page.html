@@ -40,7 +40,7 @@
         <!-- Imagen -->
         <div class="flex-shrink-0 w-full md:w-auto">
           <img
-            class="max-md:w-full w-38 h-24 object-cover rounded-md mx-auto md:mx-0"
+            class="max-md:w-full w-38 h-full max-h-[6.75rem] object-cover rounded-md mx-auto md:mx-0"
             [src]="
               getImagenUrl(
                 reserva.espacio.imagen?.ubicacion
@@ -58,38 +58,38 @@
 
         <!-- Información principal -->
         <div class="flex flex-col flex-grow">
-          <h3 class="text-base sm:text-md font-semibold text-base-content">
+          <h3 class="max-sm:text-sm text-base font-semibold text-base-content">
             Reserva {{ reserva.codigo.slice(10) }}
           </h3>
-          <span class="text-gray-400 underline text-sm sm:text-base">
-            Para {{ reserva.espacio.nombre | upperFirst }}
+          <span class="text-gray-400 max-sm:text-xs text-sm">
+            Espacio: {{ reserva.espacio.nombre | upperFirst }}
           </span>
-          <span class="text-gray-400 text-sm sm:text-base">
+          <span class="text-gray-400 max-sm:text-xs text-sm">
             Sede: {{ reserva.espacio.sede.nombre | upperFirst }}
           </span>
-          <span class="text-gray-400 text-sm sm:text-base">
+          <span class="text-gray-400 max-sm:text-xs text-sm">
             Categoría: {{ reserva.espacio.categoria.nombre | upperFirst }}
           </span>
         </div>
 
         <!-- Información de fecha y estado (móvil: columna, desktop: columna) -->
         <div class="flex flex-col md:flex-col w-full max-w-44">
-          <div class="flex flex-col sm:flex-row md:flex-col gap-1 md:gap-2">
+          <div class="flex flex-col sm:flex-row md:flex-col">
             <span
-              class="text-base-content font-semibold text-sm sm:text-base md:text-lg"
+              class="text-base-content font-semibold max-sm:text-sm text-base"
             >
               Fecha: {{ formatearFechaReserva(reserva.fecha) }}
             </span>
-            <span class="text-gray-400 text-sm sm:text-base">
+            <span class="text-gray-400 max-sm:text-xs text-sm">
               Hora: {{ reserva.hora_inicio | date : 'shortTime' }}
             </span>
           </div>
           <div
             class="flex w-full flex-wrap lg:items-center lg:justify-between gap-2"
           >
-            <span class="text-gray-400 text-sm sm:text-base">Estado:</span>
+            <span class="text-gray-400 max-sm:text-xs text-sm">Estado:</span>
             <span
-              class="badge badge-outline text-xs sm:text-sm"
+              class="badge badge-outline max-sm:text-xs text-sm"
               [ngClass]="{
                 'badge-info':
                   reserva.estado === 'pagada' ||
@@ -102,6 +102,36 @@
             >
               {{ reserva.estado | upperFirst }}
             </span>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="flex gap-2 mt-1">
+            <button
+              (click)="verDetalleReserva(reserva.id)"
+              class="btn btn-secondary btn-sm rounded-lg max-sm:h-9 flex-1"
+            >
+              <app-web-icon
+                estilos="max-sm:h-4 h-5 max-sm:w-4 h-5"
+                nombreIcono="eye-outline"
+              ></app-web-icon>
+              <span class="hidden sm:inline max-sm:text-sm text-base"
+                >Ver detalles</span
+              >
+              <span class="sm:hidden max-sm:text-sm text-base">Ver</span>
+            </button>
+            @if (sePuedeCancelar(reserva)) {
+            <button
+              (click)="cancelarReserva(reserva)"
+              class="btn btn-error btn-sm"
+              title="Cancelar reserva"
+            >
+              <app-web-icon
+                estilos="h-4 w-4"
+                nombreIcono="close-outline"
+              ></app-web-icon>
+              <span class="hidden lg:inline">Cancelar</span>
+            </button>
+            }
           </div>
         </div>
       </div>
@@ -126,3 +156,6 @@
     }
   </div>
 </div>
+
+<!-- Modal de detalles de reserva -->
+<modal-dreservas></modal-dreservas>

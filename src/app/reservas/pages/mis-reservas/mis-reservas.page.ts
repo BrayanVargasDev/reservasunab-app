@@ -17,6 +17,8 @@ import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs
 import { environment } from '@environments/environment';
 import { UpperFirstPipe } from '@shared/pipes';
 import { Reserva } from '@reservas/interfaces';
+import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
+import { DreservasService } from '@reservas/services/dreservas.service';
 
 @Component({
   selector: 'app-mis-reservas.page',
@@ -25,6 +27,7 @@ import { Reserva } from '@reservas/interfaces';
     WebIconComponent,
     BreadcrumbsComponent,
     UpperFirstPipe,
+    ModalDreservasComponent,
   ],
   templateUrl: './mis-reservas.page.html',
   styleUrl: './mis-reservas.page.scss',
@@ -34,6 +37,7 @@ export default class MisReservasPage implements OnInit, OnDestroy {
   public misReservasService = inject(MisReservasService);
   private router = inject(Router);
   private environment = environment;
+  private dreservasService = inject(DreservasService);
 
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
@@ -69,6 +73,37 @@ export default class MisReservasPage implements OnInit, OnDestroy {
 
   aplicarFiltro(texto: string) {
     this.searchSubject.next(texto);
+  }
+
+  public verDetalleReserva(idReserva: number) {
+    this.dreservasService.abrirModal(true);
+
+    this.dreservasService.setCargando('Cargando reserva...');
+    this.dreservasService.setIdMiReserva(idReserva);
+
+    setTimeout(() => {
+      this.dreservasService.miReservaQuery
+        .refetch()
+        .then(() => {
+          const reserva = this.dreservasService.miReservaQuery.data();
+          if (reserva) {
+            this.dreservasService.setMostrarResumenExistente(reserva);
+          } else {
+            this.dreservasService.cerrarModal();
+            console.error(
+              'No se pudo cargar la reserva. Por favor, inténtalo de nuevo.',
+            );
+          }
+        })
+        .catch(error => {
+          console.error('Error al obtener mi reserva:', error);
+          this.dreservasService.cerrarModal();
+        });
+    }, 1000);
+  }
+
+  public cancelarReserva(reserva: Reserva) {
+    this.verDetalleReserva(reserva.id);
   }
 
   ngOnDestroy() {

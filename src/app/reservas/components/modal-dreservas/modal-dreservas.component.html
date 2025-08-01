@@ -291,8 +291,8 @@
                         : null
                     "
                     class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
-                    [disabled]="item.reserva_pasada"
-                    [class.btn-disabled]="item.reserva_pasada"
+                    [disabled]="item.reserva_pasada && !item.mi_reserva"
+                    [class.btn-disabled]="item.reserva_pasada && !item.mi_reserva"
                     [class.btn-accent]="item.disponible"
                     [class.btn-success]="item.mi_reserva"
                     [class.btn-error]="!item.mi_reserva && item.reservada"
@@ -306,7 +306,7 @@
                         : null
                     "
                     [class.pointer-events-none]="
-                      !item.disponible && item.reserva_pasada
+                      !item.disponible && item.reserva_pasada && !item.mi_reserva
                     "
                     [ngClass]="{
                       'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
@@ -340,7 +340,9 @@
               >
                 Notas importantes:
               </span>
-              <div class="border border-base-content/70 rounded-lg prose quill-reset">
+              <div
+                class="border border-base-content/70 rounded-lg prose quill-reset"
+              >
                 <quill-view-html
                   class="text-sm"
                   [content]="espacioDetallesQuery?.descripcion || ''"

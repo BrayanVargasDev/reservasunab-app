@@ -8,7 +8,7 @@ import {
   ViewContainerRef,
   computed,
   ChangeDetectorRef,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
@@ -29,7 +29,6 @@ import {
 } from '@reservas/interfaces/reserva-espacio-detalle.interface';
 import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
 import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
-
 
 @Component({
   selector: 'modal-dreservas',
@@ -100,6 +99,12 @@ export class ModalDreservasComponent {
     const estado =
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
+
+    // Si es reserva pasada, no se puede pagar
+    if (this.esReservaPasada()) {
+      return false;
+    }
+
     return (
       estado && estado.estado !== 'pagada' && estado.valor && estado.valor > 0
     );
@@ -109,6 +114,12 @@ export class ModalDreservasComponent {
     const estado =
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
+
+    // Si es reserva pasada, no se puede cancelar
+    if (this.esReservaPasada()) {
+      return false;
+    }
+
     return estado?.puede_cancelar;
   });
 
@@ -116,6 +127,12 @@ export class ModalDreservasComponent {
     const estado =
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
+
+    // Si es reserva pasada, no puede agregar jugadores
+    if (this.esReservaPasada()) {
+      return false;
+    }
+
     return (
       estado &&
       estado.estado === 'pagada' &&
@@ -123,6 +140,14 @@ export class ModalDreservasComponent {
       estado.jugadores &&
       estado.jugadores.length < estado.maximo_jugadores
     );
+  });
+
+  public esReservaPasada = computed(() => {
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+
+    return estado?.es_pasada;
   });
 
   // Propiedades computadas para validaciones de jugadores
@@ -480,7 +505,6 @@ export class ModalDreservasComponent {
       return;
     }
 
-    // Guardar información necesaria antes de limpiar
     const numJugadoresAAgregar =
       this.dreservasService.jugadoresSeleccionados().length;
     const esNuevaReserva = !!this.dreservasService.estadoResumen();
@@ -507,21 +531,17 @@ export class ModalDreservasComponent {
         return;
       }
 
-      // Limpiar datos de jugadores seleccionados DESPUÉS de tener la respuesta
       this.dreservasService.limpiarJugadoresSeleccionados();
       this.dreservasService.setTerminoBusquedaJugadores('');
 
-      // Actualizar los datos y regresar al resumen apropiado
       if (esNuevaReserva) {
         this.dreservasService.setMostrarResumenNueva(response.data);
       } else if (esReservaExistente) {
         this.dreservasService.setMostrarResumenExistente(response.data);
       }
 
-      // Forzar detección de cambios y mostrar alerta después
       this.cdr.detectChanges();
 
-      // Usar setTimeout con tiempo mínimo para que la alerta aparezca después del render
       setTimeout(() => {
         this.alertaService.success(
           `Se agregaron ${numJugadoresAAgregar} jugador(es) exitosamente. Total actual: ${
@@ -545,7 +565,6 @@ export class ModalDreservasComponent {
         this.estilosAlerta,
       );
 
-      // En caso de error, regresar al resumen correcto sin limpiar jugadores seleccionados
       if (esNuevaReserva) {
         this.dreservasService.setMostrarResumenNueva(estado);
       } else if (esReservaExistente) {
@@ -566,7 +585,6 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         this.estilosAlerta,
       );
-      // Volver al resumen correcto
       if (this.dreservasService.estadoResumen()) {
         this.dreservasService.setMostrarResumenNueva(
           this.dreservasService.estadoResumen()!,
@@ -590,7 +608,6 @@ export class ModalDreservasComponent {
               this.alertaModalReservas(),
               this.estilosAlerta,
             );
-            // Volver al resumen correcto
             if (this.dreservasService.estadoResumen()) {
               this.dreservasService.setMostrarResumenNueva(
                 this.dreservasService.estadoResumen()!,
@@ -615,7 +632,6 @@ export class ModalDreservasComponent {
             this.alertaModalReservas(),
             this.estilosAlerta,
           );
-          // Volver al resumen correcto
           if (this.dreservasService.estadoResumen()) {
             this.dreservasService.setMostrarResumenNueva(
               this.dreservasService.estadoResumen()!,
@@ -630,7 +646,11 @@ export class ModalDreservasComponent {
   }
 
   public manejarCierreModal(): void {
-    // Si estamos en la pantalla de disponibilidad (estado por defecto), cerrar completamente
+    if (this.dreservasService.abiertaDesdeMisReservas()) {
+      this.dreservasService.cerrarModal();
+      return;
+    }
+
     if (
       !this.dreservasService.mostrandoResumenNueva() &&
       !this.dreservasService.mostrandoResumenExistente() &&

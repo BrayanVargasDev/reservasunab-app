@@ -43,6 +43,7 @@ export class DreservasService {
   private _idCategoria = signal<number | null>(null);
   private _idEspacio = signal<number | null>(null);
   private _modalAbierta = signal(false);
+  private _abiertaDesdeMisReservas = signal(false);
 
   // ? Estado unificado para las reservas
   private _estadoModal = signal<EstadoModalType>(EstadoModal.DISPONIBILIDAD);
@@ -96,6 +97,7 @@ export class DreservasService {
 
   public fecha = this._fecha.asReadonly();
   public modalAbierta = this._modalAbierta.asReadonly();
+  public abiertaDesdeMisReservas = this._abiertaDesdeMisReservas.asReadonly();
 
   allEspaciosQuery = injectQuery(() => ({
     queryKey: [
@@ -201,8 +203,9 @@ export class DreservasService {
     this._idEspacio.set(idEspacio);
   }
 
-  public abrirModal() {
+  public abrirModal(desdeMisReservas: boolean = false) {
     this._modalAbierta.set(true);
+    this._abiertaDesdeMisReservas.set(desdeMisReservas);
   }
 
   public cerrarModal() {
@@ -215,6 +218,7 @@ export class DreservasService {
     this._idMiReserva.set(null);
     this._termino_busqueda_jugadores.set('');
     this._jugadoresSeleccionados.set([]);
+    this._abiertaDesdeMisReservas.set(false);
   }
 
   // Métodos para cambiar el estado del modal
