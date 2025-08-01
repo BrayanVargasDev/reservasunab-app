@@ -86,17 +86,25 @@
     <div class="flex items-center">
       <app-web-icon
         nombreIcono="card-outline"
-        estilos="h-5 w-5 mr-3 text-success"
+        estilos="h-5 w-5 max-sm:mr-1 mr-3 text-success"
       ></app-web-icon>
-      <span class="text-lg font-semibold">Valor total:</span>
+      <span class="max-sm:text-base text-lg font-semibold">Valor total:</span>
     </div>
     <div class="flex gap-1 items-center">
       <span class="text-sm md:text-base line-through text-base-content/70 italic mr-2"
         >${{ resumen()?.valor?.toLocaleString('es-CO') }}</span
       >
-      <span class="text-2xl font-bold text-success">
+      <span class="max-sm:text-xl text-2xl font-bold text-success">
         ${{ resumen()?.valor_descuento?.toLocaleString('es-CO') }}
       </span>
+
+      <ng-container *ngIf="resumen()?.valor_descuento && resumen()?.valor">
+        <span
+          class="text-xs badge badge-secondary badge-outline font-bold rounded px-2 py-0.5"
+        >
+          -{{ resumen()?.porcentaje_descuento }}%
+        </span>
+      </ng-container>
     </div>
   </div>
 </div>

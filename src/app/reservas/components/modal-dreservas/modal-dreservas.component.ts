@@ -267,17 +267,28 @@ export class ModalDreservasComponent {
     item: Disponibilidad,
   ) {
     if (!base) return;
+
+    // Validación de seguridad: verificar si el item tiene novedad
+    if (
+      item.novedad ||
+      !item.disponible ||
+      item.reserva_pasada ||
+      item.reservada
+    ) {
+      return;
+    }
+
     this.dreservasService.setCargando('Creando reserva...');
 
     const fechaFiltro = this.dreservasService.fecha();
-    const fechaBase = fechaFiltro
+    const fechaBaseStr = fechaFiltro
       ? moment(fechaFiltro, 'YYYY-MM-DD').format('YYYY-MM-DD')
       : moment().format('YYYY-MM-DD');
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     this.dreservasService
-      .iniciarReserva(base, fechaBase, item.hora_inicio, item.hora_fin)
+      .iniciarReserva(base, fechaBaseStr, item.hora_inicio, item.hora_fin)
       .then(response => {
         if (!response.data) {
           this.alertaService.error(

@@ -9,6 +9,7 @@ export interface ResumenReserva {
   hora_inicio: string;
   valor: number;
   valor_descuento: number;
+  porcentaje_descuento: number;
   estado: string;
   usuario_reserva: string;
   codigo_usuario: string;
