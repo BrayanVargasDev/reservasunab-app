@@ -11,6 +11,8 @@ import {
   AfterViewInit,
   effect,
   OnDestroy,
+  ViewEncapsulation,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -19,6 +21,13 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
+import {
+  ContentChange,
+  QuillEditorComponent,
+  QuillViewHTMLComponent,
+} from 'ngx-quill';
+import Quill from 'quill';
 
 import { EspaciosService } from '@espacios/services/espacios.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
@@ -34,7 +43,15 @@ import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'espacio-general',
-  imports: [CommonModule, ReactiveFormsModule, ImagenDropComponent, UpperFirstPipe],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ImagenDropComponent,
+    UpperFirstPipe,
+    QuillEditorComponent,
+    QuillViewHTMLComponent,
+  ],
   templateUrl: './espacio-general.component.html',
   styleUrl: './espacio-general.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,10 +85,40 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
   });
   public tiltuloImagen = signal<{ nombre: string; peso: string } | null>(null);
 
+  // Configuración del editor Quill sin imágenes ni elementos binarios
+  public quillConfig = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+      ['blockquote', 'code-block'],
+
+      [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+      [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+      [{ 'direction': 'rtl' }],                         // text direction
+
+      [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+      [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+      [{ 'font': [] }],
+      [{ 'align': [] }],
+
+      ['clean'],                                         // remove formatting button
+      ['link']                                          // link button (sin imagen)
+    ],
+    modules: {
+      // Deshabilitar el módulo de imágenes explícitamente
+      imageResize: false,
+      imageCompress: false
+    }
+  };
+
   public modalEspacios =
     viewChild<ElementRef<HTMLDialogElement>>('espaciosModal');
   public espacioImagenRef =
     viewChild<ElementRef<HTMLImageElement>>('espacioImagenRef');
+  public editor = viewChild<QuillEditorComponent>('editor');
 
   ngAfterViewInit() {
     effect(
@@ -96,6 +143,52 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
       },
       { injector: this.injector },
     );
+
+    // Configurar el editor Quill para deshabilitar elementos binarios
+    this.configurarEditorQuill();
+  }
+
+  private configurarEditorQuill() {
+    // Esperar a que el editor esté disponible
+    setTimeout(() => {
+      const editorComponent = this.editor();
+      if (editorComponent && editorComponent.quillEditor) {
+        const quill = editorComponent.quillEditor;
+
+        // Deshabilitar la capacidad de pegar imágenes
+        quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node: any, delta: any) => {
+          // Filtrar cualquier inserción de imagen
+          const ops = delta.ops || [];
+          const filteredOps = ops.filter((op: any) => {
+            // Remover operaciones que contengan imágenes
+            if (op.insert && typeof op.insert === 'object' && op.insert.image) {
+              return false;
+            }
+            return true;
+          });
+
+          // Crear un nuevo delta con las operaciones filtradas
+          const Delta = Quill.import('delta');
+          return new Delta(filteredOps);
+        });
+
+        // Prevenir drag & drop de archivos
+        const editorContainer = quill.container;
+        editorContainer.addEventListener('drop', (e: DragEvent) => {
+          const files = e.dataTransfer?.files;
+          if (files && files.length > 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.alertaService.error(
+              'No se permite insertar archivos en el editor de texto.',
+              3000,
+              this.espacioConfigService.alertaEspacioConfigRef()!,
+              this.estilosAlerta(),
+            );
+          }
+        });
+      }
+    }, 100);
   }
 
   get imagen() {

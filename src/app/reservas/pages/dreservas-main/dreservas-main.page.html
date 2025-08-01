@@ -241,7 +241,6 @@
   >
     @for (espacio of espacios(); track trackByEspacioId($index, espacio)) {
     <espacio-booking-item
-      [calificacion]="5"
       [ubicacion]="espacio.sede"
       [titulo]="espacio.nombre"
       [imagenUrl]="getImagenUrl(espacio.imagen_url)"

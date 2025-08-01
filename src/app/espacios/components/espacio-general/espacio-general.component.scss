@@ -1,3 +1,18 @@
 :host {
   display: block;
 }
+
+:host quill-editor {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+
+  &.ql-container {
+    height: auto;
+
+    &.ql-snow {
+      height: auto;
+      border: none;
+    }
+  }
+}

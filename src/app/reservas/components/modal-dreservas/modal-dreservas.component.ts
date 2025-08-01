@@ -8,10 +8,12 @@ import {
   ViewContainerRef,
   computed,
   ChangeDetectorRef,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
 
+import { QuillViewHTMLComponent } from 'ngx-quill';
 import moment from 'moment';
 import 'moment/locale/es';
 
@@ -21,14 +23,13 @@ import { Configuracion } from '@espacios/interfaces';
 import { AuthService } from '@auth/services/auth.service';
 import { UpperFirstPipe } from '@shared/pipes';
 import { AlertasService } from '@shared/services/alertas.service';
-
 import {
   Disponibilidad,
   ReservaEspaciosDetalles,
 } from '@reservas/interfaces/reserva-espacio-detalle.interface';
 import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
 import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
-import { ChangeDetectionStrategy } from '@angular/core';
+
 
 @Component({
   selector: 'modal-dreservas',
@@ -37,6 +38,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
     WebIconComponent,
     UpperFirstPipe,
     InfoReservaComponent,
+    QuillViewHTMLComponent,
   ],
   templateUrl: './modal-dreservas.component.html',
   styleUrl: './modal-dreservas.component.scss',

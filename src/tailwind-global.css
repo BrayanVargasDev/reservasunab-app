@@ -125,3 +125,20 @@ input[type='time']::-moz-calendar-picker-indicator {
   filter: invert(1);
   opacity: 1 !important;
 }
+
+.quill-reset .ql-editor {
+  @apply box-border h-full outline-none overflow-y-auto py-3 px-4 text-left break-words whitespace-pre-wrap;
+}
+
+.quill-reset .ql-editor ul {
+  @apply list-disc pl-5;
+}
+
+.quill-reset .ql-editor ol {
+  @apply list-decimal pl-5;
+}
+
+.quill-reset .ql-editor li {
+  @apply list-item;
+  @apply pl-2 list-[inherit];
+}
