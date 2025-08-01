@@ -35,6 +35,7 @@ import { Imagen } from '@espacios/interfaces/imagen.interface';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
 import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/tabla-dreservas.component';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 
 @Component({
   selector: 'app-dreservas-main',
@@ -47,6 +48,7 @@ import { AuthService } from '@auth/services/auth.service';
     ReactiveFormsModule,
     EspacioBookingItemComponent,
     ModalDreservasComponent,
+    UpperFirstPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -102,7 +102,7 @@
         @for (categoria of appService.categoriasQuery.data(); track
         categoria.id) {
         <option [value]="categoria.id">
-          {{ `${categoria.nombre}` | titlecase }}
+          {{ `${categoria.nombre}` | upperFirst }}
         </option>
         }
       </select>

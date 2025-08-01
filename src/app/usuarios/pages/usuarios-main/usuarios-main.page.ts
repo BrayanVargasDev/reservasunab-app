@@ -61,6 +61,7 @@ import { AlertasService } from '@shared/services/alertas.service';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 import { Rol } from '@permisos/interfaces/rol.interface';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -79,6 +80,7 @@ import { AuthService } from '@auth/services/auth.service';
     WebIconComponent,
     ModalUsuariosComponent,
     PaginadorComponent,
+    UpperFirstPipe,
   ],
   host: {
     class: 'flex flex-col grow w-full sm:pl-3 relative overflow-y-auto',
@@ -262,11 +264,7 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
 
     // Configurar debounce para la búsqueda
     this.searchSubject
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$),
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((texto: string) => {
         this.usuariosService.setFiltroTexto(texto);
       });

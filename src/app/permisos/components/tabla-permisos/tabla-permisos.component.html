@@ -1,4 +1,4 @@
-<ng-template #celdaRol let-context>
+<!-- <ng-template #celdaRol let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="capitalize">{{ context.getValue() }}</span>
 
@@ -28,7 +28,7 @@
             class="w-full text-left"
             (click)="cambiarRolUsuario(context.row.original, rol)"
           >
-            {{ rol.nombre | titlecase }}
+            {{ rol.nombre | upperFirst }}
           </button>
         </li>
         }
@@ -36,9 +36,9 @@
     </div>
     }
   </div>
-</ng-template>
+</ng-template> -->
 
-<table
+<!-- <table
   responsiveTable
   #tabla="responsiveTable"
   [table]="tablaPermisos()"
@@ -156,10 +156,10 @@
     </tr>
     } }
   </tbody>
-</table>
+</table> -->
 
 <!-- Paginador -->
-<app-paginador
+<!-- <app-paginador
   [ngClass]="
     'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
   "
@@ -171,7 +171,7 @@
   [mostrarExtremos]="true"
   [deshabilitado]="permisosQuery.isFetching()"
   (prefetchFunction)="permisosService.prefetchPermisos($event)"
->
-</app-paginador>
+> -->
+<!-- </app-paginador> -->
 
-<ng-template #alertaPermisos></ng-template>
+<!-- <ng-template #alertaPermisos></ng-template> -->

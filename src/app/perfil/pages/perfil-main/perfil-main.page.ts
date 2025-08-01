@@ -40,6 +40,7 @@ import { InputSoloNumerosDirective } from '@shared/directives/input-solo-numeros
 import { Ciudad } from '@shared/interfaces';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Usuario } from '@usuarios/intefaces';
+import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 
 @Component({
   selector: 'app-perfil-main',
@@ -52,6 +53,7 @@ import { Usuario } from '@usuarios/intefaces';
     ReactiveFormsModule,
     InputSoloNumerosDirective,
     WebIconComponent,
+    UpperFirstPipe,
   ],
   host: {
     class: 'flex flex-col grow w-full h-full',

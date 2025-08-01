@@ -71,7 +71,7 @@
             class="w-full text-left"
             (click)="cambiarRolUsuario(context.row.original, rol)"
           >
-            {{ rol.nombre | titlecase }}
+            {{ rol.nombre | upperFirst }}
           </button>
         </li>
         }

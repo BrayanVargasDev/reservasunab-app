@@ -123,7 +123,7 @@
             <option value="" disabled>Seleccione</option>
             @for (grupo of appService.gruposQuery.data(); track grupo.id) {
             <option [value]="grupo.id">
-              {{ grupo.nombre | titlecase }}
+              {{ grupo.nombre | upperFirst }}
             </option>
             }
           </select>
@@ -162,7 +162,7 @@
             @for (categoria of appService.categoriasQuery.data(); track
             categoria.id) {
             <option [value]="categoria.id">
-              {{ categoria.nombre | titlecase }}
+              {{ categoria.nombre | upperFirst }}
             </option>
             }
           </select>
@@ -200,7 +200,7 @@
             <option value="" disabled>Seleccione</option>
             @for (sede of appService.sedesQuery.data(); track sede.id) {
             <option [value]="sede.id">
-              {{ sede.nombre | titlecase }}
+              {{ sede.nombre | upperFirst }}
             </option>
             }
           </select>

@@ -51,6 +51,7 @@ import { UpperFirstPipe } from '@shared/pipes';
     UpperFirstPipe,
     QuillEditorComponent,
     QuillViewHTMLComponent,
+    UpperFirstPipe,
   ],
   templateUrl: './espacio-general.component.html',
   styleUrl: './espacio-general.component.scss',

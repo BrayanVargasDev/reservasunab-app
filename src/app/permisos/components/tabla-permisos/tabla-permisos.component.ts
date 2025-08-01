@@ -48,6 +48,7 @@ import { UsuariosService } from '@usuarios/services/usuarios.service';
 import { Usuario } from '@usuarios/intefaces';
 import { Rol } from '@permisos/interfaces';
 import { AuthService } from '@auth/services/auth.service';
+import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -63,6 +64,7 @@ interface Util {
     WebIconComponent,
     ListaPermisosPantallaComponent,
     PaginadorComponent,
+    UpperFirstPipe,
   ],
   templateUrl: './tabla-permisos.component.html',
   styleUrl: './tabla-permisos.component.scss',

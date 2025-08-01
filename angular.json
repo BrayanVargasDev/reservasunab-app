@@ -47,7 +47,9 @@
             "allowedCommonJsDependencies": [
               "moment",
               "moment-timezone",
-              "pikaday"
+              "pikaday",
+              "quill",
+              "quill-mention"
             ]
           },
           "configurations": {
