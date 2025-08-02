@@ -9,5 +9,5 @@ export interface UsuarioLogueado {
   rol: Rol;
   token: string;
   permisos: Permiso[];
-  tipo_usuario: TipoUsuario;
+  tipo_usuario: TipoUsuario[];
 }

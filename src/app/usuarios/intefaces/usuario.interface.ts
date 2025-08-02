@@ -4,7 +4,7 @@ import { Estado } from '@shared/enums/usuarios.enum';
 export interface Usuario {
   id: number;
   email: string;
-  tipoUsuario: TipoUsuario;
+  tipoUsuario: TipoUsuario[];
   telefono: string;
   rol: string;
   tipoDocumento: number;

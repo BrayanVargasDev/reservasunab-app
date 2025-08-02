@@ -98,7 +98,7 @@ export class HeaderComponent implements OnInit {
   }
 
   obtenerLeyenda(usuario: UsuarioLogueado | null): string {
-    return usuario?.rol?.nombre ?? usuario?.tipo_usuario ?? 'Usuario';
+    return usuario?.rol?.nombre ?? usuario?.tipo_usuario[0] ?? 'Usuario';
   }
 
   navegarAlInicio() {

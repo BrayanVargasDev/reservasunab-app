@@ -108,7 +108,7 @@ export class MobileDrawerComponent implements OnDestroy {
       return usuario.rol.nombre!;
     }
 
-    return usuario.tipo_usuario || 'Usuario';
+    return usuario.tipo_usuario[0] || 'Usuario';
   }
 
   onOverlayClick(event: Event) {

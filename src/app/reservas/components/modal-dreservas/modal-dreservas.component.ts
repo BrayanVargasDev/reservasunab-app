@@ -241,7 +241,7 @@ export class ModalDreservasComponent {
 
       const tipoUsuarioConfig = tipo_usuario_config.find(
         config =>
-          config.tipo_usuario === this.authService.usuario()?.tipo_usuario,
+          config.tipo_usuario[0] === this.authService.usuario()?.tipo_usuario[0],
       );
 
       const minutosTotales = tipoUsuarioConfig
