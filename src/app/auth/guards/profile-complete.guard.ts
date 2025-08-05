@@ -8,6 +8,7 @@ import {
 import { Observable, from } from 'rxjs';
 
 import { AuthService } from '@auth/services/auth.service';
+import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import { checkProfileCompleted } from '@auth/actions';
 
@@ -18,6 +19,7 @@ export class ProfileCompleteGuard implements CanActivate {
   private authService = inject(AuthService);
   private router = inject(Router);
   private globalLoaderService = inject(GlobalLoaderService);
+  private validationCache = inject(ValidationCacheService);
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -33,29 +35,66 @@ export class ProfileCompleteGuard implements CanActivate {
 
   private async checkProfile(): Promise<boolean> {
     try {
-      this.globalLoaderService.show(
-        'Verificando perfil...',
-        'Validando información del usuario',
-      );
+      const isComingFromLogin = this.validationCache.isComingFromLogin();
+      const storedProfileCompleted =
+        this.validationCache.obtenerPerfilCompletado();
 
-      const profileResponse = await checkProfileCompleted(
-        this.authService['http'],
-      );
+      if (isComingFromLogin || storedProfileCompleted === null) {
+        this.globalLoaderService.show(
+          'Verificando perfil...',
+          'Validando información del usuario',
+        );
 
-      if (!profileResponse.data.perfil_completo) {
+        if (!this.authService.isSessionValid()) {
+          this.globalLoaderService.hide();
+          this.authService.clearSession();
+          this.router.navigate(['/auth/login']);
+          return false;
+        }
+
+        const profileResponse = await checkProfileCompleted(
+          this.authService['http'],
+        );
+
+        const profileCompleted = profileResponse.data.perfil_completo;
+
+        this.validationCache.setPerfilCompletado(profileCompleted);
+
+        if (!profileCompleted) {
+          this.globalLoaderService.hide();
+          this.router.navigate(['/perfil'], {
+            queryParams: { completeProfile: true },
+          });
+          return false;
+        }
+
         this.globalLoaderService.hide();
-        this.router.navigate(['/perfil'], {
-          queryParams: { completeProfile: true },
-        });
-        return false;
+        return true;
+      } else {
+        if (storedProfileCompleted === true) {
+          if (!this.authService.isSessionValid()) {
+            this.authService.clearSession();
+            this.router.navigate(['/auth/login']);
+            return false;
+          }
+          return true;
+        } else {
+          this.router.navigate(['/perfil'], {
+            queryParams: { completeProfile: true },
+          });
+          return false;
+        }
       }
-
-      this.globalLoaderService.hide();
-      return true;
     } catch (error) {
       console.error('Error al verificar perfil:', error);
       this.globalLoaderService.hide();
-      // En caso de error, permitir acceso
+
+      if (!this.authService.isSessionValid()) {
+        this.authService.clearSession();
+        this.router.navigate(['/auth/login']);
+        return false;
+      }
+
       return true;
     }
   }

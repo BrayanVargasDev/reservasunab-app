@@ -8,6 +8,7 @@ import {
 import { Observable, from } from 'rxjs';
 
 import { AuthService } from '@auth/services/auth.service';
+import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import { checkTermsAccepted } from '@auth/actions';
 
@@ -18,12 +19,12 @@ export class TermsAcceptedGuard implements CanActivate {
   private authService = inject(AuthService);
   private router = inject(Router);
   private globalLoaderService = inject(GlobalLoaderService);
+  private validationCache = inject(ValidationCacheService);
 
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Observable<boolean> | Promise<boolean> | boolean {
-    // Si estamos navegando a términos y condiciones, no validar (evitar bucle)
     if (state.url.includes('/auth/terms-conditions')) {
       return true;
     }
@@ -33,25 +34,61 @@ export class TermsAcceptedGuard implements CanActivate {
 
   private async checkTerms(): Promise<boolean> {
     try {
-      this.globalLoaderService.show(
-        'Verificando términos y condiciones...',
-        'Un momento por favor',
-      );
+      const isComingFromLogin = this.validationCache.isComingFromLogin();
+      const storedTermsAccepted = this.validationCache.getTerminosAceptados();
 
-      const termsResponse = await checkTermsAccepted(this.authService['http']);
+      if (isComingFromLogin || storedTermsAccepted === null) {
+        this.globalLoaderService.show(
+          'Verificando términos y condiciones...',
+          'Un momento por favor',
+        );
 
-      if (!termsResponse.data.terminos_condiciones) {
+        if (!this.authService.isSessionValid()) {
+          this.globalLoaderService.hide();
+          this.authService.clearSession();
+          this.router.navigate(['/auth/login']);
+          return false;
+        }
+
+        const termsResponse = await checkTermsAccepted(
+          this.authService['http'],
+        );
+
+        const termsAccepted = termsResponse.data.terminos_condiciones;
+
+        this.validationCache.setTerminosAceptados(termsAccepted);
+
+        if (!termsAccepted) {
+          this.globalLoaderService.hide();
+          this.router.navigate(['/auth/terms-conditions']);
+          return false;
+        }
+
         this.globalLoaderService.hide();
-        this.router.navigate(['/auth/terms-conditions']);
-        return false;
+        return true;
+      } else {
+        if (storedTermsAccepted === true) {
+          if (!this.authService.isSessionValid()) {
+            this.authService.clearSession();
+            this.router.navigate(['/auth/login']);
+            return false;
+          }
+          return true;
+        } else {
+          this.router.navigate(['/auth/terms-conditions']);
+          return false;
+        }
       }
-
-      this.globalLoaderService.hide();
-      return true;
     } catch (error) {
       console.error('Error al verificar términos:', error);
       this.globalLoaderService.hide();
-      // En caso de error, permitir acceso
+
+      if (!this.authService.isSessionValid()) {
+        this.authService.clearSession();
+        this.router.navigate(['/auth/login']);
+        return false;
+      }
+
       return true;
     }
   }

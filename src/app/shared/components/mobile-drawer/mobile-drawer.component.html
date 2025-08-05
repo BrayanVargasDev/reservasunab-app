@@ -15,12 +15,11 @@
       <div class="p-4">
         <div class="flex items-center">
           <div class="avatar mr-2">
-            <div class="w-16 h-16 rounded-full bg-base-100">
-              <img
-                src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
-                alt="Avatar"
-                class="w-full h-full object-cover rounded-full"
-              />
+            <div class="w-16 h-16 rounded-full bg-base-300">
+              <app-web-icon
+                nombreIcono="person-circle-outline"
+                estilos="w-16 h-16 !fill-base-content"
+              ></app-web-icon>
             </div>
           </div>
           <div class="flex-1">
@@ -48,6 +47,13 @@
           </button>
         </div>
       </div>
+
+      <a
+        (click)="navigateAndClose('perfil')"
+        class="max-sm:text-sm font-semibold underline text-primary w-full px-4"
+        type="button"
+        >Ir al perfil</a
+      >
 
       <!-- Menú de navegación -->
       <div class="flex-1 overflow-y-auto">

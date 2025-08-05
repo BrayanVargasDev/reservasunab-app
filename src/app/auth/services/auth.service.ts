@@ -21,6 +21,7 @@ import { CredencialesLogin } from '@auth/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
 import { Rol } from '@permisos/interfaces';
 import { STORAGE_KEYS, AUTH_CONFIG } from '../constants/storage.constants';
+import { ValidationCacheService } from './validation-cache.service';
 
 type EstadoAutenticacion = 'autenticado' | 'noAutenticado' | 'chequeando';
 
@@ -31,6 +32,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private qc = inject(QueryClient);
   private router = inject(Router);
+  private validationCache = inject(ValidationCacheService);
   private _estadoAutenticacion = signal<EstadoAutenticacion>('chequeando');
   private _usuario = signal<UsuarioLogueado | null>(null);
   private _token = signal<string | null>(null);
@@ -100,6 +102,8 @@ export class AuthService {
     onSuccess: response => {
       const user = response.data;
       if (user) {
+        this.validationCache.limpiarEstadosValidacion();
+
         this.saveUserToStorage(user);
         this.setToken(user.token);
         this.updateLastActivity();
@@ -152,6 +156,8 @@ export class AuthService {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+
+    this.validationCache.limpiarEstadosValidacion();
 
     this._usuario.set(null);
     this._token.set(null);
@@ -298,21 +304,28 @@ export class AuthService {
     }
   }
 
-  // Métodos para validaciones de términos y perfil
-  public async checkTermsAccepted(): Promise<boolean> {
+  public async checkTerminosAceptados(): Promise<boolean> {
     try {
       const response = await checkTermsAccepted(this.http);
-      return response.data.terminos_condiciones;
+      const termsAccepted = response.data.terminos_condiciones;
+
+      this.validationCache.setTerminosAceptados(termsAccepted);
+
+      return termsAccepted;
     } catch (error) {
       console.error('Error verificando términos aceptados:', error);
       return false;
     }
   }
 
-  public async checkProfileCompleted(): Promise<boolean> {
+  public async checkPerfilCompletado(): Promise<boolean> {
     try {
       const response = await checkProfileCompleted(this.http);
-      return response.data.perfil_completo;
+      const profileCompleted = response.data.perfil_completo;
+
+      this.validationCache.setPerfilCompletado(profileCompleted);
+
+      return profileCompleted;
     } catch (error) {
       console.error('Error verificando perfil completo:', error);
       return false;

@@ -24,7 +24,6 @@ export class UserValidationGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Observable<boolean> | boolean {
-    // Solo validar si el usuario está autenticado
     if (!this.authService.estaAutenticado()) {
       this.router.navigate(['/auth/login']);
       return false;
@@ -38,7 +37,6 @@ export class UserValidationGuard implements CanActivate {
     state: RouterStateSnapshot,
   ): Promise<boolean> {
     try {
-      // 1. Verificar términos y condiciones
       const termsValid = this.termsGuard.canActivate(route, state);
       const termsResult =
         termsValid instanceof Promise ? await termsValid : termsValid;
@@ -46,7 +44,6 @@ export class UserValidationGuard implements CanActivate {
         return false;
       }
 
-      // 2. Verificar perfil completo
       const profileValid = this.profileGuard.canActivate(route, state);
       const profileResult =
         profileValid instanceof Promise ? await profileValid : profileValid;
@@ -57,7 +54,6 @@ export class UserValidationGuard implements CanActivate {
       return true;
     } catch (error) {
       console.error('Error en validación de usuario:', error);
-      // En caso de error, permitir acceso para no bloquear la aplicación
       return true;
     }
   }

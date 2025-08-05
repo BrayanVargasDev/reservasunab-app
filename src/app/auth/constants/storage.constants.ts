@@ -2,6 +2,8 @@ export const STORAGE_KEYS = {
   TOKEN: 'token',
   USER: 'user',
   LAST_ACTIVITY: 'last_activity',
+  PROFILE_COMPLETED: 'profile_completed',
+  TERMS_ACCEPTED: 'terms_accepted',
 } as const;
 
 export const AUTH_CONFIG = {
