@@ -3,3 +3,11 @@
 } @else {
 <router-outlet></router-outlet>
 }
+
+<!-- Global Loader que se superpone sobre toda la aplicación -->
+<app-global-loader
+  [isVisible]="globalLoaderService.isLoading()"
+  [title]="globalLoaderService.title()"
+  [message]="globalLoaderService.message()"
+>
+</app-global-loader>

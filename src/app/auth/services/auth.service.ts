@@ -8,7 +8,14 @@ import {
   injectQuery,
 } from '@tanstack/angular-query-experimental';
 
-import { loginAction, registroAction, getUser, logoutAction } from '../actions';
+import {
+  loginAction,
+  registroAction,
+  getUser,
+  logoutAction,
+  checkTermsAccepted,
+  checkProfileCompleted,
+} from '../actions';
 import { Registro, UsuarioLogueado } from '../interfaces';
 import { CredencialesLogin } from '@auth/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
@@ -288,6 +295,27 @@ export class AuthService {
   public refreshTokenIfNeeded(): void {
     if (this.isSessionValid()) {
       this.verificarYSincronizarUsuario();
+    }
+  }
+
+  // Métodos para validaciones de términos y perfil
+  public async checkTermsAccepted(): Promise<boolean> {
+    try {
+      const response = await checkTermsAccepted(this.http);
+      return response.data.terminos_condiciones;
+    } catch (error) {
+      console.error('Error verificando términos aceptados:', error);
+      return false;
+    }
+  }
+
+  public async checkProfileCompleted(): Promise<boolean> {
+    try {
+      const response = await checkProfileCompleted(this.http);
+      return response.data.perfil_completo;
+    } catch (error) {
+      console.error('Error verificando perfil completo:', error);
+      return false;
     }
   }
 }

@@ -1,0 +1,114 @@
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-amber-50 p-4"
+>
+  <div class="max-w-2xl w-full bg-white rounded-2xl shadow-2xl max-sm:p-2 p-4">
+    <div class="text-center max-sm:mb-1 max-md:mb-3 mb-6">
+      <img
+        src="assets/icon/logo-universidad-unab.png"
+        alt="Logo de la Universidad Autónoma de Bucaramanga"
+        class="mx-auto max-sm:h-12 h-16 w-auto max-sm:mb-2 mb-4"
+      />
+      <h1 class="max-sm:text-xl text-3xl font-bold text-base-content mb-2">
+        Términos y Condiciones
+      </h1>
+      <p class="max-sm:text-sm text-base-content">
+        Para continuar, debes aceptar nuestros términos y políticas.
+      </p>
+    </div>
+
+    <!-- Checkboxes con hipervínculos -->
+    <div class="space-y-1 max-sm:mb-1 max-md:mb-3 mb-6">
+      <!-- Política de Tratamiento de Datos -->
+      <div
+        class="flex items-start space-x-3 max-md:p-2 p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+      >
+        <input
+          type="checkbox"
+          id="privacyPolicy"
+          class="checkbox my-auto checkbox-secondary flex-shrink-0 focus:ring-secondary hover:ring-secondary hover:border-secondary"
+          (change)="onPrivacyPolicyChange($event)"
+        />
+        <div class="flex-1">
+          <label
+            for="privacyPolicy"
+            class="max-sm:text-sm text-base text-base-content leading-relaxed cursor-pointer"
+          >
+            He leído y acepto la
+            <a
+              type="button"
+              (click)="openPrivacyPolicy()"
+              class="inline flex-wrap break-words text-primary hover:text-primary-focus underline font-medium transition-colors"
+            >
+              política de tratamiento de datos personales
+            </a>
+            de la Universidad Autónoma de Bucaramanga.
+          </label>
+        </div>
+      </div>
+
+      <!-- Términos y Condiciones -->
+      <div
+        class="flex items-start space-x-3 max-md:p-2 p-4 border border-gray-200 rounded-lg hover:border-primary transition-colors"
+      >
+        <input
+          type="checkbox"
+          id="termsConditions"
+          class="checkbox checkbox-accent my-auto flex-shrink-0 focus:ring-accent hover:ring-accent hover:border-accent"
+          (change)="onTermsChange($event)"
+        />
+        <div class="flex-1">
+          <label
+            for="termsConditions"
+            class="max-sm:text-sm text-base text-base-content leading-relaxed cursor-pointer"
+          >
+            He leído y acepto los
+            <a
+              type="button"
+              (click)="openTermsAndConditions()"
+              class="inline text-primary hover:text-primary-focus underline font-medium transition-colors"
+            >
+              términos y condiciones de uso
+            </a>
+            del Sistema de Reservas UNAB.
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div
+      class="bg-blue-50 border border-blue-200 rounded-lg max-md:p-2 p-4 max-md:mb-3 mb-6"
+    >
+      <div class="flex items-start space-x-2">
+        <app-web-icon
+          estilos="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0"
+          nombreIcono="information-circle-outline"
+        ></app-web-icon>
+        <div class="max-sm:text-sm text-base text-blue-800">
+          <p class="font-semibold mb-0.5">Información importante:</p>
+          <p class="wrap-break-word">
+            Al aceptar estos términos, confirmas que has leído y entendido
+            nuestras políticas. Puedes hacer clic en los enlaces para revisar
+            los documentos completos.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #alertaTerminos></ng-template>
+
+    <!-- Botón Continuar -->
+    <div class="flex justify-end">
+      <button
+        type="button"
+        [disabled]="!canContinue()"
+        (click)="acceptAndContinue()"
+        class="btn btn-primary max-sm:btn-sm sm:h-11"
+      >
+        @if (isLoading()) {
+        <span class="loading loading-spinner loading-sm mr-2"></span>
+        Procesando... } @else { Continuar }
+      </button>
+    </div>
+  </div>
+</div>

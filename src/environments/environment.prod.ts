@@ -4,5 +4,5 @@ export const environment = {
   baseUrl: 'https://reservasunab.wgsoluciones.com',
   // apiUrl: 'https://reservasunab.loca.lt/api',
   // samlUrl: 'https://reservasunab.loca.lt',
-  tenantId: 'a74670d8-5b78-4b6c-9dc8-045ec3cbb231', // URL del backend de producción
+  tenantId: 'd8ee4f79-3f08-4bd6-9450-cb7a3de29582', // Id de google
 };

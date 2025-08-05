@@ -1,7 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+} from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
 import { SideMenuComponent } from '../components/side-menu/side-menu.component';
 import { HeaderComponent } from '../components/header/header.component';
 import { MobileDrawerComponent } from '../components/mobile-drawer/mobile-drawer.component';
@@ -24,4 +29,21 @@ import { AppService } from '@app/app.service';
 })
 export class MainLayoutComponent {
   appService = inject(AppService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  // Computed para determinar si se debe mostrar el menú
+  shouldShowMenu = computed(() => {
+    const url = this.router.url;
+
+    // Ocultar menú si está en modo de completar perfil
+    if (url.includes('completeProfile=true')) {
+      return false;
+    }
+
+    // Otras condiciones donde ocultar el menú
+    const routesWithoutMenu = ['/auth/', '/terms-conditions'];
+
+    return !routesWithoutMenu.some(route => url.includes(route));
+  });
 }

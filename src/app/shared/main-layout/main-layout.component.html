@@ -1,13 +1,21 @@
-<!-- Drawer móvil para pantallas pequeñas - Siempre presente en el DOM -->
+<!-- Drawer móvil para pantallas pequeñas - Solo si se debe mostrar menú -->
+@if (shouldShowMenu()) {
 <app-mobile-drawer></app-mobile-drawer>
+}
 
-<div class="flex flex-col w-dvw h-dvh bg-base-300 !pt-[var(--ion-safe-area-top)]">
+<div
+  class="flex flex-col w-dvw h-dvh bg-base-300 !pt-[var(--ion-safe-area-top)]"
+>
+  @if (shouldShowMenu()) {
   <app-header></app-header>
+  }
 
   <div class="flex grow gap-1 w-full px-2 md:p-4 overflow-hidden">
+    @if (shouldShowMenu()) {
     <div class="hidden md:flex md:col-span-1 flex-col h-full">
       <app-side-menu></app-side-menu>
     </div>
+    }
     <div
       class="flex flex-col w-full h-full max-h-[100%] overflow-hidden relative"
     >

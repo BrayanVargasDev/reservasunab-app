@@ -10,10 +10,12 @@ import {
   signal,
   effect,
   Injector,
+  computed,
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -62,6 +64,8 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private fb = inject(FormBuilder);
   private injector = inject(Injector);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
   private alertaService = inject(AlertasService);
   private pikaday!: Pikaday;
@@ -71,6 +75,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   public appService = inject(AppService);
   public formUtils = FormUtils;
   public avatarUrl = signal<string>('');
+
+  // Verificar si está en modo completar perfil
+  public isCompleteProfileMode = computed(() => {
+    return this.route.snapshot.queryParams['completeProfile'] === 'true';
+  });
 
   // Control de pestañas
   public selectedTab = signal<string>('perfil');
@@ -486,6 +495,13 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         this.alertaPerfil(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+
+      // Si está en modo completar perfil, redirigir al dashboard
+      if (this.isCompleteProfileMode()) {
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 2000);
+      }
     } catch (error) {
       console.error('Error al guardar cambios:', error);
       this.alertaService.error(

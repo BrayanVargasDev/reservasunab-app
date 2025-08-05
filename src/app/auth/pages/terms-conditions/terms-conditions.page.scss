@@ -1,0 +1,50 @@
+// Estilos específicos para la página de términos y condiciones
+.prose {
+  h2,
+  h3 {
+    color: var(--ion-color-dark);
+  }
+
+  p {
+    text-align: justify;
+    line-height: 1.6;
+  }
+}
+
+// Estilo para el scroll del contenedor de términos
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+// Efecto de hover para el checkbox
+input[type='checkbox']:hover {
+  border-color: var(--ion-color-primary);
+}
+
+// Animación para el botón
+button {
+  transition: all 0.3s ease;
+}
+
+button:disabled {
+  transform: none !important;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

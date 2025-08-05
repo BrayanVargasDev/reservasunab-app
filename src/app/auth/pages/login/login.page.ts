@@ -77,7 +77,7 @@ export class LoginPage {
   loginSaml() {
     this.disableForm();
     this.authService.setLoading(true);
-    const samlUrl = `${this.appService.samlUrl}/saml/${this.appService.tenantId}/login`;
+    const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
     console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
     // window.location.href = samlUrl;
   }

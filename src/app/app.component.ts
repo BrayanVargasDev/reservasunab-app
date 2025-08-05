@@ -15,14 +15,22 @@ import moment from 'moment-timezone';
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
 import { SessionSyncService } from '@auth/services/session-sync.service';
+import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import { AuthLoadingComponent } from '@shared/components/auth-loading/auth-loading.component';
+import { GlobalLoaderComponent } from '@shared/components/global-loader/global-loader.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterOutlet, AuthLoadingComponent],
+  imports: [
+    IonicModule,
+    CommonModule,
+    RouterOutlet,
+    AuthLoadingComponent,
+    GlobalLoaderComponent,
+  ],
 })
 export class AppComponent implements OnInit {
   momentL = moment;
@@ -31,6 +39,7 @@ export class AppComponent implements OnInit {
   appService = inject(AppService);
   authService = inject(AuthService);
   sessionSyncService = inject(SessionSyncService);
+  globalLoaderService = inject(GlobalLoaderService);
 
   showMenu = signal(false);
 

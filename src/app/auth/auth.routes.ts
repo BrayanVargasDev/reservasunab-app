@@ -9,7 +9,14 @@ export const authRoutes: Routes = [
         path: 'login',
         canActivate: [NoAuthGuard],
         loadComponent: () =>
-          import('@auth/pages/login/login.page').then((m) => m.LoginPage),
+          import('@auth/pages/login/login.page').then(m => m.LoginPage),
+      },
+      {
+        path: 'terms-conditions',
+        loadComponent: () =>
+          import('@auth/pages/terms-conditions/terms-conditions.page').then(
+            m => m.TermsConditionsPage,
+          ),
       },
       // {
       //   path: 'registro',
