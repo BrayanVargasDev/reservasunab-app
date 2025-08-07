@@ -5,6 +5,7 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { Observable, from } from 'rxjs';
 
 import { AuthService } from '@auth/services/auth.service';
@@ -17,6 +18,7 @@ import { checkProfileCompleted } from '@auth/actions';
 })
 export class ProfileCompleteGuard implements CanActivate {
   private authService = inject(AuthService);
+  private http = inject(HttpClient);
   private router = inject(Router);
   private globalLoaderService = inject(GlobalLoaderService);
   private validationCache = inject(ValidationCacheService);
@@ -25,7 +27,6 @@ export class ProfileCompleteGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): Observable<boolean> | Promise<boolean> | boolean {
-    // Si estamos navegando a la ruta de perfil, no validar (evitar bucle)
     if (state.url.includes('/perfil')) {
       return true;
     }
@@ -52,9 +53,7 @@ export class ProfileCompleteGuard implements CanActivate {
           return false;
         }
 
-        const profileResponse = await checkProfileCompleted(
-          this.authService['http'],
-        );
+        const profileResponse = await checkProfileCompleted(this.http);
 
         const profileCompleted = profileResponse.data.perfil_completo;
 
@@ -86,7 +85,6 @@ export class ProfileCompleteGuard implements CanActivate {
         }
       }
     } catch (error) {
-      console.error('Error al verificar perfil:', error);
       this.globalLoaderService.hide();
 
       if (!this.authService.isSessionValid()) {

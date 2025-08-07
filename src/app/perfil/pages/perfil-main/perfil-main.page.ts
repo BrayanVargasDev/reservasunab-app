@@ -38,6 +38,8 @@ import { PerfilService } from '@app/perfil/services/perfil.service';
 import { AppService } from '@app/app.service';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AlertasService } from '@shared/services/alertas.service';
+import { NavigationService } from '@shared/services/navigation.service';
+import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { InputSoloNumerosDirective } from '@shared/directives/input-solo-numeros.directive';
 import { Ciudad } from '@shared/interfaces';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -68,6 +70,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
   private alertaService = inject(AlertasService);
+  private navigationService = inject(NavigationService);
+  private validationCache = inject(ValidationCacheService);
   private pikaday!: Pikaday;
   private http = inject(HttpClient);
 
@@ -199,21 +203,18 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private configurarAutocompleteCiudades() {
-    // Configurar el debounce para la búsqueda de ciudades de expedición
     this.ciudadSearchSubject
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(termino => {
         this.filtrarCiudades(termino);
       });
 
-    // Configurar el debounce para la búsqueda de ciudades de residencia
     this.ciudadResidenciaSearchSubject
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(termino => {
         this.filtrarCiudadesResidencia(termino);
       });
 
-    // Inicializar con todas las ciudades usando el servicio del perfil
     effect(
       () => {
         const todasLasCiudades = this.perfilService.ciudades();
@@ -496,14 +497,25 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
 
-      // Si está en modo completar perfil, redirigir al dashboard
-      if (this.isCompleteProfileMode()) {
+      if (!this.isCompleteProfileMode()) {
+        return;
+      }
+
+      this.validationCache.setPerfilCompletado(true);
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      try {
+        await this.navigationService.navegarAPrimeraPaginaDisponible();
+
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 2000);
+          const currentUrl = this.router.url.split('?')[0]; // Solo la ruta, sin query params
+          this.router.navigateByUrl(currentUrl, { replaceUrl: true });
+        }, 100);
+      } catch (error) {
+        const navegandoFallback = await this.router.navigate(['/reservas']);
       }
     } catch (error) {
-      console.error('Error al guardar cambios:', error);
       this.alertaService.error(
         'Error al actualizar el perfil. Por favor, inténtalo de nuevo.',
         5000,

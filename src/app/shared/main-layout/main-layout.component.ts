@@ -4,9 +4,18 @@ import {
   ChangeDetectionStrategy,
   inject,
   computed,
+  signal,
+  effect,
+  Injector,
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { RouterOutlet, Router, ActivatedRoute } from '@angular/router';
+import {
+  RouterOutlet,
+  Router,
+  ActivatedRoute,
+  NavigationEnd,
+} from '@angular/router';
+import { filter } from 'rxjs';
 import { SideMenuComponent } from '../components/side-menu/side-menu.component';
 import { HeaderComponent } from '../components/header/header.component';
 import { MobileDrawerComponent } from '../components/mobile-drawer/mobile-drawer.component';
@@ -31,19 +40,37 @@ export class MainLayoutComponent {
   appService = inject(AppService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private injector = inject(Injector);
 
-  // Computed para determinar si se debe mostrar el menú
+  private currentUrl = signal<string>(this.router.url);
+
+  constructor() {
+    effect(
+      () => {
+        this.router.events
+          .pipe(filter(event => event instanceof NavigationEnd))
+          .subscribe((event: NavigationEnd) => {
+            this.currentUrl.set(event.url);
+          });
+      },
+      { injector: this.injector },
+    );
+  }
+
   shouldShowMenu = computed(() => {
-    const url = this.router.url;
+    const url = this.currentUrl();
 
-    // Ocultar menú si está en modo de completar perfil
     if (url.includes('completeProfile=true')) {
       return false;
     }
 
-    // Otras condiciones donde ocultar el menú
     const routesWithoutMenu = ['/auth/', '/terms-conditions'];
+    const shouldHide = routesWithoutMenu.some(route => url.includes(route));
 
-    return !routesWithoutMenu.some(route => url.includes(route));
+    if (shouldHide) {
+      return false;
+    }
+
+    return true;
   });
 }

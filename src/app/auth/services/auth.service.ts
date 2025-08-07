@@ -118,12 +118,6 @@ export class AuthService {
   logoutMutation = injectMutation(() => ({
     mutationKey: ['logout'],
     mutationFn: () => logoutAction(this.http),
-    onSuccess: () => {
-      this.clearSession();
-    },
-    onError: () => {
-      this.clearSession();
-    },
   }));
 
   setLoading(loading: boolean): void {
@@ -156,6 +150,8 @@ export class AuthService {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+    localStorage.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
+    localStorage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
 
     this.validationCache.limpiarEstadosValidacion();
 

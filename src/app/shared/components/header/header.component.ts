@@ -77,6 +77,7 @@ export class HeaderComponent implements OnInit {
       () => {
         this.authServicio.setToken(null);
         this.authServicio.setUser(null);
+        this.authServicio.clearSession();
         this.authServicio.setLoading(false);
         this.router.navigate(['/auth/login']);
       },

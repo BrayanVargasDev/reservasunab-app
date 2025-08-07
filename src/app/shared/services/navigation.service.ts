@@ -10,7 +10,12 @@ export class NavigationService {
   private permissionService = inject(PermissionService);
 
   private obtenerPantallasDisponibles = computed(() => {
-    return this.permissionService.obtenerPantallasAccesibles();
+    try {
+      const pantallas = this.permissionService.obtenerPantallasAccesibles();
+      return pantallas || [];
+    } catch (error) {
+      return [];
+    }
   });
 
   async navegarAPrimeraPaginaDisponible(): Promise<void> {
@@ -33,12 +38,37 @@ export class NavigationService {
 
       if (pantallasDisponibles.length > 0) {
         const primeraPantalla = pantallasDisponibles[0];
-        await this.router.navigate([primeraPantalla.ruta]);
+
+        const result = await this.router.navigate([primeraPantalla.ruta]);
+
+        if (!result) {
+          for (let i = 1; i < pantallasDisponibles.length; i++) {
+            const rutaAlternativa = pantallasDisponibles[i];
+
+            const resultadoAlternativo = await this.router.navigate([
+              rutaAlternativa.ruta,
+            ]);
+
+            if (resultadoAlternativo) {
+              return;
+            }
+          }
+
+          const fallbackResult = await this.router.navigate(['/reservas']);
+
+          if (!fallbackResult) {
+            await this.router.navigateByUrl('/reservas');
+          }
+        }
       } else {
         await this.router.navigate(['/reservas']);
       }
     } catch (error) {
-      await this.router.navigate(['/reservas']);
+      try {
+        await this.router.navigate(['/reservas']);
+      } catch (fallbackError) {
+        throw fallbackError;
+      }
     }
   }
 
@@ -49,6 +79,6 @@ export class NavigationService {
       return pantallasDisponibles[0].ruta;
     }
 
-    return '/dashboard';
+    return '/reservas';
   }
 }

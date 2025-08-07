@@ -94,6 +94,7 @@ export class MobileDrawerComponent implements OnDestroy {
       () => {
         this.authServicio.setToken(null);
         this.authServicio.setUser(null);
+        this.authServicio.clearSession();
         this.authServicio.setLoading(false);
         this.router.navigate(['/auth/login']);
       },
