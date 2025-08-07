@@ -58,7 +58,7 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
     UpperFirstPipe,
   ],
   host: {
-    class: 'flex flex-col grow w-full h-full',
+    class: 'flex flex-col grow w-full h-full overflow-y-auto',
   },
 })
 export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {

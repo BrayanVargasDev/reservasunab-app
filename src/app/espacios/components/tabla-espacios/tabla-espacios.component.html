@@ -28,11 +28,11 @@
     <tr class="bg-base-300 z-20 rounded-t-box">
       @if (tabla.hiddenColumnIds().size !== 0) {
       <th
-        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+        class="p-2 text-left first:rounded-tl-box border-none last:rounded-tr-box bg-base-100 z-20"
       ></th>
       } @for (header of headerGroup.headers; track header.id) {
       <th
-        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+        class="p-2 text-left first:rounded-tl-box border-none last:rounded-tr-box bg-base-100 z-20"
         [colSpan]="header.colSpan"
       >
         @if (!header.isPlaceholder) {
@@ -79,7 +79,7 @@
     @if (row.getIsExpanded() && tabla.hiddenColumnIds().size !== 0) {
     <tr class="bg-base-300 border-none">
       <td [attr.colspan]="row.getVisibleCells().length + 1">
-        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+        <div class="bg-base-100 rounded-md p-1 px-3 w-full">
           @if (tabla.hiddenColumnIds().size !== 0) {
           <ul>
             @for (col of tablaEspacios.getAllLeafColumns(); track $index) { @if

@@ -83,7 +83,7 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
     UpperFirstPipe,
   ],
   host: {
-    class: 'flex flex-col grow w-full sm:pl-3 relative overflow-y-auto',
+    class: 'flex flex-col h-full w-full sm:pl-3',
   },
 })
 export class UsuariosMainPage implements OnInit, OnDestroy {
@@ -182,7 +182,7 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
       header: 'Estado',
       accessorKey: 'estado',
       size: 300,
-      cell: () => (this.appService.esMovil() ? this.ionChip() : this.chipWeb()),
+      cell: () => this.chipWeb(),
       meta: {
         className: 'estado-column',
         priority: 2,

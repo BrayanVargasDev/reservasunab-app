@@ -32,6 +32,9 @@ import { DreservasService } from '@reservas/services/dreservas.service';
   templateUrl: './mis-reservas.page.html',
   styleUrl: './mis-reservas.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex flex-col h-full w-full sm:pl-3 overflow-y-auto',
+  },
 })
 export default class MisReservasPage implements OnInit, OnDestroy {
   public misReservasService = inject(MisReservasService);

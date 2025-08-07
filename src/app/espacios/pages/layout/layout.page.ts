@@ -8,6 +8,9 @@ import { RouterOutlet } from '@angular/router';
   styleUrls: ['./layout.page.scss'],
   standalone: true,
   imports: [CommonModule, RouterOutlet],
+  host: {
+    class: 'flex flex-col w-full h-full overflow-hidden relative',
+  }
 })
 export class LayoutPage implements OnInit {
   constructor() {}

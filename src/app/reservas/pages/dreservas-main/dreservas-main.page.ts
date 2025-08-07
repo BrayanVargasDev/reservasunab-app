@@ -51,6 +51,9 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
     UpperFirstPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'flex flex-col h-full w-full sm:pl-3 overflow-y-auto',
+  },
 })
 export default class DreservasMainPage implements OnInit, OnDestroy {
   private injector = inject(Injector);

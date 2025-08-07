@@ -16,9 +16,17 @@ import { GruposComponent } from '@app/configuracion/components/grupos/grupos.com
 
 @Component({
   selector: 'config-main-page',
-  imports: [CommonModule, WebIconComponent, CategoriasComponent, GruposComponent],
+  imports: [
+    CommonModule,
+    WebIconComponent,
+    CategoriasComponent,
+    GruposComponent,
+  ],
   templateUrl: './config-main.page.html',
   styleUrl: './config-main.page.scss',
+  host: {
+    class: 'flex flex-col w-full h-full sm:pl-3 relative overflow-y-auto',
+  },
 })
 export default class ConfigMainPageComponent {
   public configService = inject(ConfigService);

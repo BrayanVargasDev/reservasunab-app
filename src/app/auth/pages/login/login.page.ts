@@ -95,25 +95,42 @@ export class LoginPage {
 
     const { email, password } = this.loginForm.value;
 
+    console.log('🚀 Iniciando proceso de login...');
     this.authService.setLoading(true);
+    this.disableForm();
+
     this.authService
       .login(email, password)
-      .then(response => {
-        this.authService.setLoading(false);
-        this.authService.setUser(response.data);
-        this.authService.setToken(response.data?.token || null);
-        this.authService.userQuery.refetch();
+      .then(async response => {
+        try {
+          this.authService.setUser(response.data);
+          this.authService.setToken(response.data?.token || null);
 
-        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          await this.authService.userQuery.refetch();
 
-        if (returnUrl && returnUrl !== '/') {
-          this.router.navigate([returnUrl]);
-        } else {
-          this.navigationService.navegarAPrimeraPaginaDisponible();
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+          if (returnUrl && returnUrl !== '/') {
+            await this.router.navigate([returnUrl]);
+          } else {
+            try {
+              await this.navigationService.navegarAPrimeraPaginaDisponible();
+            } catch (error) {
+              await this.router.navigate(['/reservas']);
+            }
+          }
+        } catch (setupError) {
+          await this.router.navigate(['/reservas']);
+        } finally {
+          this.authService.setLoading(false);
+          this.loginForm.enable();
         }
       })
       .catch(error => {
         this.authService.setLoading(false);
+        this.loginForm.enable();
         this.alertaService.error(
           `Error al iniciar sesión. ${
             (error as HttpErrorResponse)?.error?.message ||

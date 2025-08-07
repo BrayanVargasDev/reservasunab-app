@@ -44,7 +44,7 @@ import { NovedadesComponent } from "@app/espacios/components/novedades/novedades
     NovedadesComponent
 ],
   host: {
-    class: 'flex flex-col grow w-full sm:pl-3 relative',
+    class: 'flex flex-col h-full w-full sm:pl-3 relative overflow-y-auto',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

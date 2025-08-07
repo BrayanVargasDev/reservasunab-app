@@ -1,6 +1,6 @@
 <!-- Información de registros -->
 @if (mostrarInfo()) {
-<div class="text-sm text-base-content/70 order-2 sm:order-1">
+<div class="max-sm:text-xs text-sm text-base-content/70 order-2 sm:order-1">
   <ng-container>
     Mostrando {{ desde() }} a {{ hasta() }} de {{ totalRegistros() }} registros
   </ng-container>
@@ -12,7 +12,7 @@
   <div class="flex items-center gap-1">
     @if (mostrarExtremos()) {
     <button
-      class="btn btn-sm btn-outline"
+      class="btn max-sm:btn-xs btn-sm btn-outline"
       [disabled]="!puedeRetroceder() || deshabilitado()"
       (click)="irPrimera()"
       title="Primera página"
@@ -26,7 +26,7 @@
       <!-- Página numerada o flechas -->
       @if (page.url) {
       <button
-        class="btn btn-sm"
+        class="btn max-sm:btn-xs btn-sm"
         [class.btn-primary]="page.active"
         [class.btn-outline]="!page.active"
         [disabled]="deshabilitado()"
@@ -47,7 +47,7 @@
     </ng-container>
     } @if (mostrarExtremos()) {
     <button
-      class="btn btn-sm btn-outline"
+      class="btn max-sm:btn-xs btn-sm btn-outline"
       [disabled]="!puedeAvanzar() || deshabilitado()"
       (click)="irUltima()"
       title="Última página"
@@ -62,7 +62,7 @@
 <!-- Selector de tamaño de página -->
 @if (mostrarSelectorTamano()) {
 <div class="flex items-center gap-2 text-sm order-3 sm:order-3">
-  <span class="text-base-content/70">Mostrar:</span>
+  <span class="max-sm:text-xs text-base text-base-content/70">Mostrar:</span>
   <select
     class="select select-xs w-fit select-bordered"
     [formControl]="valorSelect"
@@ -74,6 +74,6 @@
     </option>
     }
   </select>
-  <span class="text-base-content/70">por página</span>
+  <span class="max-sm:text-xs text-base text-base-content/70">por página</span>
 </div>
 }

@@ -68,9 +68,6 @@ interface Util {
   styleUrl: './tabla-roles.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  host: {
-    class: 'flex flex-col grow w-full overflow-hidden',
-  },
 })
 export class TablaRolesComponent implements OnInit, OnDestroy {
   private injector = inject(Injector);

@@ -14,16 +14,32 @@ export class NavigationService {
   });
 
   async navegarAPrimeraPaginaDisponible(): Promise<void> {
-    setTimeout(() => {
+    try {
+      const usuario = this.permissionService['authService'].usuario();
+      const pantallasData =
+        this.permissionService['appService'].pantallasQuery.data();
+
+      if (!usuario) {
+        await this.router.navigate(['/auth/login']);
+        return;
+      }
+
+      if (!pantallasData || pantallasData.length === 0) {
+        await this.router.navigate(['/reservas']);
+        return;
+      }
+
       const pantallasDisponibles = this.obtenerPantallasDisponibles();
 
       if (pantallasDisponibles.length > 0) {
         const primeraPantalla = pantallasDisponibles[0];
-        this.router.navigate([primeraPantalla.ruta]);
+        await this.router.navigate([primeraPantalla.ruta]);
       } else {
-        this.router.navigate(['/reservas']);
+        await this.router.navigate(['/reservas']);
       }
-    }, 500);
+    } catch (error) {
+      await this.router.navigate(['/reservas']);
+    }
   }
 
   obtenerPrimeraRutaDisponible(): string {

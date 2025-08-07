@@ -7,8 +7,11 @@ import {
   computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+
 import { AuthService } from '@auth/services/auth.service';
+import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { acceptTerms, checkProfileCompleted } from '@auth/actions';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -22,7 +25,9 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
 })
 export class TermsConditionsPage {
   private router = inject(Router);
+  private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private validationCache = inject(ValidationCacheService);
   private alertaService = inject(AlertasService);
 
   public alertaTerminos = viewChild.required('alertaTerminos', {
@@ -53,21 +58,33 @@ export class TermsConditionsPage {
 
     this.isLoading.set(true);
     try {
-      await acceptTerms(this.authService['http']);
+      const acceptResponse = await acceptTerms(this.http);
+      const profileResponse = await checkProfileCompleted(this.http);
+      const perfilCompleto = profileResponse.data.perfil_completo;
 
-      const profileResponse = await checkProfileCompleted(
-        this.authService['http'],
-      );
+      this.validationCache.setTerminosAceptados(true);
+      this.validationCache.setPerfilCompletado(perfilCompleto);
 
-      if (profileResponse.data.perfil_completo) {
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.router.navigate(['/perfil'], {
+      this.authService.verificarYSincronizarUsuario();
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      if (!perfilCompleto) {
+        const navegacionExitosa = await this.router.navigate(['/perfil'], {
           queryParams: { completeProfile: true },
         });
+
+        if (!navegacionExitosa) {
+          window.location.href = '/perfil?completeProfile=true';
+        }
+        return;
+      }
+
+      const navegacionExitosa = await this.router.navigate(['/reservas']);
+      if (!navegacionExitosa) {
+        window.location.href = '/reservas';
       }
     } catch (error) {
-      console.error('Error al aceptar términos:', error);
       this.alertaService.error(
         'Error al procesar la solicitud. Por favor, inténtalo de nuevo.',
         5000,

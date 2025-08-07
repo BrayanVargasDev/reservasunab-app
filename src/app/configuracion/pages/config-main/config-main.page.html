@@ -1,29 +1,14 @@
 <div
-  class="flex flex-col md:flex-row mt-2 pr-2 sm:pl-3 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+  class="flex flex-col md:flex-row md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-30 bg-base-300"
 >
-  <div class="flex items-center gap-2">
-    <h2 class="font-bold text-4xl mb-2 md:mb-0">Configuración</h2>
-    <!-- @if (configService.filtroTexto() && configService.pestana() === 'permiso') {
-    <div class="badge badge-secondary h-6 badge-sm my-auto text-base">
-      Filtrando: "{{ configService.filtroTexto() }}"
-      <button
-        class="btn h-5 w-5 btn-circle btn-secondary ml-1"
-        (click)="limpiarFiltro()"
-        title="Limpiar filtro"
-      >
-        <app-web-icon
-          estilos="h-4 w-4"
-          nombreIcono="close-circle-outline"
-        ></app-web-icon>
-      </button>
-    </div>
-    } -->
+  <div class="flex items-center justify-center sm:justify-start gap-2">
+    <h2 class="font-bold text-4xl mb-2 md:mb-0 max-md:text-2xl max-sm:text-center">Configuración</h2>
   </div>
-  <div class="flex flex-col md:flex-row gap-2">
+  <div class="flex flex-col md:flex-row max-md:gap-1 gap-2">
     @if (authService.tienePermisos('PER000001')) {
     <button
       [disabled]="appService.editando()"
-      class="btn btn-primary h-11 rounded-box"
+      class="btn max-sm:btn-sm btn-primary sm:h-11 rounded-box"
       (click)="crear()"
     >
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
@@ -32,39 +17,34 @@
     }
   </div>
 </div>
-<div class="w-full h-full max-h-full overflow-hidden flex flex-col sm:pl-3">
-  <div class="tabs tabs-lift overflow-y-auto">
-    <input
-      #tabCategorias
-      type="radio"
-      name="espaciosTabs"
-      class="tab font-semibold text-[1.125rem]"
-      aria-label="Categorías"
-      [checked]="categoriasChecked()"
-      (change)="cambiarPestana('categorias')"
-    />
-    <div class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100dvh_-_16.75rem)]">
-      <config-categorias
-        [ngClass]="'flex flex-col h-full overflow-y-auto'"
-      ></config-categorias>
-    </div>
 
-    <input
-      #tabGrupos
-      type="radio"
-      name="espaciosTabs"
-      class="tab font-semibold text-[1.125rem]"
-      aria-label="Grupos"
-      [checked]="gruposChecked()"
-      (change)="cambiarPestana('grupos')"
-    />
-    <div
-      class="tab-content border-base-300 bg-base-100 p-5 md:p-10 overflow-hidden !max-h-[calc(100dvh_-_16.75rem)]"
-    >
-      <config-grupos
-        [ngClass]="'flex flex-col h-full overflow-y-auto'"
-      ></config-grupos>
-    </div>
+<div class="tabs tabs-lift">
+  <input
+    #tabCategorias
+    type="radio"
+    name="espaciosTabs"
+    class="tab font-semibold text-[1.125rem] max-sm:text-base"
+    aria-label="Categorías"
+    [checked]="categoriasChecked()"
+    (change)="cambiarPestana('categorias')"
+  />
+  <div class="tab-content border-base-300 bg-base-100 p-2 md:p-5">
+    <config-categorias
+      [ngClass]="'flex flex-col overflow-y-auto'"
+    ></config-categorias>
+  </div>
+
+  <input
+    #tabGrupos
+    type="radio"
+    name="espaciosTabs"
+    class="tab font-semibold text-[1.125rem] max-sm:text-base"
+    aria-label="Grupos"
+    [checked]="gruposChecked()"
+    (change)="cambiarPestana('grupos')"
+  />
+  <div class="tab-content border-base-300 bg-base-100 p-2 md:p-5">
+    <config-grupos [ngClass]="'flex flex-col overflow-y-auto'"></config-grupos>
   </div>
 </div>
 

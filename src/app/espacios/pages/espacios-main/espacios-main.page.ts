@@ -33,7 +33,7 @@ import { AuthService } from '@auth/services/auth.service';
     ModalEspaciosComponent,
   ],
   host: {
-    class: 'flex flex-col grow w-full sm:pl-3 relative',
+    class: 'flex flex-col w-full h-full sm:pl-3 relative',
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

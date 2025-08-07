@@ -1,15 +1,15 @@
 <div
-  class="flex flex-col md:flex-row mt-2 pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+  class="flex flex-col md:flex-row md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
 >
-  <div class="flex items-center">
-    <h2 class="font-bold text-4xl mb-2 md:mb-0">Espacios</h2>
+  <div class="flex items-center justify-center sm:justify-start">
+    <h2 class="font-bold text-4xl max-sm:text-2xl mb-2 md:mb-0">Espacios</h2>
   </div>
-  <div class="flex flex-col md:flex-row gap-2">
+  <div class="flex flex-col md:flex-row max-md:gap-1 gap-2">
     <input
       type="text"
       [disabled]="appService.editando()"
       placeholder="Buscar por nombre o categoria"
-      class="input input-bordered input-primary w-full h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+      class="input input-bordered max-sm:input-sm input-primary w-full sm:h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
       [value]="espaciosService.filtroTexto()"
       (input)="aplicarFiltro($any($event.target).value)"
     />
@@ -17,7 +17,7 @@
     @if (authService.tienePermisos('ESP000001')) {
     <button
       [disabled]="appService.editando()"
-      class="btn btn-primary h-11 rounded-box"
+      class="btn max-sm:btn-sm btn-primary sm:h-11 rounded-box"
       (click)="crearEspacio()"
     >
       <app-web-icon estilos="h-6 w-6" nombreIcono="add-outline"></app-web-icon>
@@ -27,13 +27,9 @@
   </div>
 </div>
 
-<div
-  class="w-full h-full max-h-[calc(100dvh_-_16.75rem)] overflow-hidden flex flex-col"
->
-  <tabla-espacios
-    [ngClass]="'flex flex-col h-full overflow-y-auto'"
-  ></tabla-espacios>
-</div>
+<tabla-espacios
+  [ngClass]="'flex flex-col max-h-[calc(100%)] overflow-y-auto'"
+></tabla-espacios>
 
 <ng-template #alertaEspacios></ng-template>
 
