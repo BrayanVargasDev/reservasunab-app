@@ -19,11 +19,8 @@
     </div>
 
     <!-- Contenido dinámico -->
-    <div class="overflow-x-auto h-full p-4 md:p-6">
-      <ng-container
-        [ngClass]="'overflow-y-auto'"
-        #contenidoContainer
-      ></ng-container>
+    <div class="overflow-x-auto overflow-y-auto h-full p-4 md:p-6">
+      <ng-container #contenidoContainer></ng-container>
     </div>
 
     <!-- Footer -->
