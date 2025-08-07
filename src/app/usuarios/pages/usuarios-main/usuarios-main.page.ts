@@ -118,6 +118,11 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
       'celdaRol',
     );
 
+  public celdaTipo =
+    viewChild.required<TemplateRef<{ $implicit: CellContext<any, any> }>>(
+      'celdaTipo',
+    );
+
   public columnas = signal<ColumnDef<Usuario>[]>([
     {
       id: 'documento',
@@ -185,6 +190,16 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
       cell: () => this.chipWeb(),
       meta: {
         className: 'estado-column',
+        priority: 1,
+      },
+    },
+    {
+      id: 'tiposUsuario',
+      header: 'Tipo de Usuario',
+      accessorKey: 'tipoUsuario',
+      cell: () => this.celdaTipo(),
+      meta: {
+        className: 'tipos-column',
         priority: 2,
       },
     },

@@ -15,13 +15,16 @@ import { ValidationCacheService } from '@auth/services/validation-cache.service'
 import { AlertasService } from '@shared/services/alertas.service';
 import { acceptTerms, checkProfileCompleted } from '@auth/actions';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { ModalInfoTerminosComponent } from '@auth/components/modal-info-terminos/modal-info-terminos.component';
+import { TerminosCondicionesComponent } from '@auth/components/terminos-condiciones/terminos-condiciones.component';
+import { TratamientoDatosComponent } from '@auth/components/tratamiento-datos/tratamiento-datos.component';
 
 @Component({
   selector: 'app-terms-conditions',
   templateUrl: './terms-conditions.page.html',
   styleUrl: './terms-conditions.page.scss',
   standalone: true,
-  imports: [CommonModule, WebIconComponent],
+  imports: [CommonModule, WebIconComponent, ModalInfoTerminosComponent],
 })
 export class TermsConditionsPage {
   private router = inject(Router);
@@ -33,6 +36,8 @@ export class TermsConditionsPage {
   public alertaTerminos = viewChild.required('alertaTerminos', {
     read: ViewContainerRef,
   });
+
+  public modalInfoTerminos = viewChild.required(ModalInfoTerminosComponent);
 
   isLoading = signal(false);
   privacyPolicyAccepted = signal(false);
@@ -105,10 +110,10 @@ export class TermsConditionsPage {
   }
 
   openPrivacyPolicy() {
-    window.open('/assets/documents/politica-tratamiento-datos.txt', '_blank');
+    this.modalInfoTerminos().abrir(TratamientoDatosComponent, 'Política de Tratamiento de Datos Personales');
   }
 
   openTermsAndConditions() {
-    window.open('/assets/documents/terminos-condiciones-uso.txt', '_blank');
+    this.modalInfoTerminos().abrir(TerminosCondicionesComponent, 'Términos y Condiciones de Uso');
   }
 }

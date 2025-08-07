@@ -1,0 +1,38 @@
+<dialog #modal class="modal p-0 z-50" (click)="onDialogClick($event)">
+  <div
+    class="modal-box p-0 max-w-[95dvw] md:max-w-4xl w-full max-h-[95dvh] md:max-h-[90dvh] relative"
+  >
+    <!-- Header -->
+    <div
+      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-4 md:px-6 py-4 flex justify-between items-center"
+    >
+      <h3 class="text-lg font-bold">{{ titulo() }}</h3>
+      <button
+        type="button"
+        (click)="cerrar()"
+        class="btn btn-sm btn-circle btn-ghost hover:bg-base-200"
+        aria-label="Cerrar modal"
+      >
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5">
+        </app-web-icon>
+      </button>
+    </div>
+
+    <!-- Contenido dinámico -->
+    <div class="overflow-x-auto h-full p-4 md:p-6">
+      <ng-container
+        [ngClass]="'overflow-y-auto'"
+        #contenidoContainer
+      ></ng-container>
+    </div>
+
+    <!-- Footer -->
+    <div
+      class="sticky bottom-0 bg-base-100 border-t border-base-300 px-4 md:px-6 py-4 flex justify-end"
+    >
+      <button type="button" (click)="cerrar()" class="btn max-sm:btn-sm sm:h-11 btn-primary">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</dialog>

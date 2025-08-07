@@ -2,7 +2,7 @@
   <div
     [attr.data-tip]="context.getValue() === 'Activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-        'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
+        'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle tooltip-right': true,
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
@@ -14,6 +14,22 @@
   >
     {{ context.getValue() }}
   </div>
+</ng-template>
+
+<ng-template #celdaTipo let-context>
+  @for (tipo of context.getValue(); track $index) {
+  <div
+    class="max-sm:text-xs m-0.5 md:text-sm font-semibold badge min-w-20 transition-all align-middle"
+    [ngClass]="{
+    'badge-secondary': tipo === 'administrativo',
+    'badge-warning': tipo === 'estudiante',
+    'badge-accent': tipo === 'egresado',
+    'badge-info': tipo === 'externo',
+  }"
+  >
+    {{ tipo | upperFirst}}
+  </div>
+  }
 </ng-template>
 
 <ng-template #celdaNombre let-context>
@@ -76,14 +92,15 @@
   <div
     class="flex items-center max-sm:gap-1 gap-2 justify-center mb-1 sm:justify-start"
   >
-    <h2 class="md:mb-0 font-bold text-2xl sm:text-3xl lg:text-4xl">
-      Usuarios
-    </h2>
+    <h2 class="md:mb-0 font-bold text-2xl sm:text-3xl lg:text-4xl">Usuarios</h2>
     @if (usuariosService.filtroTexto()) {
     <div
       class="badge badge-secondary h-6 badge-sm my-auto max-sm:text-xs text-base"
     >
-      Filtrando: <span class="truncate text-ellipsis max-sm:max-w-28">"{{ usuariosService.filtroTexto() }}"</span>
+      Filtrando:
+      <span class="truncate text-ellipsis max-sm:max-w-28"
+        >"{{ usuariosService.filtroTexto() }}"</span
+      >
       <button
         class="btn h-5 w-5 btn-circle btn-secondary ml-1"
         (click)="limpiarFiltro()"
