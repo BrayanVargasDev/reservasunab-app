@@ -2,7 +2,7 @@
   <div
     [attr.data-tip]="context.getValue() === 'activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-        'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+        'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
         'badge-success': context.getValue() === 'activo',
         'badge-error': context.getValue() === 'inactivo',
     }"

@@ -1,11 +1,11 @@
 <ng-template #estadoCell let-context>
   @if(context.row.original.id === -1) {
-  <span class="badge badge-outline badge-info">Nuevo</span>
+  <span class="badge font-semibold badge-info">Nuevo</span>
   } @else {
   <div
     [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-      'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
       'badge-success': context.getValue() === null,
       'badge-error': context.getValue() !== null,
       'opacity-50 pointer-events-none badge-ghost': appService.editando()

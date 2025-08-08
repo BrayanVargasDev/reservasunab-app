@@ -91,20 +91,23 @@
       <span class="max-sm:text-base text-lg font-semibold">Valor total:</span>
     </div>
     <div class="flex gap-1 items-center">
-      <span class="text-sm md:text-base line-through text-base-content/70 italic mr-2"
+      <span
+        class="text-sm md:text-base line-through text-base-content/70 italic mr-2"
         >${{ resumen()?.valor?.toLocaleString('es-CO') }}</span
       >
       <span class="max-sm:text-xl text-2xl font-bold text-success">
         ${{ resumen()?.valor_descuento?.toLocaleString('es-CO') }}
       </span>
 
-      <ng-container *ngIf="resumen()?.valor_descuento && resumen()?.valor">
+      @if (resumen()?.valor_descuento) {
+      <ng-container>
         <span
-          class="text-xs badge badge-secondary badge-outline font-bold rounded px-2 py-0.5"
+          class="text-xs badge badge-secondary font-bold rounded px-2 py-0.5"
         >
           -{{ resumen()?.porcentaje_descuento }}%
         </span>
       </ng-container>
+      }
     </div>
   </div>
 </div>

@@ -2,7 +2,7 @@
   <div
     [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-      'badge badge-outline min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
       'badge-success': context.getValue() === null,
       'badge-error': context.getValue() !== null,
       'opacity-50 pointer-events-none badge-ghost': appService.editando()
@@ -27,8 +27,8 @@
   class="table w-full rounded-md table-sm sm:table-md"
 >
   <thead class="sticky top-0 z-20 bg-base-100">
-    @for (headerGroup of tablaGrupos().getHeaderGroups(); track
-    headerGroup.id) {
+    @for (headerGroup of tablaGrupos().getHeaderGroups(); track headerGroup.id)
+    {
     <tr>
       @if (tablaGrupo.hiddenColumnIds().size !== 0) {
       <th
@@ -114,7 +114,7 @@
       } @for (cell of row.getVisibleCells(); track cell.id) {
       <td class="p-2">
         @if (esColumnaEditable(cell.column.id) &&
-          configService.filaGrupoEditando()[row.original.id]) { @switch
+        configService.filaGrupoEditando()[row.original.id]) { @switch
         (cell.column.id) { @case ('nombre') {
         <input
           [formControl]="nombre"

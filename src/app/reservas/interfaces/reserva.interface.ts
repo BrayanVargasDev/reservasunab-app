@@ -1,9 +1,12 @@
+import { Usuario } from '@usuarios/intefaces';
+import { UsuarioReserva } from '@shared/interfaces';
 export interface Reserva {
   id: number;
   id_usuario: number;
   id_espacio: number;
   fecha: Date;
   id_configuracion: number;
+  usuario_reserva: UsuarioReserva;
   estado: string;
   hora_inicio: Date;
   hora_fin: Date;

@@ -7,6 +7,8 @@ export * from './grupo.interface';
 export * from './menu.interface';
 export * from './paginatd-response.interface';
 export * from './pantalla.interface';
+export * from './persona.interface';
 export * from './regiment-tributario.interface';
 export * from './sede.interface';
 export * from './tipo-documento.interface';
+export * from './usuario-reserva.interface';

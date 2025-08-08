@@ -115,7 +115,6 @@ export class ModalDreservasComponent {
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
 
-    // Si es reserva pasada, no se puede cancelar
     if (this.esReservaPasada()) {
       return false;
     }
@@ -241,7 +240,8 @@ export class ModalDreservasComponent {
 
       const tipoUsuarioConfig = tipo_usuario_config.find(
         config =>
-          config.tipo_usuario[0] === this.authService.usuario()?.tipo_usuario[0],
+          config.tipo_usuario[0] ===
+          this.authService.usuario()?.tipo_usuario[0],
       );
 
       const minutosTotales = tipoUsuarioConfig
