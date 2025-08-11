@@ -1,7 +1,11 @@
 <div class="flex w-full items-center justify-around">
   @for (accion of acciones(); track trackByIcono($index, accion)) {
   <button
-    [ngClass]="`btn btn-sm mr-1 btn-${accion.color} h-8 w-8 btn-circle btn-soft ${accion.tooltip ? 'tooltip tooltip-right lg:tooltip-left' : ''}`"
+    [class]="`btn btn-sm mr-1 btn-${accion.color} h-8 w-8 btn-circle btn-soft ${accion.tooltip ? 'tooltip' : ''}`"
+    [ngClass]="{
+      'tooltip-left': visibles(),
+      'tooltip-right': !visibles()
+    }"
     [disabled]="accion.disabled"
     [attr.data-tip]="accion.tooltip"
     (click)="accion.eventoClick($event)"

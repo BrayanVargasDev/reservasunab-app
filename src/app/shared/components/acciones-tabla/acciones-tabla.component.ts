@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class AccionesTablaComponent {
   acciones = input.required<BotonAcciones[]>();
+  visibles = input<boolean>();
 
   trackByIcono = (index: number, accion: BotonAcciones) => accion.icono;
 }
