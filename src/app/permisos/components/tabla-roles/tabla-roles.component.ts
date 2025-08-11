@@ -169,6 +169,7 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
         if (id === -1) {
           return flexRenderComponent(AccionesTablaComponent, {
             inputs: {
+              visibles: context.column.getIsVisible(),
               acciones: [
                 {
                   tooltip: 'Cancelar',
@@ -226,6 +227,7 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
+            visibles: context.column.getIsVisible(),
             acciones,
           },
         });
