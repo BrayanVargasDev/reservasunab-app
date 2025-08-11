@@ -1,54 +1,20 @@
-export interface PagoInfo {
-  pago: PagoDatum;
-  transaccion: TransaccionPago;
-  reserva: ReservaPago;
-}
-
-export interface PagoDatum {
+import { Reserva } from '@reservas/interfaces';
+export interface Pago {
   codigo: string;
+  ticket_id: number;
+  id_reserva: number;
   valor: string;
   estado: string;
-  ticket_id: string;
+  url_ecollect: string;
   creado_en: string;
   actualizado_en: string;
+  eliminado_en: null;
+  reserva: Reserva;
 }
 
-export interface ReservaPago {
-  id: number;
-  hora_inicio: string;
-  hora_fin: string;
-  codigo: string;
-  fecha: string;
-  usuario: UsuarioPago;
-  espacio: EspacioPago;
-}
-
-export interface EspacioPago {
-  id: number;
-  nombre: string;
-}
-
-export interface UsuarioPago {
-  id: null;
-  tipo_docuemnto: string;
-  documento: string;
-  nombre_completo: string;
-  email: string;
-  celular: string;
-}
-
-export interface TransaccionPago {
-  entidad: string;
-  moneda: string;
-  fecha_banco: string;
-  codigo_traza: string;
-  tipo: string;
-  cuotas: string;
-  digitos: string;
-  titular: string;
-  doc_titular: string;
-}
-
-export interface GetPagoInfoParams {
-  codigo: string;
+// Interface para los parámetros de consulta de pagos
+export interface GetPagosParams {
+  pageIndex: number;
+  pageSize: number;
+  search?: string;
 }

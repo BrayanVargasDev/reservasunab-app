@@ -2,7 +2,7 @@
   <div class="navbar m-2 mb-0 md:mb-2 shadow-md bg-secondary rounded-box px-4">
     <div class="navbar-start">
       <button
-        class="btn btn-secondary font-bold w-10 h-10 px-1 text-primary md:hidden"
+        class="btn btn-secondary font-bold w-10 h-10 px-1 text-white md:hidden"
         (click)="toggleMobileDrawer()"
         title="Abrir menú"
       >
@@ -17,7 +17,7 @@
       >
         <img
           src="assets/icon/logo-universidad-unab.png"
-          class="inline-block w-32 filter"
+          class="inline-block w-32 brightness-0 invert"
           alt="Logo"
         />
       </a>
@@ -25,7 +25,7 @@
 
     <div class="navbar-end gap-2">
       <button
-        class="btn btn-secondary font-bold w-10 h-10 btn-circle px-1 text-primary md:hidden ml-1"
+        class="btn btn-secondary font-bold w-10 h-10 btn-circle px-1 text-white md:hidden ml-1"
         (click)="recargarAplicacion()"
         [disabled]="isRefreshing()"
         title="Recargar aplicación"

@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './pago-info-item.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'bg-base-100 p-6 md:p-4 rounded-xl shadow-lg w-full',
+    class: 'bg-base-100 p-3 md:p-4 rounded-xl shadow-lg w-full',
   },
 })
 export class PagoInfoItemComponent {

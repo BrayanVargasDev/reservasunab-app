@@ -1,147 +1,116 @@
-<ion-content
-  [fullscreen]="true"
-  class="ion-padding">
-  <div class="pagos-container">
-    <ion-grid>
-      <ion-row>
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="3">
-          <ion-card class="summary-card">
-            <ion-card-content>
-              <div
-                class="summary-icon"
-                style="
-                  background-color: rgba(var(--ion-color-success-rgb), 0.1);
-                ">
-                <ion-icon
-                  name="checkmark-circle"
-                  color="success"></ion-icon>
-              </div>
-              <div class="summary-data">
-                <h5>Pagos Completados</h5>
-                <h2>{{ formatMonto(150000) }}</h2>
-                <p>1 transacción</p>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="3">
-          <ion-card class="summary-card">
-            <ion-card-content>
-              <div
-                class="summary-icon"
-                style="
-                  background-color: rgba(var(--ion-color-warning-rgb), 0.1);
-                ">
-                <ion-icon
-                  name="time"
-                  color="warning"></ion-icon>
-              </div>
-              <div class="summary-data">
-                <h5>Pagos Pendientes</h5>
-                <h2>{{ formatMonto(460000) }}</h2>
-                <p>3 transacciones</p>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="3">
-          <ion-card class="summary-card">
-            <ion-card-content>
-              <div
-                class="summary-icon"
-                style="
-                  background-color: rgba(var(--ion-color-danger-rgb), 0.1);
-                ">
-                <ion-icon
-                  name="close-circle"
-                  color="danger"></ion-icon>
-              </div>
-              <div class="summary-data">
-                <h5>Pagos Rechazados</h5>
-                <h2>{{ formatMonto(220000) }}</h2>
-                <p>1 transacción</p>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="3">
-          <ion-card class="summary-card">
-            <ion-card-content>
-              <div
-                class="summary-icon"
-                style="
-                  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
-                ">
-                <ion-icon
-                  name="wallet"
-                  color="primary"></ion-icon>
-              </div>
-              <div class="summary-data">
-                <h5>Total</h5>
-                <h2>{{ formatMonto(830000) }}</h2>
-                <p>5 transacciones</p>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-
-    <ion-card class="pagos-list-card">
-      <ion-card-header>
-        <ion-card-title>Registro de Pagos</ion-card-title>
-      </ion-card-header>
-      <ion-card-content class="ion-no-padding">
-        <ion-list lines="full">
-          @for (pago of pagos; track pago.id) {
-          <ion-item>
-            <ion-label>
-              <h2>{{ pago.concepto }}</h2>
-              <p>Fecha: {{ pago.fecha }} | Método: {{ pago.metodoPago }}</p>
-            </ion-label>
-            <ion-badge
-              slot="end"
-              [color]="getColorEstado(pago.estado)"
-              >{{ pago.estado }}</ion-badge
-            >
-            <div
-              slot="end"
-              class="monto-acciones">
-              <strong>{{ formatMonto(pago.monto) }}</strong>
-              @if (pago.estado === 'Pendiente') {
-              <ion-button
-                fill="clear"
-                size="small"
-                (click)="procesarPago(pago.id)">
-                <ion-icon name="arrow-forward-circle-outline"></ion-icon>
-              </ion-button>
-              }
-            </div>
-          </ion-item>
-          } @empty {
-          <ion-item>
-            <ion-label class="ion-text-center"
-              >No hay pagos registrados</ion-label
-            >
-          </ion-item>
-          }
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+<div
+  class="flex flex-col md:flex-row md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-30 bg-base-300 py-1"
+>
+  <div class="flex items-center justify-center sm:justify-start">
+    <h2 class="font-bold text-4xl max-sm:text-2xl mb-1 md:mb-0">
+      Gestión de Pagos
+    </h2>
   </div>
-</ion-content>
+  <div class="flex max-sm:px-1 flex-col md:flex-row max-md:gap-1 gap-2">
+    <input
+      type="text"
+      [disabled]="appService.editando()"
+      placeholder="Buscar por código, usuario, ticket o fecha"
+      class="input input-bordered max-sm:input-sm input-primary w-full sm:h-11 pr-10 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+      [value]="pagosService.filtroTexto()"
+      (input)="aplicarFiltro($any($event.target).value)"
+    />
+  </div>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+@if (pagosService.pagosQuery.data() && pagosService.pagosQuery.data()!.length >
+0) {
+<div
+  class="grid px-1 grid-cols-2 lg:grid-cols-4 max-md:gap-1 gap-4 max-md:mb-2 mb-6"
+>
+  <!-- Pagos Completados -->
+  <div class="stats shadow bg-base-100">
+    <div class="stat max-sm:gap-x-1 max-md:gap-x-2">
+      <div class="stat-figure text-success">
+        <app-web-icon
+          nombreIcono="checkmark-circle-outline"
+          estilos="h-8 w-8"
+        ></app-web-icon>
+      </div>
+      <div class="stat-title font-semibold max-sm:text-xs text-sm">
+        Completados
+      </div>
+      <div class="stat-value text-success">
+        {{ obtenerEstadisticas().completados.cantidad }}
+      </div>
+      <div class="stat-desc font-semibold max-sm:text-xs text-sm">
+        {{ formatearMonto(obtenerEstadisticas().completados.total) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagos Pendientes -->
+  <div class="stats shadow bg-base-100">
+    <div class="stat max-sm:gap-x-1 max-md:gap-x-2">
+      <div class="stat-figure text-warning">
+        <app-web-icon
+          nombreIcono="time-outline"
+          estilos="h-8 w-8"
+        ></app-web-icon>
+      </div>
+      <div class="stat-title font-semibold max-sm:text-xs text-sm">
+        Pendientes
+      </div>
+      <div class="stat-value text-warning">
+        {{ obtenerEstadisticas().pendientes.cantidad }}
+      </div>
+      <div class="stat-desc font-semibold max-sm:text-xs text-sm">
+        {{ formatearMonto(obtenerEstadisticas().pendientes.total) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagos Rechazados -->
+  <div class="stats shadow bg-base-100">
+    <div class="stat max-sm:gap-x-1 max-md:gap-x-2">
+      <div class="stat-figure text-error">
+        <app-web-icon
+          nombreIcono="close-circle-outline"
+          estilos="h-8 w-8"
+        ></app-web-icon>
+      </div>
+      <div class="stat-title font-semibold max-sm:text-xs text-sm">
+        Rechazados
+      </div>
+      <div class="stat-value text-error">
+        {{ obtenerEstadisticas().rechazados.cantidad }}
+      </div>
+      <div class="stat-desc font-semibold max-sm:text-xs text-sm">
+        {{ formatearMonto(obtenerEstadisticas().rechazados.total) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div class="stats shadow bg-base-100">
+    <div class="stat max-sm:gap-x-1 max-md:gap-x-2">
+      <div class="stat-figure text-primary">
+        <app-web-icon
+          nombreIcono="wallet-outline"
+          estilos="h-8 w-8"
+        ></app-web-icon>
+      </div>
+      <div class="stat-title font-semibold max-sm:text-xs text-sm">Total</div>
+      <div class="stat-value text-primary">
+        {{ obtenerEstadisticas().total.cantidad }}
+      </div>
+      <div class="stat-desc font-semibold max-sm:text-xs text-sm">
+        {{ formatearMonto(obtenerEstadisticas().total.total) }}
+      </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Tabla de pagos -->
+<div class="bg-base-100 rounded-box p-1 md:p-4">
+  <tabla-pagos></tabla-pagos>
+</div>
+
+<div #alertaPagos></div>

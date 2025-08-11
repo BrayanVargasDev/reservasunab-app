@@ -1,115 +1,107 @@
-import { Component, OnInit } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
-import { addIcons } from 'ionicons';
 import {
-  arrowForwardCircleOutline,
-  checkmarkCircle,
-  closeCircle,
-  time,
-  wallet,
-} from 'ionicons/icons';
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  ViewContainerRef,
+  viewChild,
+  OnDestroy,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
-interface Pago {
-  id: number;
-  concepto: string;
-  monto: number;
-  fecha: string;
-  estado: string;
-  metodoPago: string;
-}
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { TablaPagosComponent } from '@pagos/components/tabla-pagos/tabla-pagos.component';
+import { PagosService } from '@pagos/services/pagos.service';
+import { AlertasService } from '@shared/services/alertas.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Component({
   selector: 'app-pagos-main',
   templateUrl: './pagos-main.page.html',
   styleUrls: ['./pagos-main.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    WebIconComponent,
+    TablaPagosComponent,
+  ],
+  host: {
+    class: 'flex flex-col w-full h-full sm:pl-3 relative overflow-y-auto',
+  },
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PagosMainPage implements OnInit {
-  pagos: Pago[] = [];
+export class PagosMainPage implements OnInit, OnDestroy {
+  private alertaService = inject(AlertasService);
+  public authService = inject(AuthService);
+  public appService = inject(AppService);
+  public pagosService = inject(PagosService);
 
-  constructor() {
-    addIcons({
-      wallet,
-      closeCircle,
-      time,
-      arrowForwardCircleOutline,
-      checkmarkCircle,
-    });
-  }
+  public alertaPago = viewChild.required('alertaPagos', {
+    read: ViewContainerRef,
+  });
+
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
 
   ngOnInit() {
-    this.cargarPagos();
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(texto => {
+        this.pagosService.setFiltroTexto(texto.trim());
+      });
   }
 
-  cargarPagos() {
-    // En una implementación real, estos datos vendrían del backend
-    this.pagos = [
-      {
-        id: 1,
-        concepto: 'Factura #12345',
-        monto: 150000,
-        fecha: '10/05/2025',
-        estado: 'Pagado',
-        metodoPago: 'Tarjeta de crédito',
-      },
-      {
-        id: 2,
-        concepto: 'Factura #12346',
-        monto: 75000,
-        fecha: '12/05/2025',
-        estado: 'Pendiente',
-        metodoPago: 'Transferencia',
-      },
-      {
-        id: 3,
-        concepto: 'Factura #12347',
-        monto: 300000,
-        fecha: '15/05/2025',
-        estado: 'Pendiente',
-        metodoPago: 'Efectivo',
-      },
-      {
-        id: 4,
-        concepto: 'Factura #12348',
-        monto: 220000,
-        fecha: '18/05/2025',
-        estado: 'Rechazado',
-        metodoPago: 'Tarjeta de crédito',
-      },
-      {
-        id: 5,
-        concepto: 'Factura #12349',
-        monto: 85000,
-        fecha: '20/05/2025',
-        estado: 'Pendiente',
-        metodoPago: 'Transferencia',
-      },
-    ];
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  formatMonto(monto: number): string {
-    return monto.toLocaleString('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-    });
+  aplicarFiltro(texto: string) {
+    this.searchSubject.next(texto);
   }
 
-  getColorEstado(estado: string): string {
-    switch (estado) {
-      case 'Pagado':
-        return 'success';
-      case 'Pendiente':
-        return 'warning';
-      case 'Rechazado':
-        return 'danger';
-      default:
-        return 'medium';
-    }
+  limpiarFiltro() {
+    this.pagosService.limpiarFiltro();
   }
 
-  procesarPago(id: number) {
-    // Implementación real: llamar al servicio que procesa el pago
+  formatearMonto(monto: number): string {
+    return this.pagosService.formatearMonto(monto);
+  }
+
+  obtenerEstadisticas() {
+    const pagos = this.pagosService.pagosQuery.data() || [];
+
+    const completados = pagos.filter(
+      p => this.pagosService.obtenerColorEstado(p.estado) === 'success',
+    );
+    const pendientes = pagos.filter(
+      p => this.pagosService.obtenerColorEstado(p.estado) === 'warning',
+    );
+    const rechazados = pagos.filter(
+      p => this.pagosService.obtenerColorEstado(p.estado) === 'error',
+    );
+
+    return {
+      completados: {
+        cantidad: completados.length,
+        total: completados.reduce((sum, p) => sum + parseFloat(p.valor), 0),
+      },
+      pendientes: {
+        cantidad: pendientes.length,
+        total: pendientes.reduce((sum, p) => sum + parseFloat(p.valor), 0),
+      },
+      rechazados: {
+        cantidad: rechazados.length,
+        total: rechazados.reduce((sum, p) => sum + parseFloat(p.valor), 0),
+      },
+      total: {
+        cantidad: pagos.length,
+        total: pagos.reduce((sum, p) => sum + parseFloat(p.valor), 0),
+      },
+    };
   }
 }

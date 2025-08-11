@@ -1,0 +1,60 @@
+/* Estilos específicos para la tabla de pagos */
+.table {
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.table td {
+  font-size: 0.875rem;
+}
+
+/* Estilos para el expansor de filas */
+.row-expanded {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Estilos para los badges de estado */
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Estilos para la información expandida */
+.expanded-info {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+}
+
+/* Hover effects */
+.table tbody tr:hover {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Estados de los pagos */
+.estado-pagado {
+  color: #10b981;
+}
+
+.estado-pendiente {
+  color: #f59e0b;
+}
+
+.estado-rechazado {
+  color: #ef4444;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.75rem;
+  }
+
+  .expanded-info {
+    font-size: 0.75rem;
+  }
+}

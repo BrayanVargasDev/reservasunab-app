@@ -1,0 +1,201 @@
+<ng-template #estadoCell let-context>
+  <div
+    [ngClass]="{
+        'badge min-w-20 !max-sm:text-xs !text-sm !font-semibold align-middle': true,
+        'badge-success': pagosService.obtenerColorEstado(context.getValue()) === 'success',
+        'badge-warning': pagosService.obtenerColorEstado(context.getValue()) === 'warning',
+        'badge-error': pagosService.obtenerColorEstado(context.getValue()) === 'error',
+        'badge-primary': pagosService.obtenerColorEstado(context.getValue()) === 'primary',
+    }"
+  >
+    {{
+      pagosService.obtenerMensajeEstadoBadge(context.getValue()) | upperFirst
+    }}
+  </div>
+</ng-template>
+
+<ng-template #montoCell let-context>
+  <span class="font-bold max-sm:text-sm text-base text-success">
+    {{ pagosService.formatearMonto(context.getValue()) }}
+  </span>
+</ng-template>
+
+<ng-template #fechaCell let-context>
+  <span class="max-sm:text-sm text-base">
+    {{ pagosService.formatearFechaCorta(context.getValue()) }}
+  </span>
+</ng-template>
+
+<div class="overflow-x-auto">
+  <table
+    responsiveTable
+    #tabla="responsiveTable"
+    [table]="tablaPagos"
+    class="table w-full rounded-box table-sm sm:table-md"
+  >
+    <thead class="sticky top-0 bg-base-100 rounded-t-box">
+      @for (headerGroup of tablaPagos.getHeaderGroups(); track headerGroup.id) {
+      <tr>
+        @for (header of headerGroup.headers; track header.id) {
+        <th
+          class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100"
+          [colSpan]="header.colSpan"
+        >
+          @if (!header.isPlaceholder) {
+          <ng-container
+            *flexRender="
+              header.column.columnDef.header;
+              props: header.getContext();
+              let header
+            "
+          >
+            <span
+              class="text-left max-sm:text-sm text-base text-base-content"
+              [innerHTML]="header"
+            ></span>
+          </ng-container>
+          }
+        </th>
+        }
+      </tr>
+      }
+    </thead>
+    <tbody>
+      @if (pagosQuery.isLoading()) {
+      <tr>
+        <td
+          [attr.colspan]="tablaPagos.getAllColumns().length"
+          class="text-center py-6"
+        >
+          <div class="flex flex-col items-center gap-2">
+            <span
+              class="loading loading-spinner loading-md text-primary"
+            ></span>
+            <span>Cargando pagos...</span>
+          </div>
+        </td>
+      </tr>
+      } @else if (pagosQuery.isError()) {
+      <tr>
+        <td
+          [attr.colspan]="tablaPagos.getAllColumns().length"
+          class="text-center py-6"
+        >
+          <div class="alert alert-error justify-center">
+            <span>Error al cargar los pagos. Intenta nuevamente.</span>
+          </div>
+        </td>
+      </tr>
+      } @else if (pagosQuery.data() && pagosQuery.data()!.length === 0) {
+      <tr>
+        <td
+          [attr.colspan]="tablaPagos.getAllColumns().length"
+          class="text-center text-gray-500"
+        >
+          <span>No hay pagos aún...</span>
+        </td>
+      </tr>
+      } @else { @for (row of tablaPagos.getRowModel().rows; track row.id) {
+      <tr class="bg-base-100">
+        @for (cell of row.getVisibleCells(); track cell.id) {
+        <td class="py-1">
+          <ng-container
+            *flexRender="
+              cell.column.columnDef.cell;
+              props: cell.getContext();
+              let cell
+            "
+          >
+            <div [innerHTML]="cell"></div>
+          </ng-container>
+        </td>
+        }
+      </tr>
+      @if (row.getIsExpanded()) {
+      <tr class="bg-base-300 border-none">
+        <td [attr.colspan]="row.getVisibleCells().length + 1">
+          <div class="bg-base-100 rounded-lg p-2 md:p-4 shadow-md w-full">
+            <h4 class="text-lg font-semibold mb-1 md:mb-4 text-center">
+              Información del pago
+            </h4>
+            <div class="grid w-full grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <span class="max-sm:text-sm text-base">
+                <strong>Código:</strong>
+                {{ row.original.codigo.toUpperCase() }}
+              </span>
+              <span class="max-sm:text-sm text-base">
+                <strong>Creado en:</strong>
+                {{ pagosService.formatearFecha(row.original.creado_en) }}
+              </span>
+              <span class="max-sm:text-sm text-base">
+                <strong>Actualizado en:</strong>
+                {{ pagosService.formatearFecha(row.original.actualizado_en) }}
+              </span>
+              <span class="max-sm:text-sm text-base">
+                <strong>Ticket:</strong>
+                {{ row.original.ticket_id }}
+              </span>
+            </div>
+            @if (tabla.hiddenColumnIds().size !== 0) {
+            <div class="divider max-md:my-1 my-4"></div>
+            <div class="space-y-2">
+              <ul>
+                @for (col of tablaPagos.getAllLeafColumns(); track col.id) { @if
+                (tabla.hiddenColumnIds().has(col.id)) {
+                <li class="flex my-2 flex-row gap-2 items-center">
+                  <span class="font-bold max-sm:text-sm text-base text-base-content">
+                    {{ col.columnDef.header }}:
+                  </span>
+
+                  <ng-container
+                    *flexRender="
+                      tabla.getCell(col, row).column.columnDef.cell;
+                      props: tabla.getCell(col, row).getContext();
+                      let cell
+                    "
+                  >
+                    <div [innerHTML]="cell"></div>
+                  </ng-container>
+                </li>
+                } }
+              </ul>
+            </div>
+            }
+          </div>
+        </td>
+      </tr>
+      } } }
+    </tbody>
+  </table>
+</div>
+
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 rounded-b-box'
+  "
+  [estado]="pagosService.paginacion()"
+  [paginacion]="pagosService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="pagosQuery.isFetching()"
+  (prefetchFunction)="pagosService.prefetchPagos($event)"
+></app-paginador>
+
+<modal-pago-info
+  [abierto]="modalAbierto()"
+  [cargando]="cargandoInfo()"
+  [error]="errorInfo()"
+  [pagoInfo]="pagoInfo()"
+  (cerrar)="cerrarModal()"
+  (recargar)="recargarInfoPago()"
+></modal-pago-info>
+
+<div #alertaPago></div>
+
+<!-- Referencias ocultas para que el compilador reconozca componentes usados dinámicamente -->
+<ng-template>
+  <app-table-expansor [isExpanded]="false" />
+  <modal-pago-info [abierto]="false" />
+</ng-template>

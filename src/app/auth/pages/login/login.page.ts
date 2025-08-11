@@ -95,7 +95,6 @@ export class LoginPage {
 
     const { email, password } = this.loginForm.value;
 
-    console.log('🚀 Iniciando proceso de login...');
     this.authService.setLoading(true);
     this.disableForm();
 
