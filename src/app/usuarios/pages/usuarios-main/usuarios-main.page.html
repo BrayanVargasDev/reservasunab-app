@@ -27,7 +27,7 @@
     'badge-info': tipo === 'externo',
   }"
   >
-    {{ tipo | upperFirst}}
+    {{ tipo | upperFirst }}
   </div>
   }
 </ng-template>
@@ -151,128 +151,125 @@
   </button>
 </div>
 } @else {
-<div class="overflow-y-auto">
-  <table
-    responsiveTable
-    #responsiveWeb="responsiveTable"
-    [table]="table()"
-    class="table rounded-none table-sm sm:table-md rounded-t-box bg-base-100 w-full overflow-y-auto"
-  >
-    <thead class="sticky top-0 z-20 bg-base-300">
-      @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
-      <tr class="bg-base-300 z-20 rounded-t-box">
-        @if (responsiveWeb.hiddenColumnIds().size !== 0) {
-        <th
-          class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
-        ></th>
-        } @for (header of headerGroup.headers; track header.id) { @if
-        (!header.isPlaceholder) {
-        <th
-          class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
-          [class]="header.column.columnDef.meta?.className || ''"
-          [style.width]="header.getSize()"
-        >
-          <ng-container
-            *flexRender="
-              header.column.columnDef.header;
-              props: header.getContext();
-              let header
-            "
-          >
-            <div [innerHTML]="header"></div>
-          </ng-container>
-        </th>
-        } }
-      </tr>
-      }
-    </thead>
-    <tbody>
-      @if (!usuariosQuery.data()) {
-      <tr>
-        <td [attr.colspan]="columnas().length" class="text-center">
-          No se encontraron resultados.
-        </td>
-      </tr>
-      } @else { @for (row of table().getCoreRowModel().rows; track row.id) {
-      <tr
-        [ngClass]="{
-          'hover:bg-base-200': true,
-          'last:rounded-b-none': true,
-          'bg-base-200': isRowExpanded(+row.id)
-        }"
-        [class.expanded]="isRowExpanded(+row.id)"
+<table
+  responsiveTable
+  #responsiveWeb="responsiveTable"
+  [table]="table()"
+  class="table rounded-none table-sm sm:table-md rounded-t-box bg-base-100 w-full overflow-y-auto"
+>
+  <thead class="sticky top-0 z-20 bg-base-300">
+    @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
+    <tr class="bg-base-300 z-20 rounded-t-box">
+      @if (responsiveWeb.hiddenColumnIds().size !== 0) {
+      <th
+        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+      ></th>
+      } @for (header of headerGroup.headers; track header.id) { @if
+      (!header.isPlaceholder) {
+      <th
+        class="p-2 text-left first:rounded-tl-box last:rounded-tr-box bg-base-100 z-20"
+        [class]="header.column.columnDef.meta?.className || ''"
+        [style.width]="header.getSize()"
       >
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <div [innerHTML]="header"></div>
+        </ng-container>
+      </th>
+      } }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @if (!usuariosQuery.data()) {
+    <tr>
+      <td [attr.colspan]="columnas().length" class="text-center">
+        No se encontraron resultados.
+      </td>
+    </tr>
+    } @else { @for (row of table().getCoreRowModel().rows; track row.id) {
+    <tr
+      [ngClass]="{
+        'hover:bg-base-200': true,
+        'last:rounded-b-none': true,
+        'bg-base-200': isRowExpanded(+row.id)
+      }"
+      [class.expanded]="isRowExpanded(+row.id)"
+    >
+      @if (responsiveWeb.hiddenColumnIds().size !== 0) {
+      <td class="!pe-0">
+        <app-table-expansor
+          [isExpanded]="isRowExpanded(+row.id)"
+          (toggleExpand)="row.toggleExpanded()"
+        ></app-table-expansor>
+      </td>
+      } @for (cell of row.getVisibleCells(); track cell.id) {
+      <td>
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <span [innerHTML]="cell"></span>
+        </ng-container>
+      </td>
+      }
+    </tr>
+
+    @if (isRowExpanded(+row.id) && responsiveWeb.hiddenColumnIds().size !== 0) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
         @if (responsiveWeb.hiddenColumnIds().size !== 0) {
-        <td class="!pe-0">
-          <app-table-expansor
-            [isExpanded]="isRowExpanded(+row.id)"
-            (toggleExpand)="row.toggleExpanded()"
-          ></app-table-expansor>
-        </td>
-        } @for (cell of row.getVisibleCells(); track cell.id) {
-        <td>
-          <ng-container
-            *flexRender="
-              cell.column.columnDef.cell;
-              props: cell.getContext();
-              let cell
-            "
-          >
-            <span [innerHTML]="cell"></span>
-          </ng-container>
-        </td>
+        <ul class="bg-base-100 rounded-box px-4 py-1 shadow-sm">
+          @for (col of table.getAllLeafColumns(); track $index) { @if
+          (responsiveWeb.hiddenColumnIds().has(col.id)) {
+          <li class="flex my-2 flex-row gap-2 items-center">
+            <span class="font-bold text-base-content">
+              {{ col.columnDef.header }}:
+            </span>
+            <span>
+              <ng-container
+                *flexRender="
+                  responsiveWeb.getCell(col, row).column.columnDef.cell;
+                  props: responsiveWeb.getCell(col, row).getContext();
+                  let cell
+                "
+              >
+                <div [innerHTML]="cell"></div>
+              </ng-container>
+            </span>
+          </li>
+          } }
+        </ul>
         }
-      </tr>
+      </td>
+    </tr>
+    } } }
+  </tbody>
+</table>
 
-      @if (isRowExpanded(+row.id) && responsiveWeb.hiddenColumnIds().size !== 0)
-      {
-      <tr class="bg-base-300 border-none">
-        <td [attr.colspan]="row.getVisibleCells().length + 1">
-          @if (responsiveWeb.hiddenColumnIds().size !== 0) {
-          <ul class="bg-base-100 rounded-box px-4 py-1 shadow-sm">
-            @for (col of table.getAllLeafColumns(); track $index) { @if
-            (responsiveWeb.hiddenColumnIds().has(col.id)) {
-            <li class="flex my-2 flex-row gap-2 items-center">
-              <span class="font-bold text-base-content">
-                {{ col.columnDef.header }}:
-              </span>
-              <span>
-                <ng-container
-                  *flexRender="
-                    responsiveWeb.getCell(col, row).column.columnDef.cell;
-                    props: responsiveWeb.getCell(col, row).getContext();
-                    let cell
-                  "
-                >
-                  <div [innerHTML]="cell"></div>
-                </ng-container>
-              </span>
-            </li>
-            } }
-          </ul>
-          }
-        </td>
-      </tr>
-      } } }
-    </tbody>
-  </table>
-
-  <!-- Paginador -->
-  <app-paginador
-    [ngClass]="
-      'flex flex-col sm:flex-row items-center justify-between max-sm:gap-2 gap-4 max-sm:p-2 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
-    "
-    [estado]="usuariosService.paginacion()"
-    [paginacion]="usuariosService.datosPaginador() ?? null"
-    (cambioPaginacion)="onPageChange($event)"
-    [mostrarInfo]="true"
-    [mostrarSelectorTamano]="true"
-    [mostrarExtremos]="true"
-    [deshabilitado]="usuariosQuery.isFetching()"
-    (prefetchFunction)="usuariosService.prefetchUsuarios($event)"
-  >
-  </app-paginador>
-</div>
+<!-- Paginador -->
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between max-sm:gap-2 gap-4 max-sm:p-2 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+  "
+  [estado]="usuariosService.paginacion()"
+  [paginacion]="usuariosService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="usuariosQuery.isFetching()"
+  (prefetchFunction)="usuariosService.prefetchUsuarios($event)"
+>
+</app-paginador>
 
 <ng-template #alertaUsuarios></ng-template>
 
