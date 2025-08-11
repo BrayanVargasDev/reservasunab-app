@@ -2,7 +2,9 @@
   <div
     [attr.data-tip]="context.getValue() === 'Activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-        'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle tooltip-right': true,
+        'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
+        'tooltip-right': !context.column.getIsVisible(),
+        'tooltip-left': context.column.getIsVisible(),
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
     }"
@@ -38,7 +40,11 @@
 
     @if (authService.tienePermisos('USR000002')) {
     <button
-      class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm lg:tooltip p-0"
+      class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm tooltip p-0"
+      [ngClass]="{
+        'tooltip-right': !context.column.getIsVisible(),
+        'tooltip-left': context.column.getIsVisible(),
+      }"
       (click)="editarUsuario(context.row.original)"
       data-tip="Editar usuario"
     >
@@ -56,7 +62,11 @@
       <button
         role="button"
         tabindex="0"
-        class="btn btn-soft btn-secondary w-8 h-8 rounded-box btn-sm lg:tooltip lg:tooltip-left p-0"
+        class="btn btn-soft btn-secondary w-8 h-8 rounded-box btn-sm tooltip p-0"
+        [ngClass]="{
+          'tooltip-right': !context.column.getIsVisible(),
+          'tooltip-left': context.column.getIsVisible(),
+        }"
         data-tip="Cambiar rol"
       >
         <app-web-icon
