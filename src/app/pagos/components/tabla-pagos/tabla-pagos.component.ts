@@ -54,8 +54,8 @@ interface Util {
     FlexRenderDirective,
     ResponsiveTableDirective,
     UpperFirstPipe,
-  TableExpansorComponent,
-  ModalPagoInfoComponent,
+    TableExpansorComponent,
+    ModalPagoInfoComponent,
     PaginadorComponent,
   ],
 })
@@ -236,7 +236,7 @@ export class TablaPagosComponent implements OnInit {
   public verDetallesPago(pago: Pago) {
     // Abrir modal y cargar info
     this._modalAbierto.set(true);
-  this.cargarInfoPago(pago.codigo);
+    this.cargarInfoPago(pago.codigo);
   }
 
   onPageChange(estado: PaginationState): void {
@@ -253,9 +253,9 @@ export class TablaPagosComponent implements OnInit {
     try {
       this._cargandoInfo.set(true);
       this._errorInfo.set(null);
-  this._pagoInfo.set(null);
-  this._ultimoCodigo.set(codigo);
-  const { data } = await this.pagosService.obtenerInfoPago({ codigo });
+      this._pagoInfo.set(null);
+      this._ultimoCodigo.set(codigo);
+      const { data } = await this.pagosService.obtenerInfoPago({ codigo });
       if (!data) throw new Error('No se encontró información del pago');
       this._pagoInfo.set(data);
     } catch (e: any) {
