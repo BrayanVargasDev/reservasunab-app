@@ -119,7 +119,7 @@
               Información del pago
             </h4>
             <div class="grid w-full grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <span class="max-sm:text-sm text-base">
+              <span class="max-sm:text-sm text-base truncate text-ellipsis">
                 <strong>Código:</strong>
                 {{ row.original.codigo.toUpperCase() }}
               </span>
@@ -143,7 +143,9 @@
                 @for (col of tablaPagos.getAllLeafColumns(); track col.id) { @if
                 (tabla.hiddenColumnIds().has(col.id)) {
                 <li class="flex my-2 flex-row gap-2 items-center">
-                  <span class="font-bold max-sm:text-sm text-base text-base-content">
+                  <span
+                    class="font-bold max-sm:text-sm text-base text-base-content"
+                  >
                     {{ col.columnDef.header }}:
                   </span>
 

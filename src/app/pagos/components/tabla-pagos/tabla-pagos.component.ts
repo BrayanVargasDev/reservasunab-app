@@ -158,6 +158,7 @@ export class TablaPagosComponent implements OnInit {
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
+            visibles: context.column.getIsVisible(),
             acciones,
           },
         });
