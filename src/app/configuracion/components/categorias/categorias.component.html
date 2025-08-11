@@ -5,7 +5,9 @@
   <div
     [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
+      'tooltip-right': !context.column.getIsVisible(),
+      'tooltip-left': context.column.getIsVisible(),
       'badge-success': context.getValue() === null,
       'badge-error': context.getValue() !== null,
       'opacity-50 pointer-events-none badge-ghost': appService.editando()
@@ -146,7 +148,9 @@
           >
             <!-- Reservas Estudiante -->
             <div class="flex flex-col">
-              <label class="font-bold text-base-content max-sm:text-xs text-sm mb-2">
+              <label
+                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
+              >
                 Estudiante:
               </label>
               @if (row.original.id === -1 ||
@@ -166,7 +170,9 @@
             </div>
             <!-- Reservas Administrativo -->
             <div class="flex flex-col">
-              <label class="font-bold text-base-content max-sm:text-xs text-sm mb-2">
+              <label
+                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
+              >
                 Administrativo:
               </label>
               @if (row.original.id === -1 ||
@@ -187,7 +193,9 @@
 
             <!-- Reservas Externo -->
             <div class="flex flex-col">
-              <label class="font-bold text-base-content max-sm:text-xs text-sm mb-2">
+              <label
+                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
+              >
                 Externo:
               </label>
               @if (row.original.id === -1 ||
@@ -208,7 +216,9 @@
 
             <!-- Reservas Egresado -->
             <div class="flex flex-col">
-              <label class="font-bold text-base-content max-sm:text-xs text-sm mb-2">
+              <label
+                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
+              >
                 Egresado:
               </label>
               @if (row.original.id === -1 ||

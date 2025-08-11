@@ -1,12 +1,18 @@
 <ng-template #estadoCell let-context>
+  @if(context.row.original.id === -1) {
+  <span class="badge font-semibold badge-info">Nuevo</span>
+  } @else {
   <div
     [attr.data-tip]="context.getValue() === null ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+      'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
+      'tooltip-right': !context.column.getIsVisible(),
+      'tooltip-left': context.column.getIsVisible(),
       'badge-success': context.getValue() === null,
       'badge-error': context.getValue() !== null,
       'opacity-50 pointer-events-none badge-ghost': appService.editando()
     }"
+    [attr.disabled]="appService.guardando()"
     (click)="
       authService.tienePermisos('ESP000012')
         ? appService.editando()
@@ -17,6 +23,35 @@
   >
     {{ (context.getValue() === null ? 'activo' : 'inactivo') | upperFirst }}
   </div>
+  }
+</ng-template>
+
+<ng-template #nombreCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaGrupoEditando()[context.row.original.id]) {
+  <input
+    [formControl]="nombre"
+    placeholder="Inserte nombre del grupo"
+    pattern="[a-zA-Z0-9áéíóú ]*"
+    class="input input-sm h-9 placeholder:text-gray-400"
+    type="text"
+  />
+  } @else {
+  <span class="font-semibold text-sm md:text-base">{{
+    context.getValue() | upperFirst
+  }}</span>
+  }
+</ng-template>
+
+<ng-template #fechaCell let-context>
+  @if (context.row.original.id === -1 ||
+  configService.filaGrupoEditando()[context.row.original.id]) {
+  <span>{{ fechaActual() }}</span>
+  } @else {
+  <span>
+    {{ context.getValue() }}
+  </span>
+  }
 </ng-template>
 
 <!-- Tabla de grupos -->
@@ -30,11 +65,7 @@
     @for (headerGroup of tablaGrupos().getHeaderGroups(); track headerGroup.id)
     {
     <tr>
-      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
-      <th
-        class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
-      ></th>
-      } @for (header of headerGroup.headers; track header.id) {
+      @for (header of headerGroup.headers; track header.id) {
       <th
         class="p-2 text-left first:rounded-tl-md last:rounded-tr-md bg-base-100 z-20"
         [colSpan]="header.colSpan"
@@ -56,40 +87,7 @@
     }
   </thead>
   <tbody>
-    @if (modoCreacion()) {
-    <tr class="bg-base-100">
-      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
-      <td class="!pe-0">
-        <app-table-expansor
-          [disabled]="appService.editando()"
-          [isExpanded]="false"
-          (toggleExpand)="(null)"
-        ></app-table-expansor>
-      </td>
-      }
-      <td class="p-2">
-        <input
-          [formControl]="nombre"
-          placeholder="Inserte nombre del grupo"
-          pattern="[a-zA-Z0-9áéíóú ]*"
-          class="input input-sm text-sm h-9 placeholder:text-gray-400"
-          type="text"
-        />
-      </td>
-      <td class="p-2">
-        {{ fechaActual() }}
-      </td>
-      <td class="p-2">
-        <span class="text-sm"></span>
-      </td>
-      <td class="p-2">
-        <acciones-tabla
-          [acciones]="accionesNuevo()"
-          [ngClass]="'flex justify-between'"
-        ></acciones-tabla>
-      </td>
-    </tr>
-    } @if (!gruposQuery.length && !modoCreacion()) {
+    @if (!gruposQuery.length && !modoCreacion()) {
     <tr>
       <td
         [attr.colspan]="
@@ -103,15 +101,7 @@
     </tr>
     } @else { @for (row of tablaGrupos().getRowModel().rows; track row.id) {
     <tr class="bg-base-100">
-      @if (tablaGrupo.hiddenColumnIds().size !== 0) {
-      <td class="!pe-0">
-        <app-table-expansor
-          [disabled]="appService.editando()"
-          [isExpanded]="row.getIsExpanded()"
-          (toggleExpand)="row.toggleExpanded()"
-        ></app-table-expansor>
-      </td>
-      } @for (cell of row.getVisibleCells(); track cell.id) {
+      @for (cell of row.getVisibleCells(); track cell.id) {
       <td class="p-2">
         @if (esColumnaEditable(cell.column.id) &&
         configService.filaGrupoEditando()[row.original.id]) { @switch

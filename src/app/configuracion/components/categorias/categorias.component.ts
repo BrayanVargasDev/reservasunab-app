@@ -137,7 +137,7 @@ export class CategoriasComponent implements OnDestroy {
       id: 'nombre',
       accessorKey: 'nombre',
       header: 'Nombre',
-      size: 100,
+      size: 150,
       cell: this.nombreCell,
     },
     {
@@ -163,7 +163,7 @@ export class CategoriasComponent implements OnDestroy {
       id: 'estado',
       accessorKey: 'eliminado_en',
       header: 'Estado',
-      size: 200,
+      size: 400,
       cell: this.estadoCell,
     },
     {
@@ -177,6 +177,7 @@ export class CategoriasComponent implements OnDestroy {
         if (id === -1) {
           return flexRenderComponent(AccionesTablaComponent, {
             inputs: {
+              visibles: context.column.getIsVisible(),
               acciones: [
                 {
                   tooltip: 'Cancelar',

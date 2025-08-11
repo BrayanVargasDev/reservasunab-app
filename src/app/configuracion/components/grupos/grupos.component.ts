@@ -38,7 +38,6 @@ import { AccionesTablaComponent } from '@shared/components/acciones-tabla/accion
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
-import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { effect } from '@angular/core';
 import { UpperFirstPipe } from '@shared/pipes';
 
@@ -52,10 +51,8 @@ interface Util {
   imports: [
     CommonModule,
     ResponsiveTableDirective,
-    AccionesTablaComponent,
     FlexRenderDirective,
     ReactiveFormsModule,
-    TableExpansorComponent,
     PaginadorComponent,
     UpperFirstPipe,
   ],
@@ -82,6 +79,9 @@ export class GruposComponent implements OnInit, OnDestroy {
   public modoCreacion = computed(() => this.configService.modoCreacionGrupo());
 
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
+  public nombreCell = viewChild.required<TemplateRef<Util>>('nombreCell');
+  public fechaCell = viewChild.required<TemplateRef<Util>>('fechaCell');
+
   public accionesNuevo = computed(() => [
     {
       icono: 'remove-circle-outline',
@@ -99,40 +99,82 @@ export class GruposComponent implements OnInit, OnDestroy {
     },
   ]);
 
-  private columnasPorDefecto = signal<ColumnDef<Grupo>[]>([
+  private columnasPorDefecto = computed<ColumnDef<Grupo>[]>(() => [
+    {
+      id: 'expansor',
+      header: '',
+      size: 40,
+      cell: context =>
+        flexRenderComponent(TableExpansorComponent, {
+          inputs: {
+            isExpanded: context.row.getIsExpanded(),
+            disabled: this.appService.editando(),
+          },
+          outputs: {
+            toggleExpand: () => this.onToggleRow(context.row),
+          },
+        }),
+    },
     {
       id: 'nombre',
       accessorKey: 'nombre',
       header: 'Nombre',
-      cell: info =>
-        `<span class="font-semibold text-sm md:text-base">${this.upperFirstPipe.transform(
-          info.getValue() as unknown as string,
-        )}</span>`,
+      size: 150,
+      cell: this.nombreCell,
     },
     {
       accessorKey: 'creado_en',
       header: `Creado en`,
-      size: 200,
+      size: 150,
       accessorFn: row => {
         const date = moment(row.creado_en);
         return date.isValid()
           ? date.format('DD/MM/YYYY hh:mm a')
           : 'Fecha inválida';
       },
+      cell: this.fechaCell,
     },
     {
       id: 'estado',
       accessorKey: 'eliminado_en',
       header: 'Estado',
+      size: 400,
       cell: this.estadoCell,
     },
     {
       id: 'acciones',
       header: 'Acciones',
       cell: context => {
-        const id = context.row.original.id;
-        const enEdicion = this.configService.filaGrupoEditando()[id];
+        const grupo = context.row.original;
+        const id = grupo.id;
 
+        // Si es la fila de creación (ID = -1)
+        if (id === -1) {
+          return flexRenderComponent(AccionesTablaComponent, {
+            inputs: {
+              visibles: context.column.getIsVisible(),
+              acciones: [
+                {
+                  tooltip: 'Cancelar',
+                  icono: 'remove-circle-outline',
+                  color: 'error',
+                  disabled: this.appService.guardando(),
+                  eventoClick: (event: Event) => this.cancelarCreacion(),
+                },
+                {
+                  tooltip: 'Guardar',
+                  icono: 'save-outline',
+                  color: 'success',
+                  disabled: this.appService.guardando(),
+                  eventoClick: (event: Event) => this.onGuardarNuevo(),
+                },
+              ],
+            },
+          });
+        }
+
+        // Para filas normales
+        const enEdicion = this.configService.filaGrupoEditando()[id];
         const accionesVerificadas = [];
 
         if (this.authService.tienePermisos('ESP000011')) {
@@ -140,7 +182,7 @@ export class GruposComponent implements OnInit, OnDestroy {
             tooltip: 'Editar',
             icono: 'pencil-outline',
             color: 'accent',
-            disabled: this.appService.guardando() || this.appService.editando(),
+            disabled: this.appService.editando() || this.appService.guardando(),
             eventoClick: (event: Event) => this.iniciarEdicion(context.row),
           });
         }
@@ -168,6 +210,7 @@ export class GruposComponent implements OnInit, OnDestroy {
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
+            visibles: context.column.getIsVisible(),
             acciones,
           },
         });
@@ -236,7 +279,51 @@ export class GruposComponent implements OnInit, OnDestroy {
   }
 
   get gruposQuery() {
-    return this.configService.gruposQuery.data() || [];
+    const grupos = this.configService.gruposQuery.data() || [];
+
+    // Si está en modo creación, agregar una fila especial con ID -1
+    if (this.modoCreacion()) {
+      const filaCreacion: any = {
+        id: -1,
+        nombre: '',
+        creado_en: new Date().toISOString(),
+        actualizado_en: '',
+        eliminado_en: null,
+        creado_por: 0,
+        actualizado_por: null,
+        eliminado_por: null,
+      };
+
+      return [filaCreacion, ...grupos];
+    }
+
+    return grupos;
+  }
+
+  public onToggleRow(row: Row<Grupo>, editing = false): void {
+    // No expandir filas en modo creación o si es la fila de creación
+    if (row.original.id !== -1) {
+      return;
+    }
+
+    const rowId = row.id;
+    const currentExpanded = this.tableState().expanded as Record<
+      string,
+      boolean
+    >;
+
+    let newExpanded: Record<string, boolean>;
+
+    if (editing) {
+      newExpanded = { [rowId]: true };
+    } else {
+      newExpanded = currentExpanded[rowId] ? {} : { [rowId]: true };
+    }
+
+    this.tableState.update(state => ({
+      ...state,
+      expanded: newExpanded,
+    }));
   }
 
   public onPageChange(estado: PaginationState): void {
@@ -299,7 +386,7 @@ export class GruposComponent implements OnInit, OnDestroy {
 
   public crearGrupo() {
     this.configService.setModoCreacionGrupo(true);
-    this.appService.setEditando(true);
+    // this.appService.setEditando(true);
     this.grupoEnEdicion.set(null);
 
     this.nombre.reset('');
@@ -315,11 +402,12 @@ export class GruposComponent implements OnInit, OnDestroy {
     this.grupoEnEdicion.set(grupo);
     this.appService.setEditando(true);
 
+    // Expandir la fila para mostrar la edición
+    this.onToggleRow(row, true);
+
     setTimeout(() => {
       this.nombre.setValue(grupo.nombre);
-
       this.nombre.markAsPristine();
-
       this.cdr.detectChanges();
     }, 0);
   }
