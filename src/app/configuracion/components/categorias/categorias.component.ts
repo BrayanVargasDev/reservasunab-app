@@ -235,6 +235,7 @@ export class CategoriasComponent implements OnDestroy {
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
+            visibles: context.column.getIsVisible(),
             acciones,
           },
         });
