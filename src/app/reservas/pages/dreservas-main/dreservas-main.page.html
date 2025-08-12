@@ -218,14 +218,14 @@
 </div>
 
 @if (isLoadingEspacios()) {
-<div class="flex flex-col items-center justify-center w-full py-16 text-center">
-  <div class="loading loading-spinner loading-lg text-primary mb-4"></div>
-  <h3 class="text-lg font-semibold text-base-content/70 mb-2">
-    Cargando espacios...
-  </h3>
-  <p class="text-base-content/50">
-    Por favor espere mientras consultamos la disponibilidad.
-  </p>
+<div
+  class="grid w-full justify-center sm:justify-start auto-rows-[15rem] grid-cols-[repeat(auto-fit,11rem)] gap-4 mt-2 place-items-center"
+>
+  @for (item of [1,2,3,4,5,6,7,8]; track item) {
+  <div
+    class="relative bg-gray-300 rounded-xl shadow-md h-60 w-44 skeleton"
+  ></div>
+  }
 </div>
 } @else if (espacios().length > 0) {
 <div

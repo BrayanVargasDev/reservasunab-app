@@ -116,6 +116,7 @@ export class DreservasService {
         idCategoria: this._idCategoria(),
       }),
     select: (response: GeneralResponse<EspacioReservas[]>) => response.data,
+    enabled: computed(() => this._fecha() !== null),
   }));
 
   espacioDetallesQuery = injectQuery(() => ({
