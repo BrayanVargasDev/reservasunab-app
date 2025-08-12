@@ -38,7 +38,7 @@
   />
   } @else {
   <span class="font-semibold text-sm md:text-base">{{
-    context.getValue() | upperFirst
+    context.getValue()
   }}</span>
   }
 </ng-template>
@@ -53,14 +53,12 @@
     <option value="" disabled selected>Seleccione</option>
     @for(grupo of appService.gruposQuery.data(); track $index) {
     <option [value]="grupo.id">
-      {{ grupo.nombre | upperFirst }}
+      {{ grupo.nombre }}
     </option>
     }
   </select>
   } @else {
-  <span class="text-sm md:text-base">{{
-    context.getValue() | upperFirst
-  }}</span>
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
   }
 </ng-template>
 

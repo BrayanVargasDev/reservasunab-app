@@ -6,7 +6,7 @@
       class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 lg:px-6 py-4 flex-shrink-0"
     >
       <span class="w-full text-center text-2xl font-bold block truncate">
-        {{ espacioDetallesQuery?.nombre | upperFirst }}
+        {{ espacioDetallesQuery?.nombre   }}
       </span>
     </div>
 
@@ -242,7 +242,7 @@
                 <div class="w-full flex items-center">
                   <app-web-icon
                     nombreIcono="location-outline"
-                    estilos="h-5 w-5 font-bold"
+                    estilos="h-5 w-5 font-bold text-secondary !fill-secondary"
                   >
                   </app-web-icon>
                   <span class="font-bold text-sm lg:text-base ml-1">
@@ -289,9 +289,9 @@
                         : null
                     "
                     class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
-                    [disabled]="item.reserva_pasada && !item.mi_reserva"
+                    [disabled]="item.reserva_pasada && !item.mi_reserva && !item.novedad && !item.reservada"
                     [class.btn-disabled]="
-                      item.reserva_pasada && !item.mi_reserva
+                      item.reserva_pasada && !item.mi_reserva && !item.novedad && !item.reservada
                     "
                     [class.btn-accent]="item.disponible"
                     [class.btn-success]="item.mi_reserva"

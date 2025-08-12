@@ -100,7 +100,7 @@
           <option value="" disabled selected>Seleccione</option>
           @for (tipo of tiposUsuariosDisponibles(); track $index) {
           <option [value]="tipo.toLowerCase()">
-            {{ tipo | upperFirst }}
+            {{ tipo }}
           </option>
           }
         </select>
@@ -136,6 +136,7 @@
       </td>
       <td class="p-2">
         <acciones-tabla
+          [visibles]="true"
           [acciones]="accionesNuevo()"
           [ngClass]="'flex justify-between'"
         ></acciones-tabla>

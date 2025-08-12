@@ -39,7 +39,6 @@ import { AppService } from '@app/app.service';
 import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
 import { AuthService } from '@auth/services/auth.service';
-import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'espacio-general',
@@ -48,10 +47,8 @@ import { UpperFirstPipe } from '@shared/pipes';
     CommonModule,
     ReactiveFormsModule,
     ImagenDropComponent,
-    UpperFirstPipe,
     QuillEditorComponent,
     QuillViewHTMLComponent,
-    UpperFirstPipe,
   ],
   templateUrl: './espacio-general.component.html',
   styleUrl: './espacio-general.component.scss',
@@ -89,30 +86,30 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
   // Configuración del editor Quill sin imágenes ni elementos binarios
   public quillConfig = {
     toolbar: [
-      ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+      ['bold', 'italic', 'underline', 'strike'], // toggled buttons
       ['blockquote', 'code-block'],
 
-      [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-      [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-      [{ 'direction': 'rtl' }],                         // text direction
+      [{ header: 1 }, { header: 2 }], // custom button values
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+      [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+      [{ direction: 'rtl' }], // text direction
 
-      [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
 
-      [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-      [{ 'font': [] }],
-      [{ 'align': [] }],
+      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+      [{ font: [] }],
+      [{ align: [] }],
 
-      ['clean'],                                         // remove formatting button
-      ['link']                                          // link button (sin imagen)
+      ['clean'], // remove formatting button
+      ['link'], // link button (sin imagen)
     ],
     modules: {
       // Deshabilitar el módulo de imágenes explícitamente
       imageResize: false,
-      imageCompress: false
-    }
+      imageCompress: false,
+    },
   };
 
   public modalEspacios =
@@ -157,21 +154,28 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         const quill = editorComponent.quillEditor;
 
         // Deshabilitar la capacidad de pegar imágenes
-        quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node: any, delta: any) => {
-          // Filtrar cualquier inserción de imagen
-          const ops = delta.ops || [];
-          const filteredOps = ops.filter((op: any) => {
-            // Remover operaciones que contengan imágenes
-            if (op.insert && typeof op.insert === 'object' && op.insert.image) {
-              return false;
-            }
-            return true;
-          });
+        quill.clipboard.addMatcher(
+          Node.ELEMENT_NODE,
+          (node: any, delta: any) => {
+            // Filtrar cualquier inserción de imagen
+            const ops = delta.ops || [];
+            const filteredOps = ops.filter((op: any) => {
+              // Remover operaciones que contengan imágenes
+              if (
+                op.insert &&
+                typeof op.insert === 'object' &&
+                op.insert.image
+              ) {
+                return false;
+              }
+              return true;
+            });
 
-          // Crear un nuevo delta con las operaciones filtradas
-          const Delta = Quill.import('delta');
-          return new Delta(filteredOps);
-        });
+            // Crear un nuevo delta con las operaciones filtradas
+            const Delta = Quill.import('delta');
+            return new Delta(filteredOps);
+          },
+        );
 
         // Prevenir drag & drop de archivos
         const editorContainer = quill.container;

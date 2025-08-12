@@ -2,16 +2,11 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { ResumenReserva } from '../../interfaces/resumen-reserva.interface';
 import { CommonModule } from '@angular/common';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
-import { UpperFirstPipe, FormatearDuracionPipe } from '@shared/pipes';
+import { FormatearDuracionPipe } from '@shared/pipes';
 
 @Component({
   selector: 'dreservas-info-reserva',
-  imports: [
-    CommonModule,
-    WebIconComponent,
-    UpperFirstPipe,
-    FormatearDuracionPipe,
-  ],
+  imports: [CommonModule, WebIconComponent, FormatearDuracionPipe],
   templateUrl: './info-reserva.component.html',
   styleUrl: './info-reserva.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

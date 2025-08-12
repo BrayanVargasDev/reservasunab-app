@@ -25,11 +25,10 @@ import { AppService } from '@app/app.service';
 import { EspaciosService } from '@espacios/services/espacios.service';
 import { Espacio, FormEspacio } from '@espacios/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
-import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 
 @Component({
   selector: 'modal-espacios',
-  imports: [CommonModule, ReactiveFormsModule, UpperFirstPipe],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './modal-espacios.component.html',
   styleUrl: './modal-espacios.component.scss',
   standalone: true,

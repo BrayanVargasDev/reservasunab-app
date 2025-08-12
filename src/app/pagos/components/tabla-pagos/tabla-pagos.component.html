@@ -1,7 +1,7 @@
 <ng-template #estadoCell let-context>
   <div
     [ngClass]="{
-        'badge min-w-20 !max-sm:text-xs !text-sm !font-semibold align-middle': true,
+        'badge min-w-26 !max-sm:text-xs !text-sm !font-semibold align-middle': true,
         'badge-success': pagosService.obtenerColorEstado(context.getValue()) === 'success',
         'badge-warning': pagosService.obtenerColorEstado(context.getValue()) === 'warning',
         'badge-error': pagosService.obtenerColorEstado(context.getValue()) === 'error',

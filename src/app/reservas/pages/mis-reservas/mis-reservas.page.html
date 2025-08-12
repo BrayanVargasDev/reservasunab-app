@@ -63,13 +63,13 @@
           Reserva {{ reserva.codigo.slice(10) }}
         </h3>
         <span class="text-gray-400 max-sm:text-xs text-sm">
-          Espacio: {{ reserva.espacio.nombre | upperFirst }}
+          Espacio: {{ reserva.espacio.nombre }}
         </span>
         <span class="text-gray-400 max-sm:text-xs text-sm">
-          Sede: {{ reserva.espacio.sede.nombre | upperFirst }}
+          Sede: {{ reserva.espacio.sede.nombre }}
         </span>
         <span class="text-gray-400 max-sm:text-xs text-sm">
-          Categoría: {{ reserva.espacio.categoria.nombre | upperFirst }}
+          Categoría: {{ reserva.espacio.categoria.nombre }}
         </span>
       </div>
 
@@ -100,7 +100,7 @@
               'badge-error': reserva.estado === 'cancelada'
             }"
           >
-            {{ reserva.estado | upperFirst }}
+            {{ reserva.estado }}
           </span>
         </div>
 

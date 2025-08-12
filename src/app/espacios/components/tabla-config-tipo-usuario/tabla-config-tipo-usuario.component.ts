@@ -185,6 +185,7 @@ export class TablaConfigTipoUsuarioComponent {
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
+            visibles: context.column.getIsVisible(),
             acciones,
           },
         });

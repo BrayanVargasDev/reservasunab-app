@@ -132,6 +132,7 @@ export class DreservasService {
     queryFn: () => getMiReserva(this.http, this._idMiReserva()),
     select: (response: GeneralResponse<ResumenReserva>) => response.data,
     enabled: !!this._idMiReserva(),
+    staleTime: 0, // Asegurar que siempre se obtengan datos frescos
   }));
 
   jugadoresQuery = injectQuery(() => ({
@@ -323,6 +324,10 @@ export class DreservasService {
   }
 
   public setIdMiReserva(idReserva: number | null) {
+    // Limpiar la reserva actual primero
+    if (this._idMiReserva() !== idReserva) {
+      this._miReserva.set(null);
+    }
     this._idMiReserva.set(idReserva);
   }
 

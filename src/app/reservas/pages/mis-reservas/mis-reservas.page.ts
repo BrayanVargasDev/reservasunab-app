@@ -15,7 +15,6 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
 import { MisReservasService } from '@reservas/services/mis-reservas.service';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
 import { environment } from '@environments/environment';
-import { UpperFirstPipe } from '@shared/pipes';
 import { Reserva } from '@reservas/interfaces';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
 import { DreservasService } from '@reservas/services/dreservas.service';
@@ -26,7 +25,6 @@ import { DreservasService } from '@reservas/services/dreservas.service';
     CommonModule,
     WebIconComponent,
     BreadcrumbsComponent,
-    UpperFirstPipe,
     ModalDreservasComponent,
   ],
   templateUrl: './mis-reservas.page.html',
@@ -78,31 +76,38 @@ export default class MisReservasPage implements OnInit, OnDestroy {
     this.searchSubject.next(texto);
   }
 
-  public verDetalleReserva(idReserva: number) {
+  public async verDetalleReserva(idReserva: number) {
     this.dreservasService.abrirModal(true);
-
     this.dreservasService.setCargando('Cargando reserva...');
+
+    // Establecer el ID de la reserva primero
     this.dreservasService.setIdMiReserva(idReserva);
 
-    setTimeout(() => {
-      this.dreservasService.miReservaQuery
-        .refetch()
-        .then(() => {
-          const reserva = this.dreservasService.miReservaQuery.data();
-          if (reserva) {
-            this.dreservasService.setMostrarResumenExistente(reserva);
-          } else {
-            this.dreservasService.cerrarModal();
-            console.error(
-              'No se pudo cargar la reserva. Por favor, inténtalo de nuevo.',
-            );
-          }
-        })
-        .catch(error => {
-          console.error('Error al obtener mi reserva:', error);
-          this.dreservasService.cerrarModal();
-        });
-    }, 1000);
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      // Hacer refetch de la query después de establecer el ID
+      const result = await this.dreservasService.miReservaQuery.refetch();
+
+      // Obtener los datos del resultado del refetch
+      const reserva = result.data;
+      console.log(
+        '🚀 ✅ ~ MisReservasPage ~ verDetalleReserva ~ reserva:',
+        reserva,
+      );
+
+      if (reserva) {
+        this.dreservasService.setMostrarResumenExistente(reserva);
+      } else {
+        this.dreservasService.cerrarModal();
+        console.error(
+          'No se pudo cargar la reserva. Por favor, inténtalo de nuevo.',
+        );
+      }
+    } catch (error) {
+      console.error('Error al obtener mi reserva:', error);
+      this.dreservasService.cerrarModal();
+    }
   }
 
   public cancelarReserva(reserva: Reserva) {

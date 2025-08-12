@@ -21,7 +21,6 @@ import { environment } from '@environments/environment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Configuracion } from '@espacios/interfaces';
 import { AuthService } from '@auth/services/auth.service';
-import { UpperFirstPipe } from '@shared/pipes';
 import { AlertasService } from '@shared/services/alertas.service';
 import {
   Disponibilidad,
@@ -35,7 +34,6 @@ import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.inte
   imports: [
     CommonModule,
     WebIconComponent,
-    UpperFirstPipe,
     InfoReservaComponent,
     QuillViewHTMLComponent,
   ],
@@ -396,40 +394,46 @@ export class ModalDreservasComponent {
     }, 1000);
   }
 
-  public verMiReserva(idReserva: number | null) {
+  public async verMiReserva(idReserva: number | null) {
     if (!idReserva) return;
 
     this.dreservasService.setCargando('Cargando reserva...');
     this.dreservasService.setIdMiReserva(idReserva);
 
-    setTimeout(() => {
-      this.dreservasService.miReservaQuery
-        .refetch()
-        .then(() => {
-          const reserva = this.dreservasService.miReservaQuery.data();
-          if (reserva) {
-            this.dreservasService.setMostrarResumenExistente(reserva);
-          } else {
-            this.alertaService.error(
-              'No se pudo cargar la reserva.',
-              5 * 1000,
-              this.alertaModalReservas(),
-              this.estilosAlerta,
-            );
-            this.dreservasService.setMostrarDisponibilidad();
-          }
-        })
-        .catch(error => {
-          console.error('Error al obtener mi reserva:', error);
-          this.alertaService.error(
-            'Error al obtener la reserva. Por favor, inténtelo de nuevo.',
-            5 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
-          );
-          this.dreservasService.setMostrarDisponibilidad();
-        });
-    }, 1000);
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      // Hacer refetch de la query después de establecer el ID
+      const result = await this.dreservasService.miReservaQuery.refetch();
+
+      // Obtener los datos del resultado del refetch
+      const reserva = result.data;
+      console.log(
+        '🚀 ✅ ~ MisReservasPage ~ verDetalleReserva ~ reserva:',
+        reserva,
+      );
+
+      if (reserva) {
+        this.dreservasService.setMostrarResumenExistente(reserva);
+      } else {
+        this.alertaService.error(
+          'No se pudo cargar la reserva.',
+          5 * 1000,
+          this.alertaModalReservas(),
+          this.estilosAlerta,
+        );
+        this.dreservasService.setMostrarDisponibilidad();
+      }
+    } catch (error) {
+      console.error('Error al obtener mi reserva:', error);
+      this.alertaService.error(
+        'Error al obtener la reserva. Por favor, inténtelo de nuevo.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      this.dreservasService.setMostrarDisponibilidad();
+    }
   }
 
   // Métodos para jugadores

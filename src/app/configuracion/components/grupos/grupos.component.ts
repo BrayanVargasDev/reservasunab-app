@@ -302,7 +302,7 @@ export class GruposComponent implements OnInit, OnDestroy {
 
   public onToggleRow(row: Row<Grupo>, editing = false): void {
     // No expandir filas en modo creación o si es la fila de creación
-    if (row.original.id !== -1) {
+    if (this.modoCreacion() && row.original.id !== -1) {
       return;
     }
 

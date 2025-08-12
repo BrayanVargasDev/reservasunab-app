@@ -24,7 +24,6 @@ import { TablaConfigTipoUsuarioComponent } from '@espacios/components/tabla-conf
 import { ConfigPorFechaComponent } from '@espacios/components/config-por-fecha/config-por-fecha.component';
 import { ConfigBaseComponent } from '@espacios/components/config-base/config-base.component';
 import { BreadcrumbsComponent } from '@shared/components/breadcrumbs/breadcrumbs.component';
-import { UpperFirstPipe } from '@shared/pipes';
 import { NovedadesComponent } from "@app/espacios/components/novedades/novedades.component";
 
 @Component({
@@ -40,7 +39,6 @@ import { NovedadesComponent } from "@app/espacios/components/novedades/novedades
     ConfigPorFechaComponent,
     ConfigBaseComponent,
     BreadcrumbsComponent,
-    UpperFirstPipe,
     NovedadesComponent
 ],
   host: {

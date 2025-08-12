@@ -72,7 +72,7 @@
         <option value="" disabled selected>Seleccione</option>
         @for (sede of appService.sedesQuery.data(); track sede.id) {
         <option [value]="sede.id">
-          {{ `${sede.nombre}` | upperFirst }}
+          {{ `${sede.nombre}` }}
         </option>
         }
       </select>
@@ -102,7 +102,7 @@
         @for (categoria of appService.categoriasQuery.data(); track
         categoria.id) {
         <option [value]="categoria.id">
-          {{ `${categoria.nombre}` | upperFirst }}
+          {{ `${categoria.nombre}` }}
         </option>
         }
       </select>
@@ -136,7 +136,7 @@
         class="label text-sm font-[600] text-base-content mb-1 md:mb-2"
         for="descripcion"
       >
-        Descripción:
+        Notas importantes:
       </label>
       @if (appService.editando()) {
       <quill-editor
