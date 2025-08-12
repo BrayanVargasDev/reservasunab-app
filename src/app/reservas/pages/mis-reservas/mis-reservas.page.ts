@@ -18,6 +18,8 @@ import { environment } from '@environments/environment';
 import { Reserva } from '@reservas/interfaces';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
 import { DreservasService } from '@reservas/services/dreservas.service';
+import { PagosService } from '@pagos/services/pagos.service';
+import { UpperFirstPipe } from '@shared/pipes';
 
 @Component({
   selector: 'app-mis-reservas.page',
@@ -26,6 +28,7 @@ import { DreservasService } from '@reservas/services/dreservas.service';
     WebIconComponent,
     BreadcrumbsComponent,
     ModalDreservasComponent,
+    UpperFirstPipe
   ],
   templateUrl: './mis-reservas.page.html',
   styleUrl: './mis-reservas.page.scss',
@@ -42,6 +45,8 @@ export default class MisReservasPage implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
+
+  public pagosService = inject(PagosService);
 
   ngOnInit() {
     this.searchSubject
@@ -91,10 +96,6 @@ export default class MisReservasPage implements OnInit, OnDestroy {
 
       // Obtener los datos del resultado del refetch
       const reserva = result.data;
-      console.log(
-        '🚀 ✅ ~ MisReservasPage ~ verDetalleReserva ~ reserva:',
-        reserva,
-      );
 
       if (reserva) {
         this.dreservasService.setMostrarResumenExistente(reserva);

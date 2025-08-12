@@ -91,16 +91,9 @@
           <span class="text-gray-400 max-sm:text-xs text-sm">Estado:</span>
           <span
             class="badge font-semibold max-sm:text-xs text-sm"
-            [ngClass]="{
-              'badge-info':
-                reserva.estado === 'pagada' || reserva.estado === 'completada',
-              'badge-success': reserva.estado === 'confirmada',
-              'badge-ghost': reserva.estado === 'inicial',
-              'badge-warning': reserva.estado === 'pendiente',
-              'badge-error': reserva.estado === 'cancelada'
-            }"
+            [ngClass]="`badge-${pagosService.obtenerColorEstado(reserva.estado)}`"
           >
-            {{ reserva.estado }}
+            {{ reserva.estado | upperFirst }}
           </span>
         </div>
 

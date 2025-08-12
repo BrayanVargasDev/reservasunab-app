@@ -408,10 +408,6 @@ export class ModalDreservasComponent {
 
       // Obtener los datos del resultado del refetch
       const reserva = result.data;
-      console.log(
-        '🚀 ✅ ~ MisReservasPage ~ verDetalleReserva ~ reserva:',
-        reserva,
-      );
 
       if (reserva) {
         this.dreservasService.setMostrarResumenExistente(reserva);
