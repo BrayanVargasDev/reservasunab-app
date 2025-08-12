@@ -33,7 +33,6 @@ import { EspacioBookingItemComponent } from '@reservas/components/espacio-bookin
 import { environment } from '@environments/environment';
 import { Imagen } from '@espacios/interfaces/imagen.interface';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
-import { TablaDreservasComponent } from '@reservas/components/tabla-dreservas/tabla-dreservas.component';
 import { AuthService } from '@auth/services/auth.service';
 
 @Component({

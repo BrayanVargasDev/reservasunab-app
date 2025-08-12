@@ -131,59 +131,105 @@ export class PagoInfoCardComponent {
     const rechazado =
       'bg-error text-error-content font-bold w-full rounded-xl shadow-lg';
 
-    switch (estado) {
-      case 'completado':
-        return completado;
+    const estadoUpper = estado.toUpperCase();
+    switch (estadoUpper) {
+      // Estados exitosos
       case 'OK':
+      case 'PAGADA':
+      case 'CONFIRMADA':
+      case 'COMPLETADO':
+      case 'ENROLLED':
         return completado;
-      case 'pendiente':
+
+      // Estados de procesamiento/pendientes
+      case 'PENDING':
+      case 'BANK':
+      case 'CAPTURED':
+      case 'CREATED':
+      case 'INICIAL':
+      case 'PENDIENTE':
+      case 'PROCESANDO':
         return pendiente;
-      case 'procesando':
-        return procesando;
-      case 'rechazado':
+
+      // Estados de error/rechazo
+      case 'NOT_AUTHORIZED':
+      case 'FAILED':
+      case 'EXPIRED':
+      case 'RECHAZADO':
+      case 'RECHAZADA':
+      case 'ERROR':
         return rechazado;
+
       default:
         return pendiente;
     }
   }
 
   getEstadoIcon(estado: string): string {
-    switch (estado) {
-      case 'completado':
-        return 'checkmark-circle-outline';
+    const estadoUpper = estado.toUpperCase();
+    switch (estadoUpper) {
+      // Estados exitosos
       case 'OK':
+      case 'PAGADA':
+      case 'CONFIRMADA':
+      case 'COMPLETADO':
+      case 'ENROLLED':
         return 'checkmark-circle-outline';
-      case 'pendiente':
-        return 'time-outline';
+
+      // Estados de procesamiento/pendientes
       case 'PENDING':
+      case 'BANK':
+      case 'CAPTURED':
+      case 'CREATED':
+      case 'INICIAL':
+      case 'PENDIENTE':
+      case 'PROCESANDO':
         return 'time-outline';
-      case 'procesando':
-        return 'refresh-circle-outline';
-      case 'rechazado':
-        return 'close-circle-outline';
+
+      // Estados de error/rechazo
       case 'NOT_AUTHORIZED':
-        return 'close-circle';
       case 'FAILED':
-        return 'close-circle';
+      case 'EXPIRED':
+      case 'RECHAZADO':
+      case 'RECHAZADA':
+      case 'ERROR':
+        return 'close-circle-outline';
+
       default:
         return 'time-outline';
     }
   }
 
   getEstadoTexto(estado: string): string {
-    switch (estado) {
-      case 'completado':
-        return 'Pago Completado';
+    const estadoUpper = estado.toUpperCase();
+    switch (estadoUpper) {
+      // Estados exitosos
       case 'OK':
+      case 'PAGADA':
+      case 'CONFIRMADA':
+      case 'COMPLETADO':
+      case 'ENROLLED':
         return 'Pago Completado';
-      case 'pendiente':
-        return 'Pago Pendiente';
+
+      // Estados de procesamiento/pendientes
       case 'PENDING':
+      case 'BANK':
+      case 'CAPTURED':
+      case 'CREATED':
+      case 'INICIAL':
+      case 'PENDIENTE':
+      case 'PROCESANDO':
         return 'Pago Pendiente';
-      case 'procesando':
-        return 'Procesando Pago';
-      case 'rechazado':
+
+      // Estados de error/rechazo
+      case 'NOT_AUTHORIZED':
+      case 'FAILED':
+      case 'EXPIRED':
+      case 'RECHAZADO':
+      case 'RECHAZADA':
+      case 'ERROR':
         return 'Pago Rechazado';
+
       default:
         return 'Estado Desconocido';
     }

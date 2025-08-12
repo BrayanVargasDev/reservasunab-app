@@ -1,0 +1,139 @@
+<ng-template #estadoCell let-context>
+  <div
+    [ngClass]="`badge-${pagoService.obtenerColorEstado(context.getValue())}`"
+    (click)="
+      context.getValue() === 'pendiente' &&
+      authService.tienePermisos('RSV000001')
+        ? aprobarReserva(context.row.original)
+        : null
+    "
+    class="hover:cursor-pointer hover:scale-105 badge font-semibold min-w-28 transition-all align-middle"
+  >
+    {{ context.getValue() | upperFirst }}
+  </div>
+</ng-template>
+
+<ng-template #codigoCell let-context>
+  <span class="font-mono text-sm truncate text-ellipsis">{{
+    context.getValue()
+  }}</span>
+</ng-template>
+
+<ng-template #horasCell let-context>
+  <span class="max-sm:text-sm text-base">
+    {{ context.row.original.hora_inicio | date : 'shortTime' }} -
+    {{ context.row.original.hora_fin | date : 'shortTime' }}
+  </span>
+</ng-template>
+
+<table
+  responsiveTable
+  #tabla="responsiveTable"
+  [table]="tablaReservas()"
+  class="table w-full rounded-box table-sm sm:table-md"
+>
+  <thead class="sticky top-0 z-20 bg-base-300">
+    @for (headerGroup of tablaReservas.getHeaderGroups(); track headerGroup.id)
+    {
+    <tr class="bg-base-300 z-20 rounded-t-box">
+      @if (tabla.hiddenColumnIds().size !== 0) {
+      <th
+        class="p-2 text-left first:rounded-tl-box border-none last:rounded-tr-box bg-base-100 z-20"
+      ></th>
+      } @for (header of headerGroup.headers; track header.id) {
+      <th
+        class="p-2 text-left first:rounded-tl-box border-none last:rounded-tr-box bg-base-100 z-20"
+        [colSpan]="header.colSpan"
+      >
+        @if (!header.isPlaceholder) {
+        <ng-container
+          *flexRender="
+            header.column.columnDef.header;
+            props: header.getContext();
+            let header
+          "
+        >
+          <span class="text-left" [innerHTML]="header"></span>
+        </ng-container>
+        }
+      </th>
+      }
+    </tr>
+    }
+  </thead>
+  <tbody>
+    @for (row of tablaReservas.getRowModel().rows; track row.id) {
+    <tr class="bg-base-100">
+      @if (tabla.hiddenColumnIds().size !== 0) {
+      <td class="!pe-0">
+        <app-table-expansor
+          [disabled]="appService.editando()"
+          [isExpanded]="row.getIsExpanded()"
+          (toggleExpand)="row.toggleExpanded()"
+        ></app-table-expansor>
+      </td>
+      } @for (cell of row.getVisibleCells(); track cell.id) {
+      <td class="py-1">
+        <ng-container
+          *flexRender="
+            cell.column.columnDef.cell;
+            props: cell.getContext();
+            let cell
+          "
+        >
+          <div class="max-sm:text-sm text-base" [innerHTML]="cell"></div>
+        </ng-container>
+      </td>
+      }
+    </tr>
+    @if (row.getIsExpanded() && tabla.hiddenColumnIds().size !== 0) {
+    <tr class="bg-base-300 border-none">
+      <td [attr.colspan]="row.getVisibleCells().length + 1">
+        <div class="bg-base-100 rounded-md p-1 px-3 w-full">
+          @if (tabla.hiddenColumnIds().size !== 0) {
+          <ul>
+            @for (col of tablaReservas.getAllLeafColumns(); track $index) { @if
+            (tabla.hiddenColumnIds().has(col.id)) {
+            <li class="flex my-2 flex-row gap-2 items-center">
+              <span
+                class="font-bold max-sm:text-sm text-base text-base-content"
+              >
+                {{ col.columnDef.header }}:
+              </span>
+
+              <ng-container
+                *flexRender="
+                  tabla.getCell(col, row).column.columnDef.cell;
+                  props: tabla.getCell(col, row).getContext();
+                  let cell
+                "
+              >
+                <div class="max-sm:text-sm text-base" [innerHTML]="cell"></div>
+              </ng-container>
+            </li>
+            } }
+          </ul>
+          }
+        </div>
+      </td>
+    </tr>
+    } }
+  </tbody>
+</table>
+
+<app-paginador
+  [ngClass]="
+    'flex flex-col sm:flex-row items-center justify-between gap-2 md:gap-4 p-2 md:p-4 bg-base-100 rounded-b-box'
+  "
+  [estado]="reservasService.paginacion()"
+  [paginacion]="reservasService.datosPaginador() ?? null"
+  (cambioPaginacion)="onPageChange($event)"
+  [mostrarInfo]="true"
+  [mostrarSelectorTamano]="true"
+  [mostrarExtremos]="true"
+  [deshabilitado]="reservasQuery.isFetching()"
+  (prefetchFunction)="reservasService.prefetchReservas($event)"
+>
+</app-paginador>
+
+<ng-template #alertaReserva></ng-template>

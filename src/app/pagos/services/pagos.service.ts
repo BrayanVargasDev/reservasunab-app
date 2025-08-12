@@ -167,6 +167,7 @@ export class PagosService {
       case 'FAILED':
       case 'EXPIRED':
       case 'RECHAZADO':
+      case 'RECHAZADA':
       case 'ERROR':
         return 'error';
 

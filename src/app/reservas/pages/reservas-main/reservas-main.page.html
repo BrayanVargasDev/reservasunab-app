@@ -1,13 +1,21 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>reservas-main</ion-title>
-  </ion-toolbar>
-</ion-header>
+<div
+  class="flex flex-col md:flex-row md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-10 bg-base-300"
+>
+  <div class="flex items-center justify-center sm:justify-start">
+    <h2 class="font-bold text-4xl max-sm:text-2xl mb-2 md:mb-0">Reservas</h2>
+  </div>
+  <div class="flex flex-col md:flex-row max-sm:px-1 max-md:gap-1 gap-2">
+    <input
+      type="text"
+      [disabled]="appService.editando()"
+      placeholder="Buscar..."
+      class="input input-bordered max-sm:input-sm input-primary w-full sm:h-11 rounded-box md:max-w-xs placeholder:text-gray-500 placeholder:text-sm disabled:placeholder:text-gray-400"
+      [value]="reservasService.filtroTexto()"
+      (input)="aplicarFiltro($any($event.target).value)"
+    />
+  </div>
+</div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">reservas-main</ion-title>
-    </ion-toolbar>
-  </ion-header>
-</ion-content>
+<tabla-reservas [ngClass]="'overflow-y-auto'"></tabla-reservas>
+
+<ng-template #alertaReservas></ng-template>
