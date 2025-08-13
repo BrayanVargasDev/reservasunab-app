@@ -19,7 +19,7 @@
       "@espacios/*": ["src/app/espacios/*"],
       "@dreservas/*": ["src/app/dreservas/*"],
       "@reservas/*": ["src/app/reservas/*"],
-      "@configuracion/*": ["src/app/configuracion/*"],
+      "@configuracion/*": ["src/app/configuracion/*"]
     },
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
@@ -36,7 +36,7 @@
     "importHelpers": true,
     "target": "es2022",
     "module": "es2020",
-    "lib": ["es2018", "dom"],
+    "lib": ["es2022", "dom", "es2020.intl"],
     "useDefineForClassFields": false
   },
   "angularCompilerOptions": {

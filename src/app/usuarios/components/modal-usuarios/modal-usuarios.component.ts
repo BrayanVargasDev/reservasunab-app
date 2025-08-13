@@ -20,7 +20,7 @@ import {
 import { CommonModule } from '@angular/common';
 
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format, parse } from 'date-fns';
 
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { FormUtils } from '@shared/utils/form.utils';
@@ -35,7 +35,12 @@ import { SaveUsuarioResponse } from '@usuarios/intefaces';
   templateUrl: './modal-usuarios.component.html',
   styleUrls: ['./modal-usuarios.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InputSoloNumerosDirective, WebIconComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputSoloNumerosDirective,
+    WebIconComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {},
 })
@@ -104,20 +109,24 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
     this.pikaday = new Pikaday({
       field: this.fechaNacimientoPicker()?.nativeElement,
       container: this.contenedorCalendario()?.nativeElement,
-      yearRange: [1950, moment().year() - 16],
-      maxDate: moment().subtract(16, 'years').toDate(),
+      yearRange: [1950, new Date().getFullYear() - 16],
+      maxDate: new Date(
+        new Date().getFullYear() - 16,
+        new Date().getMonth(),
+        new Date().getDate(),
+      ),
       i18n: this.usuarioService.i18nDatePicker(),
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
-        const fechaFormateada = moment(date).format('DD/MM/YYYY');
+        const fechaFormateada = format(date, 'dd/MM/yyyy');
         this.usuarioForm.get('fechaNacimiento')?.setValue(fechaFormateada);
       },
     });
 
     this.usuarioForm.get('fechaNacimiento')?.valueChanges.subscribe(value => {
       if (value) {
-        const date = moment(value, 'DD/MM/YYYY');
-        this.pikaday.setMoment(date, true);
+        const date = parse(value, 'dd/MM/yyyy', new Date());
+        this.pikaday.setDate(date, true);
       } else {
         this.pikaday.setDate(null);
       }
@@ -142,7 +151,10 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
         let fechaFormateada = '';
         if (usuarioAEditar.fechaNacimiento) {
           const fechaTmp = usuarioAEditar.fechaNacimiento.split('T')[0];
-          fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format('DD/MM/YYYY');
+          fechaFormateada = format(
+            parse(fechaTmp, 'yyyy-MM-dd', new Date()),
+            'dd/MM/yyyy',
+          );
         }
 
         this.usuarioForm.patchValue({
@@ -152,8 +164,8 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
 
         // Sincronizar la fecha con Pikaday si está disponible
         if (this.pikaday && fechaFormateada) {
-          const date = moment(fechaFormateada, 'DD/MM/YYYY');
-          this.pikaday.setMoment(date, true);
+          const date = parse(fechaFormateada, 'dd/MM/yyyy', new Date());
+          this.pikaday.setDate(date, true);
         }
 
         this.usuarioForm
@@ -182,10 +194,10 @@ export class ModalUsuariosComponent implements AfterViewInit, OnDestroy {
 
     let usuario = null;
 
-    const fechaNacimiento = moment(
-      this.usuarioForm.value.fechaNacimiento,
-      'DD/MM/YYYY',
-    ).format('YYYY-MM-DD');
+    const fechaNacimiento = format(
+      parse(this.usuarioForm.value.fechaNacimiento, 'dd/MM/yyyy', new Date()),
+      'yyyy-MM-dd',
+    );
 
     if (this.usuarioService.modoEdicion()) {
       usuario = {

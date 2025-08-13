@@ -32,7 +32,8 @@ import {
   type PaginationState,
 } from '@tanstack/angular-table';
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format, parse, isBefore } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { NovedadesService } from '@espacios/services/novedades.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
@@ -88,7 +89,9 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Computed properties que usan el servicio
   public modoCreacion = computed(() => this.novedadesService.modoCreacion());
-  public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
+  public fechaActual = computed(() =>
+    formatInBogota(new Date(), 'dd/MM/yyyy HH:mm a'),
+  );
 
   // Form controls - solo para crear/editar novedades
   public fechaInicio = new FormControl<string>('', [Validators.required]);
@@ -377,17 +380,17 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
       field: this.fechaInicioPicker()?.nativeElement,
       format: 'DD/MM/YYYY',
       firstDay: 1,
-      minDate: moment().toDate(),
-      yearRange: [moment().year(), moment().year() + 5],
+      minDate: new Date(),
+      yearRange: [new Date().getFullYear(), new Date().getFullYear() + 5],
       i18n: i18nDatePicker,
       onSelect: (date: Date) => {
         startDate = date;
-        const formattedDate = moment(startDate).format('DD/MM/YYYY');
+        const formattedDate = format(startDate, 'dd/MM/yyyy');
 
         this.fechaInicio.setValue(formattedDate);
         this.fechaInicio.markAsTouched();
 
-        if (endDate && moment(endDate).isBefore(moment(startDate))) {
+        if (endDate && isBefore(endDate, startDate)) {
           endDate = null;
           this.fechaFin.setValue('');
           if (this.pikadayFin) {
@@ -404,12 +407,12 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
       field: this.fechaFinPicker()?.nativeElement,
       format: 'DD/MM/YYYY',
       firstDay: 1,
-      minDate: moment().toDate(),
-      yearRange: [moment().year(), moment().year() + 5],
+      minDate: new Date(),
+      yearRange: [new Date().getFullYear(), new Date().getFullYear() + 5],
       i18n: i18nDatePicker,
       onSelect: (date: Date) => {
         endDate = date;
-        const formattedDate = moment(endDate).format('DD/MM/YYYY');
+        const formattedDate = format(endDate, 'dd/MM/yyyy');
 
         // Actualizar el FormControl
         this.fechaFin.setValue(formattedDate);
@@ -425,13 +428,13 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     const existingEndDate = this.fechaFin.value;
 
     if (existingStartDate) {
-      startDate = moment(existingStartDate, 'DD/MM/YYYY').toDate();
+      startDate = parse(existingStartDate, 'dd/MM/yyyy', new Date());
       this.pikadayInicio.setDate(startDate);
       updateStartDate();
     }
 
     if (existingEndDate) {
-      endDate = moment(existingEndDate, 'DD/MM/YYYY').toDate();
+      endDate = parse(existingEndDate, 'dd/MM/yyyy', new Date());
       this.pikadayFin.setDate(endDate);
       updateEndDate();
     }
@@ -439,18 +442,18 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private updatePikadayValues(fechaInicio: string, fechaFin: string) {
     if (this.pikadayInicio && fechaInicio) {
-      const startDate = moment(fechaInicio, 'DD/MM/YYYY').toDate();
+      const startDate = parse(fechaInicio, 'dd/MM/yyyy', new Date());
       this.pikadayInicio.setDate(startDate);
       this.pikadayInicio.setStartRange(startDate);
     }
     if (this.pikadayFin && fechaFin) {
-      const endDate = moment(fechaFin, 'DD/MM/YYYY').toDate();
+      const endDate = parse(fechaFin, 'dd/MM/yyyy', new Date());
       this.pikadayFin.setDate(endDate);
       this.pikadayFin.setEndRange(endDate);
 
       // Establecer fecha mínima basada en fecha de inicio
       if (fechaInicio && this.pikadayInicio) {
-        const startDate = moment(fechaInicio, 'DD/MM/YYYY').toDate();
+        const startDate = parse(fechaInicio, 'dd/MM/yyyy', new Date());
         this.pikadayFin.setMinDate(startDate);
         this.pikadayFin.setStartRange(startDate);
         this.pikadayInicio.setEndRange(endDate);
@@ -493,12 +496,13 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
 
     setTimeout(() => {
       // Convertir fechas del formato del backend (YYYY-MM-DD) al formato de display (DD-MM-YYYY)
-      const fechaInicioDisplay = moment(
-        novedad.fecha_inicio,
-        'YYYY-MM-DD',
-      ).format('DD/MM/YYYY');
-      const fechaFinDisplay = moment(novedad.fecha_fin, 'YYYY-MM-DD').format(
-        'DD/MM/YYYY',
+      const fechaInicioDisplay = format(
+        parse(novedad.fecha_inicio, 'yyyy-MM-dd', new Date()),
+        'dd/MM/yyyy',
+      );
+      const fechaFinDisplay = format(
+        parse(novedad.fecha_fin, 'yyyy-MM-dd', new Date()),
+        'dd/MM/yyyy',
       );
 
       this.fechaInicio.setValue(fechaInicioDisplay);
@@ -569,12 +573,15 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.appService.setGuardando(true);
 
     // Convertir fechas del formato de display (DD-MM-YYYY) al formato del backend (YYYY-MM-DD)
-    const fechaInicioBackend = moment(
-      this.fechaInicio.value!,
-      'DD/MM/YYYY',
-    ).format('YYYY-MM-DD');
+    const fechaInicioBackend = format(
+      parse(this.fechaInicio.value!, 'dd/MM/yyyy', new Date()),
+      'yyyy-MM-dd',
+    );
     const fechaFinBackend = this.fechaFin.value
-      ? moment(this.fechaFin.value!, 'DD/MM/YYYY').format('YYYY-MM-DD')
+      ? format(
+          parse(this.fechaFin.value!, 'dd/MM/yyyy', new Date()),
+          'yyyy-MM-dd',
+        )
       : undefined;
 
     const nuevaNovedad: Partial<Novedad> = {
@@ -629,12 +636,13 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     const novedad = row.original;
 
     // Convertir fechas del formato de display (DD-MM-YYYY) al formato del backend (YYYY-MM-DD)
-    const fechaInicioBackend = moment(
-      this.fechaInicio.value!,
-      'DD/MM/YYYY',
-    ).format('YYYY-MM-DD');
-    const fechaFinBackend = moment(this.fechaFin.value!, 'DD/MM/YYYY').format(
-      'YYYY-MM-DD',
+    const fechaInicioBackend = format(
+      parse(this.fechaInicio.value!, 'dd/MM/yyyy', new Date()),
+      'yyyy-MM-dd',
+    );
+    const fechaFinBackend = format(
+      parse(this.fechaFin.value!, 'dd/MM/yyyy', new Date()),
+      'yyyy-MM-dd',
     );
 
     const novedadActualizada: Partial<Novedad> = {
@@ -782,14 +790,14 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pikadayInicio.setDate(null);
       this.pikadayInicio.setStartRange(null);
       this.pikadayInicio.setEndRange(null);
-      this.pikadayInicio.setMinDate(moment().toDate());
+      this.pikadayInicio.setMinDate(new Date());
       this.pikadayInicio.setMaxDate(null);
     }
     if (this.pikadayFin) {
       this.pikadayFin.setDate(null);
       this.pikadayFin.setStartRange(null);
       this.pikadayFin.setEndRange(null);
-      this.pikadayFin.setMinDate(moment().toDate());
+      this.pikadayFin.setMinDate(new Date());
       this.pikadayFin.setMaxDate(null);
     }
   }

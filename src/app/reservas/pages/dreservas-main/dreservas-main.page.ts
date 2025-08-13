@@ -20,7 +20,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { combineLatest, startWith, debounceTime } from 'rxjs';
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format, parse } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
@@ -129,7 +130,10 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
 
         this.dreservasService.setFiltros({
           fecha: filtros?.fecha
-            ? moment(filtros.fecha, 'DD/MM/YYYY').format('YYYY-MM-DD')
+            ? format(
+                parse(filtros.fecha, 'dd/MM/yyyy', new Date()),
+                'yyyy-MM-dd',
+              )
             : null,
           idGrupo: filtros?.grupo ? Number(filtros.grupo) : null,
           idSede: filtros?.sede ? Number(filtros.sede) : null,
@@ -143,20 +147,27 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   }
 
   private initializePikaday(): void {
-    const fechaHoy = moment().format('DD/MM/YYYY');
+    const fechaHoy = formatInBogota(new Date(), 'dd/MM/yyyy');
     this.filtrosForm.controls.fecha.setValue(fechaHoy);
 
     this.pikaday = new Pikaday({
       field: this.fechaPicker()?.nativeElement,
-      minDate: moment().toDate(),
+      // Fijar hoy según Bogotá para evitar desfases por zona del dispositivo
+      minDate: parse(
+        formatInBogota(new Date(), 'yyyy-MM-dd'),
+        'yyyy-MM-dd',
+        new Date(),
+      ),
       i18n: i18nDatePicker,
       format: 'DD/MM/YYYY',
       setDefaultDate: true,
-      defaultDate: moment().toDate(),
+      defaultDate: parse(
+        formatInBogota(new Date(), 'yyyy-MM-dd'),
+        'yyyy-MM-dd',
+        new Date(),
+      ),
       onSelect: (date: Date) => {
-        this.filtrosForm.controls.fecha.setValue(
-          moment(date).format('DD/MM/YYYY'),
-        );
+        this.filtrosForm.controls.fecha.setValue(format(date, 'dd/MM/yyyy'));
       },
     });
   }

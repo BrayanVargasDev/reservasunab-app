@@ -32,7 +32,8 @@ import {
   CellContext,
   PaginationState,
 } from '@tanstack/angular-table';
-import moment from 'moment';
+import { format } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { Rol, Permiso } from '@permisos/interfaces';
 import { PermisosService } from '@permisos/services/permisos.service';
@@ -79,7 +80,9 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
-  public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
+  public fechaActual = computed(() =>
+    formatInBogota(new Date(), 'dd/MM/yyyy HH:mm a'),
+  );
   public nombre = new FormControl<string>('', [
     Validators.required,
     Validators.minLength(3),
@@ -151,10 +154,10 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
       accessorKey: 'creadoEn',
       header: `Creado en`,
       accessorFn: row => {
-        const date = moment(row.creadoEn);
-        return date.isValid()
-          ? date.format('DD/MM/YYYY HH:mm a')
-          : 'Fecha inválida';
+        const d = new Date(row.creadoEn);
+        return isNaN(d.getTime())
+          ? 'Fecha inválida'
+          : formatInBogota(d, 'dd/MM/yyyy HH:mm a');
       },
       cell: this.fechaCell,
     },

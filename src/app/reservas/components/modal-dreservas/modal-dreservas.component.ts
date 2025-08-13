@@ -14,8 +14,8 @@ import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
 
 import { QuillViewHTMLComponent } from 'ngx-quill';
-import moment from 'moment';
-import 'moment/locale/es';
+import { format, parse, subDays, set as setTime } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { environment } from '@environments/environment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -52,10 +52,7 @@ export class ModalDreservasComponent {
     'flex justify-center transition-all mx-auto ease-in-out w-[80%] text-lg';
   public dreservasService = inject(DreservasService);
 
-  constructor() {
-    // Configurar moment para usar español por defecto
-    moment.locale('es');
-  }
+  constructor() {}
   public dreservasModal =
     viewChild<ElementRef<HTMLDialogElement>>('dreservasModal');
 
@@ -72,8 +69,9 @@ export class ModalDreservasComponent {
     if (estado && estado.fecha) {
       return {
         ...estado,
-        fecha: moment(estado.fecha + ' 12:00', 'YYYY-MM-DD HH:mm').format(
-          'dddd, D [de] MMMM [de] YYYY',
+        fecha: formatInBogota(
+          parse(estado.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
+          "eeee, d 'de' MMMM 'de' yyyy",
         ),
       };
     }
@@ -85,8 +83,9 @@ export class ModalDreservasComponent {
     if (reserva && reserva.fecha) {
       return {
         ...reserva,
-        fecha: moment(reserva.fecha + ' 12:00', 'YYYY-MM-DD HH:mm').format(
-          'dddd, D [de] MMMM [de] YYYY',
+        fecha: formatInBogota(
+          parse(reserva.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
+          "eeee, d 'de' MMMM 'de' yyyy",
         ),
       };
     }
@@ -225,12 +224,13 @@ export class ModalDreservasComponent {
       const fechaFiltro = this.dreservasService.fecha();
 
       const fechaBase = fechaFiltro
-        ? moment(fechaFiltro, 'YYYY-MM-DD')
-        : moment();
+        ? parse(fechaFiltro, 'yyyy-MM-dd', new Date())
+        : new Date();
 
-      const fechaApertura = fechaBase
-        .clone()
-        .subtract(configuracion.dias_previos_apertura, 'days');
+      let fechaApertura = subDays(
+        fechaBase,
+        configuracion.dias_previos_apertura,
+      );
 
       const [horas, minutos] = configuracion.hora_apertura
         .split(':')
@@ -246,14 +246,14 @@ export class ModalDreservasComponent {
         ? minutos + tipoUsuarioConfig.retraso_reserva
         : minutos;
 
-      fechaApertura.set({
-        hour: horas,
-        minute: minutosTotales,
-        second: 0,
-        millisecond: 0,
+      fechaApertura = setTime(fechaApertura, {
+        hours: horas,
+        minutes: minutosTotales,
+        seconds: 0,
+        milliseconds: 0,
       });
 
-      return fechaApertura.format('DD/MM/YYYY HH:mm a');
+      return formatInBogota(fechaApertura, 'dd/MM/yyyy HH:mm a');
     } catch (error) {
       console.error('Error al calcular fecha de apertura:', error);
       return 'No disponible';
@@ -280,8 +280,8 @@ export class ModalDreservasComponent {
 
     const fechaFiltro = this.dreservasService.fecha();
     const fechaBaseStr = fechaFiltro
-      ? moment(fechaFiltro, 'YYYY-MM-DD').format('YYYY-MM-DD')
-      : moment().format('YYYY-MM-DD');
+      ? format(parse(fechaFiltro, 'yyyy-MM-dd', new Date()), 'yyyy-MM-dd')
+      : formatInBogota(new Date(), 'yyyy-MM-dd');
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 

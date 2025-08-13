@@ -27,7 +27,8 @@ import {
   FlexRenderDirective,
   PaginationState,
 } from '@tanstack/angular-table';
-import moment from 'moment';
+import { format } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { AppService } from '@app/app.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -70,7 +71,9 @@ export class GruposComponent implements OnInit, OnDestroy {
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
-  public fechaActual = computed(() => moment().format('DD/MM/YYYY HH:mm a'));
+  public fechaActual = computed(() =>
+    formatInBogota(new Date(), 'dd/MM/yyyy HH:mm a'),
+  );
   public nombre = new FormControl<string | null>(null, [
     Validators.required,
     Validators.minLength(3),
@@ -127,10 +130,10 @@ export class GruposComponent implements OnInit, OnDestroy {
       header: `Creado en`,
       size: 150,
       accessorFn: row => {
-        const date = moment(row.creado_en);
-        return date.isValid()
-          ? date.format('DD/MM/YYYY hh:mm a')
-          : 'Fecha inválida';
+        const date = new Date(row.creado_en as any);
+        return isNaN(date.getTime())
+          ? 'Fecha inválida'
+          : formatInBogota(date, 'dd/MM/yyyy hh:mm a');
       },
       cell: this.fechaCell,
     },

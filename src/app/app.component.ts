@@ -10,7 +10,8 @@ import { Router, RouterOutlet } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 
-import moment from 'moment-timezone';
+import { setDefaultOptions } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -18,6 +19,7 @@ import { SessionSyncService } from '@auth/services/session-sync.service';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import { AuthLoadingComponent } from '@shared/components/auth-loading/auth-loading.component';
 import { GlobalLoaderComponent } from '@shared/components/global-loader/global-loader.component';
+import { IndexedDbService } from '@shared/services/indexed-db.service';
 
 @Component({
   selector: 'app-root',
@@ -33,7 +35,6 @@ import { GlobalLoaderComponent } from '@shared/components/global-loader/global-l
   ],
 })
 export class AppComponent implements OnInit {
-  momentL = moment;
   private router = inject(Router);
 
   appService = inject(AppService);
@@ -48,8 +49,7 @@ export class AppComponent implements OnInit {
   });
 
   constructor() {
-    this.momentL.tz.setDefault('America/Bogota');
-    this.momentL.locale('es');
+    setDefaultOptions({ locale: es });
   }
 
   ngOnInit() {

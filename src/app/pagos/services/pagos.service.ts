@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import moment from 'moment-timezone';
-import 'moment/locale/es';
+import { parseISO } from 'date-fns';
+import { formatInBogota } from '@shared/utils/timezone';
 
 import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
@@ -43,10 +43,7 @@ export class PagosService {
     },
   }));
 
-  constructor() {
-    moment.tz.setDefault('America/Bogota');
-    moment.locale('es');
-  }
+  constructor() {}
 
   // Métodos para la tabla
   public setPaginacion(paginacion: PaginationState) {
@@ -93,11 +90,12 @@ export class PagosService {
   }
 
   formatearFecha(fecha: string): string {
-    return moment(fecha).format('MMMM DD YYYY, h:mm a');
+    // Mostrar siempre en zona Bogotá
+    return formatInBogota(parseISO(fecha), 'MMMM dd yyyy, h:mm a');
   }
 
   formatearFechaCorta(fecha: string): string {
-    return moment(fecha).format('DD/MM/YYYY');
+    return formatInBogota(parseISO(fecha), 'dd/MM/yyyy');
   }
 
   obtenerMensajeEstado(estado: string): string {

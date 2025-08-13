@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authRoutes } from '@auth/auth.routes';
 import { AuthGuard } from './auth/guards/auth.guard';
-import { UserValidationGuard } from './auth/guards/user-validation.guard';
 import { AppInitGuard } from './auth/guards/app-init.guard';
 import { PermissionsGuard } from './shared/guards/permissions-simple.guard';
 import { ProfileCompleteGuard } from './auth/guards/profile-complete.guard';

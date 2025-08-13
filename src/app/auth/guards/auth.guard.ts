@@ -20,23 +20,17 @@ export class AuthGuard implements CanActivate {
   ): Observable<boolean> | boolean {
     const estadoAuth = this.authService.estadoAutenticacion();
 
-    // Si ya está autenticado, permitir acceso inmediatamente
-    if (estadoAuth === 'autenticado') {
+    // Si ya está autenticado por presencia de usuario + refresh válido, permitir
+    if (estadoAuth === 'autenticado' && this.authService.isSessionValid()) {
       return true;
     }
 
-    // Si claramente no está autenticado, redirigir inmediatamente
-    if (estadoAuth === 'noAutenticado') {
-      this.redirectToLogin(state.url);
-      return false;
-    }
-
-    // Si está chequeando, esperar un tiempo limitado para la resolución
+    // Si está chequeando, esperar un tiempo limitado
     if (estadoAuth === 'chequeando') {
       return this.waitForAuthResolution(state.url);
     }
 
-    // Por defecto, no permitir acceso
+    // Estado noAutenticado o sesión inválida
     this.redirectToLogin(state.url);
     return false;
   }

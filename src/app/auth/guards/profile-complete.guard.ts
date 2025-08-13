@@ -36,9 +36,9 @@ export class ProfileCompleteGuard implements CanActivate {
 
   private async checkProfile(): Promise<boolean> {
     try {
-      const isComingFromLogin = this.validationCache.isComingFromLogin();
+      const isComingFromLogin = await this.validationCache.isComingFromLogin();
       const storedProfileCompleted =
-        this.validationCache.obtenerPerfilCompletado();
+        await this.validationCache.obtenerPerfilCompletado();
 
       if (isComingFromLogin || storedProfileCompleted === null) {
         this.globalLoaderService.show(
@@ -57,7 +57,7 @@ export class ProfileCompleteGuard implements CanActivate {
 
         const profileCompleted = profileResponse.data.perfil_completo;
 
-        this.validationCache.setPerfilCompletado(profileCompleted);
+  await this.validationCache.setPerfilCompletado(profileCompleted);
 
         if (!profileCompleted) {
           this.globalLoaderService.hide();

@@ -32,7 +32,7 @@ import {
 } from '@tanstack/angular-table';
 
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format, parse, isBefore, isAfter } from 'date-fns';
 import { FranjaHoraria } from '@espacios/interfaces';
 import { BotonAcciones } from '@shared/interfaces';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
@@ -129,9 +129,8 @@ export class ConfiguracionFormComponent<T> {
       while (totalMinutos < maxMinutos) {
         const horas = Math.floor(totalMinutos / 60);
         const minutos = totalMinutos % 60;
-        todasLasOpciones.push(
-          moment({ hour: horas, minute: minutos }).format('hh:mm A'),
-        );
+        const d = new Date(1970, 0, 1, horas, minutos, 0);
+        todasLasOpciones.push(format(d, 'hh:mm a'));
         totalMinutos += minutosUso;
       }
 
@@ -169,9 +168,8 @@ export class ConfiguracionFormComponent<T> {
 
         if (horas >= 24) break;
 
-        todasLasOpciones.push(
-          moment({ hour: horas, minute: minutos }).format('hh:mm A'),
-        );
+        const d = new Date(1970, 0, 1, horas, minutos, 0);
+        todasLasOpciones.push(format(d, 'hh:mm a'));
         totalMinutos += minutosUso;
       }
 
@@ -209,15 +207,19 @@ export class ConfiguracionFormComponent<T> {
       id: 'hora_inicio',
       header: 'Hora Inicio',
       accessorKey: 'hora_inicio',
-      cell: info =>
-        moment(info.getValue() as string, 'HH:mm').format('hh:mm A'),
+      cell: info => {
+        const d = parse(info.getValue() as string, 'HH:mm', new Date());
+        return format(d, 'hh:mm a');
+      },
     },
     {
       id: 'hora_fin',
       header: 'Hora Fin',
       accessorKey: 'hora_fin',
-      cell: info =>
-        moment(info.getValue() as string, 'HH:mm').format('hh:mm A'),
+      cell: info => {
+        const d = parse(info.getValue() as string, 'HH:mm', new Date());
+        return format(d, 'hh:mm a');
+      },
     },
     {
       id: 'valor',
@@ -388,22 +390,23 @@ export class ConfiguracionFormComponent<T> {
   }
 
   private convertirHoraA24(hora12: string): string {
-    return moment(hora12, 'hh:mm A').format('HH:mm');
+    const d = parse(hora12, 'hh:mm a', new Date());
+    return format(d, 'HH:mm');
   }
 
   private estaHoraOcupada(
     hora24: string,
     franjasExistentes: FranjaHoraria[],
   ): boolean {
-    const horaMoment = moment(hora24, 'HH:mm');
+  const horaDate = parse(hora24, 'HH:mm', new Date());
 
     return franjasExistentes.some((franja: FranjaHoraria) => {
-      const inicioExistente = moment(franja.hora_inicio, 'HH:mm');
-      const finExistente = moment(franja.hora_fin, 'HH:mm');
+      const inicioExistente = parse(franja.hora_inicio, 'HH:mm', new Date());
+      const finExistente = parse(franja.hora_fin, 'HH:mm', new Date());
 
       return (
-        horaMoment.isSameOrAfter(inicioExistente) &&
-        horaMoment.isBefore(finExistente)
+        (!isBefore(horaDate, inicioExistente)) &&
+        isBefore(horaDate, finExistente)
       );
     });
   }
@@ -413,16 +416,14 @@ export class ConfiguracionFormComponent<T> {
     horaFin: string,
     franjasExistentes: FranjaHoraria[],
   ): boolean {
-    const inicioNueva = moment(horaInicio, 'HH:mm');
-    const finNueva = moment(horaFin, 'HH:mm');
+  const inicioNueva = parse(horaInicio, 'HH:mm', new Date());
+  const finNueva = parse(horaFin, 'HH:mm', new Date());
 
     return franjasExistentes.some((franja: FranjaHoraria) => {
-      const inicioExistente = moment(franja.hora_inicio, 'HH:mm');
-      const finExistente = moment(franja.hora_fin, 'HH:mm');
+  const inicioExistente = parse(franja.hora_inicio, 'HH:mm', new Date());
+  const finExistente = parse(franja.hora_fin, 'HH:mm', new Date());
 
-      return (
-        inicioNueva.isBefore(finExistente) && finNueva.isAfter(inicioExistente)
-      );
+  return isBefore(inicioNueva, finExistente) && isAfter(finNueva, inicioExistente);
     });
   }
 

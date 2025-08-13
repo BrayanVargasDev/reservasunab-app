@@ -8,7 +8,6 @@ import {
 import { getConfigsBase, saveConfigBase } from '../actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Configuracion } from '@espacios/interfaces';
-import moment from 'moment';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 
 @Injectable({

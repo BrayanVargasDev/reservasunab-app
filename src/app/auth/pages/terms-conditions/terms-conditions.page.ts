@@ -67,8 +67,8 @@ export class TermsConditionsPage {
       const profileResponse = await checkProfileCompleted(this.http);
       const perfilCompleto = profileResponse.data.perfil_completo;
 
-      this.validationCache.setTerminosAceptados(true);
-      this.validationCache.setPerfilCompletado(perfilCompleto);
+  await this.validationCache.setTerminosAceptados(true);
+  await this.validationCache.setPerfilCompletado(perfilCompleto);
 
       this.authService.verificarYSincronizarUsuario();
 

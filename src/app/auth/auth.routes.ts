@@ -18,6 +18,13 @@ export const authRoutes: Routes = [
             m => m.TermsConditionsPage,
           ),
       },
+      {
+        path: 'callback',
+        loadComponent: () =>
+          import('@auth/pages/callback/callback.page').then(
+            m => m.AuthCallbackPage,
+          ),
+      },
       // {
       //   path: 'registro',
       //   canActivate: [NoAuthGuard],

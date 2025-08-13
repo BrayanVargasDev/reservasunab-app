@@ -34,7 +34,7 @@ import {
   flexRenderComponent,
 } from '@tanstack/angular-table';
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format } from 'date-fns';
 
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -164,14 +164,14 @@ export class ConfigPorFechaComponent {
   private initializePikaday() {
     this.pikaday = new Pikaday({
       field: this.fechaPicker()?.nativeElement,
-      minDate: moment().toDate(),
+      minDate: new Date(),
       i18n: i18nDatePicker,
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
         this.configPorFechaService.setFechaSeleccionada(
-          moment(date).format('YYYY-MM-DD'),
+          format(date, 'yyyy-MM-dd'),
         );
-        this.fecha.setValue(moment(date).format('DD/MM/YYYY'));
+        this.fecha.setValue(format(date, 'dd/MM/yyyy'));
       },
     });
   }

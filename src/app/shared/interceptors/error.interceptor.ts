@@ -26,19 +26,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       );
       const esUserCall = req.url.endsWith('/me');
 
-      // Manejar errores 401 (no autorizado)
+      // 401 se maneja en el interceptor de autenticación (refresh + reintento)
       if (error.status === 401) {
-        // Limpiar sesión siempre que haya un 401
-        authService.clearSession();
-
-        // Solo redirigir si no estamos en una ruta pública
-        if (!esRutaPublica) {
-          router.navigate(['/auth/login'], {
-            queryParams: { returnUrl: currentUrl },
-            replaceUrl: true,
-          });
-        }
-
         return throwError(() => error);
       }
 

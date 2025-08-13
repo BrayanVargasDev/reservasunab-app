@@ -1,5 +1,8 @@
 export const STORAGE_KEYS = {
-  TOKEN: 'token',
+  // Mantiene compatibilidad: TOKEN ya no se usa para persistir access token.
+  // Se conserva para limpiar datos antiguos y escuchar cambios entre tabs.
+  TOKEN: 'access_token',
+  REFRESH_TOKEN: 'refresh_token',
   USER: 'user',
   LAST_ACTIVITY: 'last_activity',
   PROFILE_COMPLETED: 'profile_completed',

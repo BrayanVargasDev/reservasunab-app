@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import moment from 'moment';
+import { format } from 'date-fns';
 
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { MisReservasService } from '@reservas/services/mis-reservas.service';
@@ -28,7 +28,7 @@ import { UpperFirstPipe } from '@shared/pipes';
     WebIconComponent,
     BreadcrumbsComponent,
     ModalDreservasComponent,
-    UpperFirstPipe
+    UpperFirstPipe,
   ],
   templateUrl: './mis-reservas.page.html',
   styleUrl: './mis-reservas.page.scss',
@@ -74,7 +74,8 @@ export default class MisReservasPage implements OnInit, OnDestroy {
   }
 
   public formatearFechaReserva(fecha: string | Date): string {
-    return moment(fecha).format('DD/MM/YYYY');
+    const d = typeof fecha === 'string' ? new Date(fecha) : fecha;
+    return format(d, 'dd/MM/yyyy');
   }
 
   aplicarFiltro(texto: string) {

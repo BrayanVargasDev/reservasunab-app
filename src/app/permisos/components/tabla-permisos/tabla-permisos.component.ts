@@ -29,7 +29,6 @@ import {
   Row,
   PaginationState,
 } from '@tanstack/angular-table';
-import moment from 'moment';
 
 import { AppService } from '@app/app.service';
 import { Permiso } from '@permisos/interfaces/permiso.interface';

@@ -86,8 +86,9 @@ export class LoginPage {
     this.loginForm.disable();
   }
 
-  onLogin() {
+  async onLogin(): Promise<void> {
     this.loginForm.markAllAsTouched();
+
     if (this.loginForm.invalid) {
       this.loginForm.enable();
       return;
@@ -98,47 +99,58 @@ export class LoginPage {
     this.authService.setLoading(true);
     this.disableForm();
 
-    this.authService
-      .login(email, password)
-      .then(async response => {
-        try {
-          this.authService.setUser(response.data);
-          this.authService.setToken(response.data?.token || null);
+    try {
+      const response = await this.authService.login(email, password);
 
-          await this.authService.userQuery.refetch();
+      this.authService.onSuccessLogin(response.data);
+  // Obtener usuario fresco del backend y luego redirigir según reglas
+  await this.authService.userQuery.refetch();
+  await this.delay(200);
 
-          await new Promise(resolve => setTimeout(resolve, 200));
+  await this.navigateAfterLogin();
+    } catch (error) {
+      this.handleLoginError(error);
+    } finally {
+      this.authService.setLoading(false);
+      this.loginForm.enable();
+    }
+  }
 
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+  private async navigateAfterLogin(): Promise<void> {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    try {
+      const dest = await this.authService.postLoginRedirect();
 
-          if (returnUrl && returnUrl !== '/') {
-            await this.router.navigate([returnUrl]);
-          } else {
-            try {
-              await this.navigationService.navegarAPrimeraPaginaDisponible();
-            } catch (error) {
-              await this.router.navigate(['/reservas']);
-            }
-          }
-        } catch (setupError) {
-          await this.router.navigate(['/reservas']);
-        } finally {
-          this.authService.setLoading(false);
-          this.loginForm.enable();
-        }
-      })
-      .catch(error => {
-        this.authService.setLoading(false);
-        this.loginForm.enable();
-        this.alertaService.error(
-          `Error al iniciar sesión. ${
-            (error as HttpErrorResponse)?.error?.message ||
-            'Por favor, inténtalo de nuevo.'
-          }`,
-          500000,
-          this.alertaLogin(),
-          'w-full block my-2',
-        );
-      });
+      if (dest && dest !== '/') {
+        await this.router.navigate([dest]);
+        return;
+      }
+
+      if (returnUrl && returnUrl !== '/') {
+        await this.router.navigate([returnUrl]);
+        return;
+      }
+
+      await this.navigationService.navegarAPrimeraPaginaDisponible();
+    } catch {
+      await this.router.navigate(['/reservas']);
+    }
+  }
+
+  private handleLoginError(error: unknown): void {
+    const errorMessage =
+      (error as HttpErrorResponse)?.error?.message ||
+      'Por favor, inténtalo de nuevo.';
+
+    this.alertaService.error(
+      `Error al iniciar sesión. ${errorMessage}`,
+      500000,
+      this.alertaLogin(),
+      'w-full block my-2',
+    );
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

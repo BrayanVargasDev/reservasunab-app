@@ -31,7 +31,7 @@ import {
   startWith,
 } from 'rxjs';
 import Pikaday from 'pikaday';
-import moment from 'moment';
+import { format, parse } from 'date-fns';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 
 import { PerfilService } from '@app/perfil/services/perfil.service';
@@ -381,20 +381,24 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private initializePikaday() {
     this.pikaday = new Pikaday({
       field: this.fechaNacimientoPicker()?.nativeElement,
-      yearRange: [1950, moment().year() - 16],
-      maxDate: moment().subtract(16, 'years').toDate(),
+      yearRange: [1950, new Date().getFullYear() - 16],
+      maxDate: new Date(
+        new Date().getFullYear() - 16,
+        new Date().getMonth(),
+        new Date().getDate(),
+      ),
       i18n: this.perfilService.i18nDatePicker(),
       format: 'DD/MM/YYYY',
       onSelect: (date: Date) => {
-        const fechaFormateada = moment(date).format('DD/MM/YYYY');
+        const fechaFormateada = format(date, 'dd/MM/yyyy');
         this.perfilForm.get('fechaNacimiento')?.setValue(fechaFormateada);
       },
     });
 
     this.perfilForm.get('fechaNacimiento')?.valueChanges.subscribe(value => {
       if (value) {
-        const date = moment(value, 'DD/MM/YYYY');
-        this.pikaday.setMoment(date, true);
+        const date = parse(value, 'dd/MM/yyyy', new Date());
+        this.pikaday.setDate(date, true);
       } else {
         this.pikaday.setDate(null);
       }
@@ -409,7 +413,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     let fechaFormateada = '';
     if (usuario.fechaNacimiento) {
       const fechaTmp = usuario.fechaNacimiento.split('T')[0];
-      fechaFormateada = moment(fechaTmp, 'YYYY-MM-DD').format('DD/MM/YYYY');
+      fechaFormateada = format(
+        parse(fechaTmp, 'yyyy-MM-dd', new Date()),
+        'dd/MM/yyyy',
+      );
     }
 
     this.perfilForm.patchValue({
@@ -462,8 +469,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     }
 
     if (this.pikaday && fechaFormateada) {
-      const date = moment(fechaFormateada, 'DD/MM/YYYY');
-      this.pikaday.setMoment(date, true);
+      const date = parse(fechaFormateada, 'dd/MM/yyyy', new Date());
+      this.pikaday.setDate(date, true);
     }
   }
 
@@ -474,8 +481,13 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     }
 
     const fechaNacimiento = this.perfilForm.value.fechaNacimiento
-      ? moment(this.perfilForm.value.fechaNacimiento, 'DD/MM/YYYY').format(
-          'YYYY-MM-DD',
+      ? format(
+          parse(
+            this.perfilForm.value.fechaNacimiento,
+            'dd/MM/yyyy',
+            new Date(),
+          ),
+          'yyyy-MM-dd',
         )
       : '';
 

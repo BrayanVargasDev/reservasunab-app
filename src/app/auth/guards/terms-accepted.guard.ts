@@ -34,8 +34,8 @@ export class TermsAcceptedGuard implements CanActivate {
 
   private async checkTerms(): Promise<boolean> {
     try {
-      const isComingFromLogin = this.validationCache.isComingFromLogin();
-      const storedTermsAccepted = this.validationCache.getTerminosAceptados();
+  const isComingFromLogin = await this.validationCache.isComingFromLogin();
+  const storedTermsAccepted = await this.validationCache.getTerminosAceptados();
 
       if (isComingFromLogin || storedTermsAccepted === null) {
         this.globalLoaderService.show(
@@ -56,7 +56,7 @@ export class TermsAcceptedGuard implements CanActivate {
 
         const termsAccepted = termsResponse.data.terminos_condiciones;
 
-        this.validationCache.setTerminosAceptados(termsAccepted);
+  await this.validationCache.setTerminosAceptados(termsAccepted);
 
         if (!termsAccepted) {
           this.globalLoaderService.hide();

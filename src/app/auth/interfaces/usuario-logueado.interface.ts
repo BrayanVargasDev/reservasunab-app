@@ -7,7 +7,8 @@ export interface UsuarioLogueado {
   apellido: string;
   email: string;
   rol: Rol;
-  token: string;
+  access_token: string;
+  refresh_token: string;
   permisos: Permiso[];
   tipo_usuario: TipoUsuario[];
 }

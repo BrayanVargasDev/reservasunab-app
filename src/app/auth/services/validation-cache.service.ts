@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { STORAGE_KEYS } from '@auth/constants/storage.constants';
+import { IndexedDbService } from '@shared/services/indexed-db.service';
 
 /**
  * Servicio para manejar el cache de validaciones en localStorage
@@ -9,21 +10,19 @@ import { STORAGE_KEYS } from '@auth/constants/storage.constants';
   providedIn: 'root',
 })
 export class ValidationCacheService {
-  setPerfilCompletado(completed: boolean): void {
+  private idb = inject(IndexedDbService);
+
+  async setPerfilCompletado(completed: boolean): Promise<void> {
     try {
-      localStorage.setItem(
-        STORAGE_KEYS.PROFILE_COMPLETED,
-        JSON.stringify(completed),
-      );
+      await this.idb.setJSON(STORAGE_KEYS.PROFILE_COMPLETED, completed);
     } catch (error) {
       console.error('Error guardando estado del perfil:', error);
     }
   }
 
-  obtenerPerfilCompletado(): boolean | null {
+  async obtenerPerfilCompletado(): Promise<boolean | null> {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED);
-      return stored ? JSON.parse(stored) : null;
+      return await this.idb.getJSON<boolean>(STORAGE_KEYS.PROFILE_COMPLETED);
     } catch (error) {
       console.error('Error obteniendo estado del perfil:', error);
       return null;
@@ -33,12 +32,9 @@ export class ValidationCacheService {
   /**
    * Guarda el estado de términos aceptados en localStorage
    */
-  setTerminosAceptados(accepted: boolean): void {
+  async setTerminosAceptados(accepted: boolean): Promise<void> {
     try {
-      localStorage.setItem(
-        STORAGE_KEYS.TERMS_ACCEPTED,
-        JSON.stringify(accepted),
-      );
+      await this.idb.setJSON(STORAGE_KEYS.TERMS_ACCEPTED, accepted);
     } catch (error) {
       console.error('Error guardando estado de términos:', error);
     }
@@ -47,10 +43,9 @@ export class ValidationCacheService {
   /**
    * Obtiene el estado de términos aceptados desde localStorage
    */
-  getTerminosAceptados(): boolean | null {
+  async getTerminosAceptados(): Promise<boolean | null> {
     try {
-      const stored = localStorage.getItem(STORAGE_KEYS.TERMS_ACCEPTED);
-      return stored ? JSON.parse(stored) : null;
+      return await this.idb.getJSON<boolean>(STORAGE_KEYS.TERMS_ACCEPTED);
     } catch (error) {
       console.error('Error obteniendo estado de términos:', error);
       return null;
@@ -60,24 +55,30 @@ export class ValidationCacheService {
   /**
    * Verifica si el usuario viene de login (no hay estados guardados)
    */
-  isComingFromLogin(): boolean {
-    const profileStored = this.obtenerPerfilCompletado();
-    const termsStored = this.getTerminosAceptados();
+  async isComingFromLogin(): Promise<boolean> {
+    const [profileStored, termsStored] = await Promise.all([
+      this.obtenerPerfilCompletado(),
+      this.getTerminosAceptados(),
+    ]);
     return profileStored === null && termsStored === null;
   }
 
-  limpiarEstadosValidacion(): void {
+  async limpiarEstadosValidacion(): Promise<void> {
     try {
-      localStorage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
-      localStorage.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
+      await Promise.all([
+        this.idb.removeItem(STORAGE_KEYS.PROFILE_COMPLETED),
+        this.idb.removeItem(STORAGE_KEYS.TERMS_ACCEPTED),
+      ]);
     } catch (error) {
       console.error('Error limpiando estados de validación:', error);
     }
   }
 
-  tieneEstadosValidos(): boolean {
-    const profileStored = this.obtenerPerfilCompletado();
-    const termsStored = this.getTerminosAceptados();
+  async tieneEstadosValidos(): Promise<boolean> {
+    const [profileStored, termsStored] = await Promise.all([
+      this.obtenerPerfilCompletado(),
+      this.getTerminosAceptados(),
+    ]);
     return profileStored !== null && termsStored !== null;
   }
 }
