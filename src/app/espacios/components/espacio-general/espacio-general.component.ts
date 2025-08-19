@@ -39,6 +39,7 @@ import { AppService } from '@app/app.service';
 import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
 import { AuthService } from '@auth/services/auth.service';
+import { ConfigBaseService } from '@espacios/services/config-base.service';
 
 @Component({
   selector: 'espacio-general',
@@ -64,6 +65,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
   ).asReadonly();
   private file = signal<File | null>(null);
   private enviroment = environment;
+  private configBaseService = inject(ConfigBaseService);
 
   public authService = inject(AuthService);
   public espaciosService = inject(EspaciosService);
@@ -77,6 +79,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     sede: ['', [Validators.required]],
     permitirJugadores: [false],
     permitirExternos: [false],
+    aprobarReservas: [false],
     minimoJugadores: [''],
     maximoJugadores: [''],
     reservasSimultaneas: [1, [Validators.min(1)]],
@@ -209,6 +212,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         sede: espacio?.sede?.id || '',
         permitirJugadores: espacio?.agregar_jugadores || false,
         permitirExternos: espacio?.permite_externos || false,
+        aprobarReservas: espacio?.aprobar_reserva ?? false,
         minimoJugadores: espacio?.minimo_jugadores || '',
         maximoJugadores: espacio?.maximo_jugadores || '',
         reservasSimultaneas: espacio?.reservas_simultaneas || 1,
@@ -245,6 +249,37 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         this.espacioConfigService.alertaEspacioConfigRef()!,
         this.estilosAlerta(),
       );
+    }
+  }
+
+  public async onAprobarReservasChange(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      // Mostrar confirmación
+      const confirmado = await this.alertaService.confirmacion({
+        referencia: this.espacioConfigService.alertaEspacioConfigRef()!,
+        titulo: 'Confirmar cambio',
+        tipo: 'warning',
+        mensaje:
+          'Este cambio hará que <strong>todas las franjas horarias</strong> de este espacio (base y futuras) tengan <strong>valor 0</strong>. Para revertirlo tendrás que reconfigurar manualmente las franjas horarias. ¿Deseas continuar?',
+        botones: [
+          { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
+          {
+            texto: 'Confirmar',
+            tipo: 'confirmar',
+            estilo: 'btn-warning',
+          },
+        ],
+      });
+
+      if (!confirmado) {
+        this.espacioForm.get('aprobarReservas')?.setValue(false, {
+          emitEvent: false,
+        });
+        return;
+      }
+    } else {
+      // Si se desmarca no se pide confirmación, simplemente queda false
     }
   }
 
@@ -298,6 +333,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         );
         this.espacioConfigService.espacioQuery.refetch();
         this.espaciosService.espaciosQuery.refetch();
+        this.configBaseService.configsQuery.refetch();
         this.cancelarEditar();
       })
       .catch((error: GeneralResponse<Espacio>) => {

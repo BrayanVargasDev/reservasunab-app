@@ -332,6 +332,22 @@ export class ConfiguracionFormComponent<T> {
         injector: this.injector,
       },
     );
+
+    // Efecto para mantener coherencia del campo valor según aprobar_reservas
+    effect(
+      () => {
+        const aprobar =
+          this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
+        // Si está en modo creación y requiere aprobación, fijar en 0 y deshabilitar
+        if (this.modoCreacion() && aprobar) {
+          this.valor.setValue('0', { emitEvent: false });
+          this.valor.disable({ emitEvent: false });
+        } else if (this.modoCreacion() && !aprobar) {
+          if (this.valor.disabled) this.valor.enable({ emitEvent: false });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   public actualizarFranjasSignal() {
@@ -346,6 +362,15 @@ export class ConfiguracionFormComponent<T> {
   public nuevaFranja() {
     this.modoCreacion.set(true);
     this.espacioConfigService.setCrandoFranja(true);
+    const aprobar =
+      this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
+    if (aprobar) {
+      this.valor.setValue('0', { emitEvent: false });
+      this.valor.disable({ emitEvent: false });
+    } else {
+      if (this.valor.disabled) this.valor.enable({ emitEvent: false });
+      this.valor.reset();
+    }
   }
 
   private cancelarCreacion() {
@@ -358,11 +383,17 @@ export class ConfiguracionFormComponent<T> {
   }
 
   private onGuardarNueva() {
-    if (this.horaInicio.valid && this.horaFin.valid && this.valor.valid) {
+    const aprobar =
+      this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
+    if (
+      this.horaInicio.valid &&
+      this.horaFin.valid &&
+      (this.valor.valid || aprobar)
+    ) {
       const nuevaFranja = {
         hora_inicio: this.convertirHoraA24(this.horaInicio.value!),
         hora_fin: this.convertirHoraA24(this.horaFin.value!),
-        valor: +this.valor.value!,
+        valor: aprobar ? 0 : +this.valor.value!,
         activa: true,
       };
 
@@ -398,15 +429,14 @@ export class ConfiguracionFormComponent<T> {
     hora24: string,
     franjasExistentes: FranjaHoraria[],
   ): boolean {
-  const horaDate = parse(hora24, 'HH:mm', new Date());
+    const horaDate = parse(hora24, 'HH:mm', new Date());
 
     return franjasExistentes.some((franja: FranjaHoraria) => {
       const inicioExistente = parse(franja.hora_inicio, 'HH:mm', new Date());
       const finExistente = parse(franja.hora_fin, 'HH:mm', new Date());
 
       return (
-        (!isBefore(horaDate, inicioExistente)) &&
-        isBefore(horaDate, finExistente)
+        !isBefore(horaDate, inicioExistente) && isBefore(horaDate, finExistente)
       );
     });
   }
@@ -416,14 +446,17 @@ export class ConfiguracionFormComponent<T> {
     horaFin: string,
     franjasExistentes: FranjaHoraria[],
   ): boolean {
-  const inicioNueva = parse(horaInicio, 'HH:mm', new Date());
-  const finNueva = parse(horaFin, 'HH:mm', new Date());
+    const inicioNueva = parse(horaInicio, 'HH:mm', new Date());
+    const finNueva = parse(horaFin, 'HH:mm', new Date());
 
     return franjasExistentes.some((franja: FranjaHoraria) => {
-  const inicioExistente = parse(franja.hora_inicio, 'HH:mm', new Date());
-  const finExistente = parse(franja.hora_fin, 'HH:mm', new Date());
+      const inicioExistente = parse(franja.hora_inicio, 'HH:mm', new Date());
+      const finExistente = parse(franja.hora_fin, 'HH:mm', new Date());
 
-  return isBefore(inicioNueva, finExistente) && isAfter(finNueva, inicioExistente);
+      return (
+        isBefore(inicioNueva, finExistente) &&
+        isAfter(finNueva, inicioExistente)
+      );
     });
   }
 
@@ -432,6 +465,11 @@ export class ConfiguracionFormComponent<T> {
     this.horaFin.reset();
     this.valor.reset();
     this.modoCreacion.set(false);
+    // Rehabilitar control valor tras cancelar (si no se requiere aprobación)
+    const aprobar =
+      this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
+    if (!aprobar && this.valor.disabled)
+      this.valor.enable({ emitEvent: false });
   }
 
   ngOnDestroy() {

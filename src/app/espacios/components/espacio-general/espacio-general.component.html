@@ -172,6 +172,20 @@
       </label>
     </div>
   </div>
+  <div class="my-2 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+    <div class="flex flex-col w-full">
+      <label class="label text-sm text-base-content" for="aprobarReservas">
+        <input
+          id="aprobarReservas"
+          formControlName="aprobarReservas"
+          type="checkbox"
+          class="checkbox checkbox-bordered mr-2"
+          (change)="onAprobarReservasChange($event)"
+        />
+        Requiere aprobar reservas manualmente
+      </label>
+    </div>
+  </div>
   @if (permitirJugadores.checked) {
   <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
     <div class="flex flex-col w-full md:w-1/3">

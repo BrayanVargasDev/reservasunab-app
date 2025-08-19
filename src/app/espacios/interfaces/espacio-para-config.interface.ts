@@ -9,6 +9,7 @@ export interface EspacioParaConfig {
   nombre: string;
   descripcion: string;
   agregar_jugadores: boolean;
+  aprobar_reserva: boolean; // Nuevo: indica si requiere aprobación de reservas
   minimo_jugadores: number;
   maximo_jugadores: number;
   reservas_simultaneas: number;
