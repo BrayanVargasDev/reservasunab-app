@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 import { NavigationService } from '@shared/services/navigation.service';
@@ -36,8 +41,12 @@ export class AuthCallbackPage implements OnInit {
 
     try {
       // Intercambiar code por tokens (access en memoria, refresh persistente)
-      await this.authService.intercambiarToken(code);
+      const response = await this.authService.intercambiarToken(code);
 
+      if (!response) {
+        await this.router.navigate(['/auth/login']);
+        return;
+      }
       // Decidir ruta de destino respetando lógica de términos/perfil
       const dest = await this.authService.postLoginRedirect();
 

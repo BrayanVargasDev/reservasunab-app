@@ -422,7 +422,7 @@ export class AuthService {
     }
   }
 
-  public async intercambiarToken(code: string): Promise<void> {
+  public async intercambiarToken(code: string): Promise<boolean> {
     try {
       const response = await intercambiarTokenAction(this.http, code);
       const { access_token, refresh_token } = response.data;
@@ -434,8 +434,10 @@ export class AuthService {
       // Obtener usuario actualizado y establecer estado autenticado
       await this.userQuery.refetch();
       this._estadoAutenticacion.set('autenticado');
+      return true;
     } catch (error) {
       console.error('Error intercambiando token:', error);
+      return false;
     }
   }
 
