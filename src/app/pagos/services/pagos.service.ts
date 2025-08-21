@@ -99,92 +99,129 @@ export class PagosService {
   }
 
   obtenerMensajeEstado(estado: string): string {
-    const mensajes = {
-      // Estados de ecollect
-      OK: 'Tu pago ha sido procesado exitosamente. Recibirás un correo de confirmación.',
-      NOT_AUTHORIZED:
-        'Tu pago ha sido rechazado por la entidad financiera. Intenta con otro método de pago o contacta soporte.',
-      BANK: 'Tu pago está siendo procesado por la entidad financiera. Te notificaremos cuando se complete.',
-      PENDING:
-        'Tu pago está pendiente de confirmación por parte de la entidad financiera.',
-      CAPTURED:
-        'Se ha generado tu transacción para pago en canales presenciales. Completa el pago en el canal indicado.',
-      CREATED:
-        'Tu transacción ha sido creada exitosamente. Procede a completar el pago.',
-      EXPIRED: 'Tu transacción ha expirado. Inicia un nuevo proceso de pago.',
-      FAILED:
-        'Se presentó una falla técnica procesando tu pago. Intenta nuevamente o contacta soporte.',
-      ENROLLED: 'Tu suscripción de pago recurrente ha sido exitosa.',
+    if (!estado) return 'Estado desconocido.';
 
-      // Estados internos del sistema
-      inicial: 'Tu transacción ha sido iniciada. Procede a completar el pago.',
-      pendiente:
-        'Tu pago está siendo procesado. Te notificaremos cuando se complete.',
-      pendienteap:
-        'Tu reserva está pendiente de aprobación. Te notificaremos cuando se apruebe.',
-      pagada:
-        'Tu pago ha sido procesado exitosamente. Recibirás un correo de confirmación.',
-      confirmada: 'Tu pago ha sido confirmado y procesado completamente.',
+    const original = estado.trim();
+    const upper = original.toUpperCase();
 
-      // Estados legacy (mantener compatibilidad)
-      completado:
-        'Tu pago ha sido procesado exitosamente. Recibirás un correo de confirmación.',
-      procesando: 'Estamos procesando tu pago. Esto puede tomar unos minutos.',
-      rechazado:
-        'Tu pago ha sido rechazado. Intenta con otro método de pago o contacta soporte.',
+    // Estados de RESERVA manejados internamente
+    const mensajesReserva: Record<string, string> = {
+      INICIAL: 'La reserva ha sido creada correctamente.',
+      PENDIENTEAP: 'La reserva está pendiente de aprobación.',
+      APROBADA: 'La reserva ha sido aprobada.',
+      COMPLETADA:
+        'La reserva se ha completado correctamente (pagada o agendada).',
     };
 
-    return (
-      mensajes[estado as keyof typeof mensajes] || 'Estado de pago desconocido.'
-    );
+    // Estados de PAGO simplificados (ecollect)
+    const mensajesPago: Record<string, string> = {
+      OK: 'Transacción aprobada por la entidad financiera.',
+      PENDING:
+        'La transacción está pendiente de confirmación por parte de la entidad financiera.',
+      EXPIRED:
+        'La transacción expiró antes de completarse. Inicia un nuevo proceso de pago.',
+      NOT_AUTHORIZED: 'Transacción rechazada por la entidad financiera.',
+      NO_AUTHORIZED: 'Transacción rechazada por la entidad financiera.', // Posible variante recibida
+      ERROR:
+        'Ocurrió un error procesando la transacción. Intenta nuevamente o contacta soporte.',
+    };
+
+    // Sinónimos / legacy -> estado canónico
+    const equivalencias: Record<string, string> = {
+      // Reserva legacy
+      PAGADA: 'COMPLETADA',
+      CONFIRMADA: 'COMPLETADA',
+      COMPLETADO: 'COMPLETADA',
+      COMPLETADA: 'COMPLETADA',
+      PENDIENTE: 'PENDING', // cuando venga de flujo de pago, se interpretará más abajo
+      PROCESANDO: 'PENDING',
+      RECHAZADO: 'NOT_AUTHORIZED',
+      RECHAZADA: 'NOT_AUTHORIZED',
+      FAILED: 'ERROR',
+      BANK: 'PENDING',
+      CAPTURED: 'PENDING',
+      CREATED: 'PENDING',
+      ENROLLED: 'OK',
+    };
+
+    const canon = equivalencias[upper] || upper;
+
+    if (mensajesReserva[canon]) return mensajesReserva[canon];
+    if (mensajesPago[canon]) return mensajesPago[canon];
+
+    return 'Estado desconocido.';
   }
 
   obtenerColorEstado(
     estado: string,
   ): 'success' | 'warning' | 'error' | 'primary' {
-    const estadoUpper = estado.toUpperCase();
-    switch (estadoUpper) {
-      // Estados exitosos
-      case 'OK':
-      case 'PAGADA':
-      case 'CONFIRMADA':
-      case 'COMPLETADO':
-      case 'ENROLLED':
-        return 'success';
+    if (!estado) return 'primary';
+    const upper = estado.trim().toUpperCase();
+    console.log('🚀 ✅ ~ PagosService ~ obtenerColorEstado ~ upper:', upper)
 
-      // Estados de procesamiento/pendientes
-      case 'PENDING':
-      case 'BANK':
-      case 'CAPTURED':
-      case 'CREATED':
-      case 'INICIAL':
-      case 'PENDIENTE APROBACIÓN':
-      case 'PENDIENTE':
-      case 'PROCESANDO':
-        return 'warning';
+    // Normalizar con las mismas equivalencias usadas en mensajes
+    const equivalencias: Record<string, string> = {
+      PAGADA: 'COMPLETADA',
+      CONFIRMADA: 'COMPLETADA',
+      COMPLETADO: 'COMPLETADA',
+      PENDIENTE: 'PENDING',
+      PROCESANDO: 'PENDING',
+      RECHAZADO: 'NOT_AUTHORIZED',
+      RECHAZADA: 'NOT_AUTHORIZED',
+      FAILED: 'ERROR',
+      BANK: 'PENDING',
+      CAPTURED: 'PENDING',
+      CREATED: 'PENDING',
+      ENROLLED: 'OK',
+      NO_AUTHORIZED: 'NOT_AUTHORIZED',
+    };
+    const canon = equivalencias[upper] || upper;
 
-      // Estados de error/rechazo
-      case 'NOT_AUTHORIZED':
-      case 'FAILED':
-      case 'EXPIRED':
-      case 'RECHAZADO':
-      case 'RECHAZADA':
-      case 'ERROR':
-        return 'error';
+    if (['OK', 'COMPLETADA', 'APROBADA'].includes(canon)) return 'success';
 
-      default:
-        return 'primary';
-    }
+    if (['PENDING', 'INICIAL', 'PENDIENTEAP'].includes(canon)) return 'warning';
+
+    if (['NOT_AUTHORIZED', 'ERROR', 'EXPIRED'].includes(canon)) return 'error';
+
+    return 'primary';
   }
 
   obtenerMensajeEstadoBadge(estado: string): string {
-    const mensajes = {
-      success: 'exitoso',
-      warning: 'en proceso',
-      error: 'en error',
-      primary: 'desconocido',
+    if (!estado) return 'desconocido';
+    const upper = estado.trim().toUpperCase();
+
+    const equivalencias: Record<string, string> = {
+      PAGADA: 'COMPLETADA',
+      CONFIRMADA: 'COMPLETADA',
+      COMPLETADO: 'COMPLETADA',
+      PENDIENTE: 'PENDING',
+      PROCESANDO: 'PENDING',
+      RECHAZADO: 'NOT_AUTHORIZED',
+      RECHAZADA: 'NOT_AUTHORIZED',
+      FAILED: 'ERROR',
+      BANK: 'PENDING',
+      CAPTURED: 'PENDING',
+      CREATED: 'PENDING',
+      ENROLLED: 'OK',
+      NO_AUTHORIZED: 'NOT_AUTHORIZED',
+    };
+    const canon = equivalencias[upper] || upper;
+
+    const badges: Record<string, string> = {
+      // Reserva
+      INICIAL: 'creada',
+      PENDIENTEAP: 'pendiente aprobación',
+      APROBADA: 'aprobada',
+      COMPLETADA: 'completada',
+
+      // Pago
+      OK: 'aprobado',
+      PENDING: 'pendiente',
+      EXPIRED: 'expirado',
+      NOT_AUTHORIZED: 'rechazado',
+      ERROR: 'error',
     };
 
-    return mensajes[this.obtenerColorEstado(estado)] || mensajes.primary;
+    return badges[canon] || 'desconocido';
   }
 }

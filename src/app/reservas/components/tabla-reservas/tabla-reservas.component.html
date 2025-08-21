@@ -1,6 +1,6 @@
 <ng-template #estadoCell let-context>
   <div
-    [ngClass]="`badge-${pagoService.obtenerColorEstado(context.getValue())}`"
+    [ngClass]="`badge-${pagoService.obtenerColorEstado(context.row.original.estado)}`"
     (click)="
       context.getValue() === 'pendiente' &&
       authService.tienePermisos('RSV000001')

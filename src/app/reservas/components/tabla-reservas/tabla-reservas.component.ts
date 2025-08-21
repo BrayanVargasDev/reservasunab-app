@@ -124,7 +124,7 @@ export class TablaReservasComponent {
       header: 'Estado',
       size: 150,
       cell: this.estadoCell,
-      accessorFn: row => row.estado === 'pendienteap' ? 'Pendiente aprobación' : row.estado,
+      accessorFn: row => this.pagoService.obtenerMensajeEstadoBadge(row.estado),
     },
     {
       id: 'acciones',
