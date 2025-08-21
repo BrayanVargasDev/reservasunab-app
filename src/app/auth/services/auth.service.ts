@@ -121,7 +121,6 @@ export class AuthService {
   }));
 
   public onSuccessLogin(user: UsuarioLogueado) {
-    console.log('🚀 ✅ ~ AuthService ~ user:', user);
     if (!user) {
       return;
     }

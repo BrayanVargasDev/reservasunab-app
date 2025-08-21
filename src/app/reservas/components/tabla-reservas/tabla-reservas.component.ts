@@ -124,6 +124,7 @@ export class TablaReservasComponent {
       header: 'Estado',
       size: 150,
       cell: this.estadoCell,
+      accessorFn: row => row.estado === 'pendienteap' ? 'Pendiente aprobación' : row.estado,
     },
     {
       id: 'acciones',
@@ -136,7 +137,7 @@ export class TablaReservasComponent {
         const reserva = context.row.original;
         const acciones: BotonAcciones[] = [];
         if (
-          reserva.estado === 'pendiente' &&
+          reserva.estado === 'pendienteap' &&
           this.authService.tienePermisos?.('RSV000001')
         ) {
           acciones.push({

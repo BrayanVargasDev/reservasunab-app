@@ -5,9 +5,15 @@
     <div
       class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 lg:px-6 py-4 flex-shrink-0"
     >
+      @if (dreservasService.espacioDetallesQuery.isPending()) {
+      <span
+        class="w-full mx-auto skeleton bg-gray-300 h-7 rounded-xl block max-w-[65%]"
+      ></span>
+      } @else {
       <span class="w-full text-center text-2xl font-bold block truncate">
-        {{ espacioDetallesQuery?.nombre   }}
+        {{ espacioDetallesQuery?.nombre }}
       </span>
+      }
     </div>
 
     @if (dreservasService.cargando()) {
@@ -79,12 +85,32 @@
             <dreservas-info-reserva
               [resumen]="estadoResumen()"
             ></dreservas-info-reserva>
+            @if (estadoResumen()?.necesita_aprobacion) {
+            <div class="alert alert-warning mt-4 rounded-lg text-sm">
+              <div class="flex items-start gap-2">
+                <app-web-icon nombreIcono="alert-circle-outline" estilos="h-5 w-5"></app-web-icon>
+                <span>
+                  Tu reserva está <strong>pendiente de aprobación</strong>, se hará válida tan pronto sea aprobada por un administrador.
+                </span>
+              </div>
+            </div>
+            }
           </div>
           } @else if (dreservasService.mostrandoResumenExistente()) {
           <div class="flex flex-col h-full">
             <dreservas-info-reserva
               [resumen]="miReserva()"
             ></dreservas-info-reserva>
+            @if (miReserva()?.necesita_aprobacion) {
+            <div class="alert alert-warning mt-4 rounded-lg text-sm">
+              <div class="flex items-start gap-2">
+                <app-web-icon nombreIcono="alert-circle-outline" estilos="h-5 w-5"></app-web-icon>
+                <span>
+                  Tu reserva está <strong>pendiente de aprobación</strong>, se hará válida tan pronto sea aprobada por un administrador.
+                </span>
+              </div>
+            </div>
+            }
           </div>
           } @else if (dreservasService.mostrandoJugadores()) {
           <div class="flex flex-col h-full">
@@ -229,6 +255,48 @@
             }
           </div>
           } @else {
+          @if (dreservasService.espacioDetallesQuery.isPending()) {
+          <!-- Skeleton de la vista de disponibilidad -->
+          <div class="h-full flex flex-col gap-6 animate-pulse">
+            <div class="flex gap-4 w-full flex-shrink-0">
+              <div class="flex flex-col w-1/2 mb-2">
+                <div class="w-full h-[13rem] rounded-lg skeleton bg-gray-300"></div>
+              </div>
+              <div class="flex flex-col w-1/2 gap-3">
+                <div class="flex items-center gap-2">
+                  <div class="skeleton bg-gray-300 h-5 w-5 rounded-full"></div>
+                  <div class="skeleton bg-gray-300 h-5 w-40 rounded"></div>
+                </div>
+                <div class="skeleton bg-gray-300 h-4 w-52 rounded"></div>
+                <div class="skeleton bg-gray-300 h-5 w-48 rounded"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3 w-full flex-1">
+              <div class="skeleton bg-gray-300 h-6 w-48 mx-auto rounded"></div>
+              <div class="flex-1 overflow-y-auto overflow-x-auto">
+                <div
+                  class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
+                >
+                  <!-- Grid de slots skeleton -->
+                  <ng-container *ngFor="let i of [1,2,3,4,5,6,7,8]">
+                    <div class="h-12 skeleton bg-gray-300 rounded-lg w-full"></div>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-3 w-full flex-1">
+              <div class="skeleton bg-gray-300 h-6 w-56 mx-auto rounded"></div>
+              <div class="border border-base-content/30 rounded-lg p-4 space-y-3">
+                <div class="skeleton bg-gray-300 h-4 w-full rounded"></div>
+                <div class="skeleton bg-gray-300 h-4 w-11/12 rounded"></div>
+                <div class="skeleton bg-gray-300 h-4 w-10/12 rounded"></div>
+                <div class="skeleton bg-gray-300 h-4 w-8/12 rounded"></div>
+              </div>
+            </div>
+          </div>
+          } @else {
           <div class="h-full flex flex-col">
             <div class="flex gap-4 w-full flex-shrink-0">
               <div class="flex flex-col w-1/2 mb-2">
@@ -289,9 +357,17 @@
                         : null
                     "
                     class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
-                    [disabled]="item.reserva_pasada && !item.mi_reserva && !item.novedad && !item.reservada"
+                    [disabled]="
+                      item.reserva_pasada &&
+                      !item.mi_reserva &&
+                      !item.novedad &&
+                      !item.reservada
+                    "
                     [class.btn-disabled]="
-                      item.reserva_pasada && !item.mi_reserva && !item.novedad && !item.reservada
+                      item.reserva_pasada &&
+                      !item.mi_reserva &&
+                      !item.novedad &&
+                      !item.reservada
                     "
                     [class.btn-accent]="item.disponible"
                     [class.btn-success]="item.mi_reserva"
@@ -353,6 +429,7 @@
             </div>
           </div>
           }
+          }
         </div>
       </div>
     </div>
@@ -399,6 +476,21 @@
           Agregar Jugadores
         </button>
         } @if (necesitaPago() && !dreservasService.mostrandoDisponibilidad()) {
+        @if((estadoResumen()?.pagar_con_saldo || miReserva()?.pagar_con_saldo))
+        {
+        <button
+          type="button"
+          class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
+          (click)="procesarPagoConSaldo()"
+          [disabled]="cargando()"
+        >
+          <app-web-icon
+            nombreIcono="wallet-outline"
+            estilos="h-5 w-5 max-md:hidden mr-2"
+          ></app-web-icon>
+          Pagar con saldo
+        </button>
+        }
         <button
           type="button"
           class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"

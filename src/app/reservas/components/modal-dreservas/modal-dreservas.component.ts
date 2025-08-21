@@ -67,12 +67,23 @@ export class ModalDreservasComponent {
   public estadoResumen = computed(() => {
     const estado = this.dreservasService.estadoResumen();
     if (estado && estado.fecha) {
+      // Calcular si puede pagar con saldo (solo si cumple condiciones de pago)
+      const usuario = this.authService.usuario();
+      const puedePagar =
+        !estado.es_pasada &&
+        estado.estado !== 'pagada' &&
+        estado.valor > 0 &&
+        (!estado.necesita_aprobacion || estado.reserva_aprovada);
+      const valorFinal = (estado.valor || 0) - (estado.valor_descuento || 0);
+      const pagarConSaldo =
+        puedePagar && usuario ? usuario.saldo >= valorFinal : false;
       return {
         ...estado,
         fecha: formatInBogota(
           parse(estado.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
           "eeee, d 'de' MMMM 'de' yyyy",
         ),
+        pagar_con_saldo: pagarConSaldo,
       };
     }
     return estado;
@@ -81,12 +92,22 @@ export class ModalDreservasComponent {
   public miReserva = computed(() => {
     const reserva = this.dreservasService.miReserva();
     if (reserva && reserva.fecha) {
+      const usuario = this.authService.usuario();
+      const puedePagar =
+        !reserva.es_pasada &&
+        reserva.estado !== 'pagada' &&
+        reserva.valor > 0 &&
+        (!reserva.necesita_aprobacion || reserva.reserva_aprovada);
+      const valorFinal = (reserva.valor || 0) - (reserva.valor_descuento || 0);
+      const pagarConSaldo =
+        puedePagar && usuario ? usuario.saldo >= valorFinal : false;
       return {
         ...reserva,
         fecha: formatInBogota(
           parse(reserva.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
           "eeee, d 'de' MMMM 'de' yyyy",
         ),
+        pagar_con_saldo: pagarConSaldo,
       };
     }
     return reserva;
@@ -102,9 +123,12 @@ export class ModalDreservasComponent {
       return false;
     }
 
-    return (
-      estado && estado.estado !== 'pagada' && estado.valor && estado.valor > 0
-    );
+  if (!estado) return false;
+
+  // Si requiere aprobación y no está aprobada, no se puede pagar
+  if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
+
+  return estado.estado !== 'pagada' && !!estado.valor && estado.valor > 0;
   });
 
   public pudeCancelar = computed(() => {
@@ -344,7 +368,7 @@ export class ModalDreservasComponent {
     setTimeout(() => {
       this.dreservasService
         .pagarReserva(estadoResumen.id)
-        .then(response => {
+  .then((response: any) => {
           if (!response.data) {
             this.alertaService.error(
               `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
@@ -369,7 +393,7 @@ export class ModalDreservasComponent {
           this.dreservasService.cerrarModal();
           window.location.href = response.data;
         })
-        .catch(error => {
+  .catch((error: any) => {
           const mensajeError =
             error.error?.error ||
             'Error al procesar el pago. Por favor, inténtelo de nuevo.';
@@ -392,6 +416,87 @@ export class ModalDreservasComponent {
           }
         });
     }, 1000);
+  }
+
+  public procesarPagoConSaldo() {
+    this.dreservasService.setProcesandoPago();
+
+    const estadoResumen = this.estadoResumen() ?? this.miReserva();
+
+    if (!estadoResumen || !estadoResumen.id) {
+      this.alertaService.error(
+        'No se pudo procesar el pago con saldo.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      if (this.dreservasService.estadoResumen()) {
+        this.dreservasService.setMostrarResumenNueva(
+          this.dreservasService.estadoResumen()!,
+        );
+      } else if (this.dreservasService.miReserva()) {
+        this.dreservasService.setMostrarResumenExistente(
+          this.dreservasService.miReserva()!,
+        );
+      }
+      return;
+    }
+
+    setTimeout(() => {
+      this.dreservasService
+  .pagarReservaConSaldo(estadoResumen.id)
+  .then((response: { data: string; message?: string }) => {
+          if (!response.data) {
+            this.alertaService.error(
+              'Error al procesar el pago con saldo.',
+              5 * 1000,
+              this.alertaModalReservas(),
+              this.estilosAlerta,
+            );
+            if (this.dreservasService.estadoResumen()) {
+              this.dreservasService.setMostrarResumenNueva(
+                this.dreservasService.estadoResumen()!,
+              );
+            } else if (this.dreservasService.miReserva()) {
+              this.dreservasService.setMostrarResumenExistente(
+                this.dreservasService.miReserva()!,
+              );
+            }
+            return;
+          }
+
+          // Asumimos que data contiene un mensaje de éxito para saldo.
+          this.alertaService.success(
+            response.message || 'Pago con saldo exitoso.',
+            4 * 1000,
+            this.alertaModalReservas(),
+            this.estilosAlerta,
+          );
+
+          // Refrescar la reserva (redirigir si backend devuelve URL también?)
+          // Aquí cerramos el modal y podríamos refrescar listados externos.
+          this.dreservasService.cerrarModal();
+        })
+  .catch((error: any) => {
+          const mensajeError =
+            error.error?.error || 'Error al procesar el pago con saldo.';
+          this.alertaService.error(
+            mensajeError,
+            5 * 1000,
+            this.alertaModalReservas(),
+            this.estilosAlerta,
+          );
+          if (this.dreservasService.estadoResumen()) {
+            this.dreservasService.setMostrarResumenNueva(
+              this.dreservasService.estadoResumen()!,
+            );
+          } else if (this.dreservasService.miReserva()) {
+            this.dreservasService.setMostrarResumenExistente(
+              this.dreservasService.miReserva()!,
+            );
+          }
+        });
+    }, 800);
   }
 
   public async verMiReserva(idReserva: number | null) {

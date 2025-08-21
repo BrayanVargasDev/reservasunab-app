@@ -120,6 +120,8 @@ export class PagosService {
       inicial: 'Tu transacción ha sido iniciada. Procede a completar el pago.',
       pendiente:
         'Tu pago está siendo procesado. Te notificaremos cuando se complete.',
+      pendienteap:
+        'Tu reserva está pendiente de aprobación. Te notificaremos cuando se apruebe.',
       pagada:
         'Tu pago ha sido procesado exitosamente. Recibirás un correo de confirmación.',
       confirmada: 'Tu pago ha sido confirmado y procesado completamente.',
@@ -156,6 +158,7 @@ export class PagosService {
       case 'CAPTURED':
       case 'CREATED':
       case 'INICIAL':
+      case 'PENDIENTE APROBACIÓN':
       case 'PENDIENTE':
       case 'PROCESANDO':
         return 'warning';

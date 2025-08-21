@@ -16,6 +16,7 @@ import {
   getMiReserva,
   buscarJugadores,
   agregarJugadoresReserva,
+  pagarReservaConSaldo,
 } from '../actions';
 
 // Definir tipos para el estado del modal
@@ -334,6 +335,10 @@ export class DreservasService {
 
   public pagarReserva(idReserva: number) {
     return pagarReserva(this.http, idReserva);
+  }
+
+  public pagarReservaConSaldo(idReserva: number) {
+    return pagarReservaConSaldo(this.http, idReserva);
   }
 
   // Métodos para jugadores

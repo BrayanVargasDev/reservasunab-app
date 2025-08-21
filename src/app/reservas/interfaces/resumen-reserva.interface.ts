@@ -22,5 +22,7 @@ export interface ResumenReserva {
   puede_cancelar: boolean;
   es_pasada: boolean;
   puede_agregar_jugadores: boolean;
+  necesita_aprobacion: boolean;
+  reserva_aprovada: boolean;
+  pagar_con_saldo: boolean;
 }
-
