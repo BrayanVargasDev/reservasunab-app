@@ -31,13 +31,8 @@ export class AuthCallbackPage implements OnInit {
 
   async ngOnInit() {
     const qp = this.route.snapshot.queryParamMap;
-    const code = qp.get('code');
-    const returnUrl = qp.get('returnUrl');
-
-    if (!code) {
-      await this.router.navigate(['/auth/login']);
-      return;
-    }
+    const code = qp.get('code') ?? '';
+    const returnUrl = qp.get('returnUrl') ?? '';
 
     try {
       // Intercambiar code por tokens (access en memoria, refresh persistente)

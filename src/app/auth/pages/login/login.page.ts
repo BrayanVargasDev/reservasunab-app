@@ -79,6 +79,7 @@ export class LoginPage {
     this.authService.setLoading(true);
     const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
     // console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
+    // const samlUrl = `${this.appService.samlUrl}/api/custom-saml/start?tenant=google`;
     window.location.href = samlUrl;
   }
 
@@ -103,11 +104,11 @@ export class LoginPage {
       const response = await this.authService.login(email, password);
 
       this.authService.onSuccessLogin(response.data);
-  // Obtener usuario fresco del backend y luego redirigir según reglas
-  await this.authService.userQuery.refetch();
-  await this.delay(200);
+      // Obtener usuario fresco del backend y luego redirigir según reglas
+      await this.authService.userQuery.refetch();
+      await this.delay(200);
 
-  await this.navigateAfterLogin();
+      await this.navigateAfterLogin();
     } catch (error) {
       this.handleLoginError(error);
     } finally {
