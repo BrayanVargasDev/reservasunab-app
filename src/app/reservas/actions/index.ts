@@ -10,3 +10,4 @@ export * from './agregar-jugadores-reserva.action';
 export * from './get-reservas.action';
 export * from './aprobar-reserva.action';
 export * from './eliminar-reserva.action';
+export * from './confirmar-reserva.action';

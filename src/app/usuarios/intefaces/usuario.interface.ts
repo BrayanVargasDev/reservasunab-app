@@ -8,6 +8,7 @@ export interface Usuario {
   telefono: string;
   rol: string;
   tipoDocumento: number;
+  codigo_tipo_documento: string;
   documento: string;
   nombre: string;
   apellido: string;
@@ -16,6 +17,7 @@ export interface Usuario {
   fechaCreacion: string;
   viendoDetalles?: boolean;
   direccion: string;
+  ldap_uid: string;
   fechaNacimiento: string;
   codigo_usuario?: string;
   ciudadExpedicion: number;

@@ -14,7 +14,14 @@ import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
 
 import { QuillViewHTMLComponent } from 'ngx-quill';
-import { format, parse, subDays, set as setTime } from 'date-fns';
+import {
+  format,
+  parse,
+  subDays,
+  set as setTime,
+  parseISO,
+  isValid,
+} from 'date-fns';
 import { formatInBogota } from '@shared/utils/timezone';
 
 import { environment } from '@environments/environment';
@@ -60,33 +67,71 @@ export class ModalDreservasComponent {
     read: ViewContainerRef,
   });
 
-  public cargando = computed(() => {
-    return this.dreservasService.cargando();
-  });
+  public cargando = computed(() => this.dreservasService.cargando());
+
+  private parsearFecha(rawFecha: string): Date | null {
+    if (!rawFecha) {
+      return null;
+    }
+
+    let fechaBase: Date | null = null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawFecha)) {
+      fechaBase = parse(
+        rawFecha + 'T12:00:00',
+        "yyyy-MM-dd'T'HH:mm:ss",
+        new Date(),
+      );
+    } else {
+      const d = parseISO(rawFecha);
+      fechaBase = isValid(d) ? d : null;
+    }
+
+    if (!fechaBase) {
+      const d = new Date(rawFecha);
+      fechaBase = isValid(d) ? d : null;
+    }
+
+    return fechaBase;
+  }
 
   public estadoResumen = computed(() => {
     const estado = this.dreservasService.estadoResumen();
-    if (estado && estado.fecha) {
-      // Calcular si puede pagar con saldo (solo si cumple condiciones de pago)
-      const usuario = this.authService.usuario();
-      const puedePagar =
-        !estado.es_pasada &&
-        estado.estado !== 'pagada' &&
-        estado.valor > 0 &&
-        (!estado.necesita_aprobacion || estado.reserva_aprovada);
-      const valorFinal = (estado.valor || 0) - (estado.valor_descuento || 0);
-      const pagarConSaldo =
-        puedePagar && usuario ? usuario.saldo >= valorFinal : false;
-      return {
-        ...estado,
-        fecha: formatInBogota(
-          parse(estado.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
-          "eeee, d 'de' MMMM 'de' yyyy",
-        ),
-        pagar_con_saldo: pagarConSaldo,
-      };
+
+    if (!estado || !estado.fecha) {
+      return estado;
     }
-    return estado;
+
+    const {
+      fecha,
+      es_pasada,
+      estado: estadoReserva,
+      valor,
+      valor_descuento,
+      necesita_aprobacion,
+      reserva_aprovada,
+    } = estado;
+    const usuario = this.authService.usuario();
+
+    const puedePagar =
+      !es_pasada &&
+      estadoReserva !== 'pagada' &&
+      valor > 0 &&
+      (!necesita_aprobacion || reserva_aprovada);
+
+    const valorFinal = (valor ?? 0) - (valor_descuento ?? 0);
+
+    const pagarConSaldo = puedePagar && (usuario?.saldo ?? 0) >= valorFinal;
+
+    const fechaParseada = this.parsearFecha(fecha);
+
+    return {
+      ...estado,
+      fecha: fechaParseada
+        ? formatInBogota(fechaParseada, "eeee, d 'de' MMMM 'de' yyyy")
+        : fecha,
+      pagar_con_saldo: pagarConSaldo,
+    };
   });
 
   public miReserva = computed(() => {
@@ -101,14 +146,33 @@ export class ModalDreservasComponent {
       const valorFinal = (reserva.valor || 0) - (reserva.valor_descuento || 0);
       const pagarConSaldo =
         puedePagar && usuario ? usuario.saldo >= valorFinal : false;
+      // Parseo tolerante de fecha
+      const rawFecha = reserva.fecha as string;
+      let fechaBase: Date | null = null;
+      try {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(rawFecha)) {
+          fechaBase = parse(
+            rawFecha + ' 12:00',
+            'yyyy-MM-dd HH:mm',
+            new Date(),
+          );
+        } else if (rawFecha.includes('T')) {
+          const d = parseISO(rawFecha);
+          fechaBase = isValid(d) ? d : null;
+        } else {
+          const d = new Date(rawFecha);
+          fechaBase = isValid(d) ? d : null;
+        }
+      } catch {
+        fechaBase = null;
+      }
       return {
         ...reserva,
-        fecha: formatInBogota(
-          parse(reserva.fecha + ' 12:00', 'yyyy-MM-dd HH:mm', new Date()),
-          "eeee, d 'de' MMMM 'de' yyyy",
-        ),
+        fecha: fechaBase
+          ? formatInBogota(fechaBase, "eeee, d 'de' MMMM 'de' yyyy")
+          : reserva.fecha,
         pagar_con_saldo: pagarConSaldo,
-      };
+      } as any;
     }
     return reserva;
   });
@@ -118,17 +182,10 @@ export class ModalDreservasComponent {
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
 
-    // Si es reserva pasada, no se puede pagar
-    if (this.esReservaPasada()) {
-      return false;
-    }
-
-  if (!estado) return false;
-
-  // Si requiere aprobación y no está aprobada, no se puede pagar
-  if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
-
-  return estado.estado !== 'pagada' && !!estado.valor && estado.valor > 0;
+    if (this.esReservaPasada()) return false;
+    if (!estado) return false;
+    if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
+    return estado.estado !== 'pagada' && !!estado.valor && estado.valor > 0;
   });
 
   public pudeCancelar = computed(() => {
@@ -136,41 +193,17 @@ export class ModalDreservasComponent {
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
 
-    if (this.esReservaPasada()) {
-      return false;
-    }
-
+    if (this.esReservaPasada()) return false;
     return estado?.puede_cancelar;
-  });
-
-  public puedeAgregarJugadores = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
-
-    // Si es reserva pasada, no puede agregar jugadores
-    if (this.esReservaPasada()) {
-      return false;
-    }
-
-    return (
-      estado &&
-      estado.estado === 'pagada' &&
-      estado.agrega_jugadores === true &&
-      estado.jugadores &&
-      estado.jugadores.length < estado.maximo_jugadores
-    );
   });
 
   public esReservaPasada = computed(() => {
     const estado =
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
-
     return estado?.es_pasada;
   });
 
-  // Propiedades computadas para validaciones de jugadores
   public readonly mostrarJugadores = this.dreservasService.mostrarJugadores;
   public readonly terminoBusquedaJugadores =
     this.dreservasService.terminoBusquedaJugadores;
@@ -178,34 +211,61 @@ export class ModalDreservasComponent {
   public readonly jugadoresSeleccionados =
     this.dreservasService.jugadoresSeleccionados;
 
-  public readonly limitesJugadores = computed(() => {
-    return this.dreservasService.obtenerLimiteJugadores();
+  public readonly userIdActual = computed(() => this.authService.usuario()?.id);
+  public readonly reservanteActual = computed(() => {
+    const u = this.authService.usuario();
+    if (!u) return null;
+    return {
+      id: u.id,
+      nombre: u.nombre,
+      apellido: u.apellido,
+      email: u.email,
+    } as any;
+  });
+  public readonly listaJugadoresSeleccionados = computed(() => {
+    const base = this.dreservasService.jugadoresSeleccionados();
+    const reservante = this.reservanteActual();
+    if (!reservante) return base;
+    return [reservante, ...base];
   });
 
-  public readonly puedeAgregarMasJugadores = computed(() => {
-    return this.dreservasService.puedeAgregarMasJugadores();
+  public readonly confirmarReservaDisabled = computed(() => {
+    const estado = this.dreservasService.estadoResumen();
+    if (!estado) return true;
+    const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
+    const totalOtros = estado.jugadores?.length || 0;
+    return totalOtros < minOtros || this.cargando();
   });
 
-  public readonly puedeSeleccionarJugador = computed(() => {
-    return this.dreservasService.puedeSeleccionarJugador();
-  });
+  public readonly limitesJugadores = computed(() =>
+    this.dreservasService.obtenerLimiteJugadores(),
+  );
 
-  // Método para validar si un jugador específico se puede seleccionar
+  public readonly puedeAgregarMasJugadores = computed(() =>
+    this.dreservasService.puedeAgregarMasJugadores(),
+  );
+
+  public readonly puedeSeleccionarJugador = computed(() =>
+    this.dreservasService.puedeSeleccionarJugador(),
+  );
+
   public puedeSeleccionarJugadorEspecifico(jugadorId: number): boolean {
-    const puede = this.dreservasService.puedeSeleccionarJugador(jugadorId);
-    return puede;
+    return this.dreservasService.puedeSeleccionarJugador(jugadorId);
   }
 
   public readonly mensajeEstado = computed(() => {
     const limites = this.limitesJugadores();
-    if (limites.actual === 0) return '';
+    if (limites.maximo === 0) return '';
 
-    const disponibles = limites.maximo - limites.actual;
+    const disponibles = limites.maximo - limites.totalFinal;
     if (disponibles <= 0) {
-      return `⚠️ La reserva ya tiene el máximo de jugadores (${limites.maximo})`;
+      return `⚠️ Ya no puedes agregar más jugadores. Máximo de acompañantes: ${limites.maximo}`;
     }
 
-    return `📊 Jugadores actuales: ${limites.actual}/${limites.maximo} - Puedes agregar ${disponibles} más`;
+    const conteoConReservante = limites.actual + 1;
+    return `📊 Jugadores (incluyéndote): ${conteoConReservante}/${
+      limites.maximo + 1
+    } - Puedes agregar ${disponibles} más`;
   });
 
   ngOnInit() {
@@ -290,7 +350,6 @@ export class ModalDreservasComponent {
   ) {
     if (!base) return;
 
-    // Validación de seguridad: verificar si el item tiene novedad
     if (
       item.novedad ||
       !item.disponible ||
@@ -300,12 +359,12 @@ export class ModalDreservasComponent {
       return;
     }
 
-    this.dreservasService.setCargando('Creando reserva...');
-
     const fechaFiltro = this.dreservasService.fecha();
     const fechaBaseStr = fechaFiltro
       ? format(parse(fechaFiltro, 'yyyy-MM-dd', new Date()), 'yyyy-MM-dd')
       : formatInBogota(new Date(), 'yyyy-MM-dd');
+
+    this.dreservasService.setCargando('Configurando reserva...');
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -352,7 +411,6 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         this.estilosAlerta,
       );
-      // Volver al resumen correcto
       if (this.dreservasService.estadoResumen()) {
         this.dreservasService.setMostrarResumenNueva(
           this.dreservasService.estadoResumen()!,
@@ -368,7 +426,7 @@ export class ModalDreservasComponent {
     setTimeout(() => {
       this.dreservasService
         .pagarReserva(estadoResumen.id)
-  .then((response: any) => {
+        .then((response: any) => {
           if (!response.data) {
             this.alertaService.error(
               `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
@@ -376,7 +434,6 @@ export class ModalDreservasComponent {
               this.alertaModalReservas(),
               this.estilosAlerta,
             );
-            // Volver al resumen correcto
             if (this.dreservasService.estadoResumen()) {
               this.dreservasService.setMostrarResumenNueva(
                 this.dreservasService.estadoResumen()!,
@@ -389,11 +446,10 @@ export class ModalDreservasComponent {
             return;
           }
 
-          // Cerrar modal y redirigir al gateway de pago
           this.dreservasService.cerrarModal();
           window.location.href = response.data;
         })
-  .catch((error: any) => {
+        .catch((error: any) => {
           const mensajeError =
             error.error?.error ||
             'Error al procesar el pago. Por favor, inténtelo de nuevo.';
@@ -404,7 +460,6 @@ export class ModalDreservasComponent {
             this.alertaModalReservas(),
             this.estilosAlerta,
           );
-          // Volver al resumen correcto
           if (this.dreservasService.estadoResumen()) {
             this.dreservasService.setMostrarResumenNueva(
               this.dreservasService.estadoResumen()!,
@@ -444,8 +499,8 @@ export class ModalDreservasComponent {
 
     setTimeout(() => {
       this.dreservasService
-  .pagarReservaConSaldo(estadoResumen.id)
-  .then((response: { data: string; message?: string }) => {
+        .pagarReservaConSaldo(estadoResumen.id)
+        .then((response: { data: string; message?: string }) => {
           if (!response.data) {
             this.alertaService.error(
               'Error al procesar el pago con saldo.',
@@ -465,7 +520,6 @@ export class ModalDreservasComponent {
             return;
           }
 
-          // Asumimos que data contiene un mensaje de éxito para saldo.
           this.alertaService.success(
             response.message || 'Pago con saldo exitoso.',
             4 * 1000,
@@ -473,11 +527,9 @@ export class ModalDreservasComponent {
             this.estilosAlerta,
           );
 
-          // Refrescar la reserva (redirigir si backend devuelve URL también?)
-          // Aquí cerramos el modal y podríamos refrescar listados externos.
           this.dreservasService.cerrarModal();
         })
-  .catch((error: any) => {
+        .catch((error: any) => {
           const mensajeError =
             error.error?.error || 'Error al procesar el pago con saldo.';
           this.alertaService.error(
@@ -508,10 +560,7 @@ export class ModalDreservasComponent {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      // Hacer refetch de la query después de establecer el ID
       const result = await this.dreservasService.miReservaQuery.refetch();
-
-      // Obtener los datos del resultado del refetch
       const reserva = result.data;
 
       if (reserva) {
@@ -537,7 +586,6 @@ export class ModalDreservasComponent {
     }
   }
 
-  // Métodos para jugadores
   public mostrarAgregarJugadores() {
     this.dreservasService.setMostrarJugadores();
   }
@@ -548,12 +596,19 @@ export class ModalDreservasComponent {
   }
 
   public agregarJugador(jugador: any) {
-    // Validar si se puede seleccionar este jugador específico
+    const idActual = this.userIdActual();
+    if (idActual && jugador.id === idActual) {
+      this.alertaService.error(
+        'Ya eres parte de la reserva como reservante. No es necesario agregarte.',
+        3 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
     if (!this.puedeSeleccionarJugadorEspecifico(jugador.id)) {
-      // Si ya está seleccionado, no mostrar error
-      if (this.esJugadorSeleccionado(jugador.id)) {
-        return;
-      }
+      if (this.esJugadorSeleccionado(jugador.id)) return;
 
       const limites = this.limitesJugadores();
       const disponibles = limites.maximo - limites.totalFinal;
@@ -575,12 +630,18 @@ export class ModalDreservasComponent {
 
   public esJugadorSeleccionado(jugadorId: number): boolean {
     const seleccionados = this.dreservasService.jugadoresSeleccionados();
-    const estaSeleccionado = seleccionados.some(j => j.id === jugadorId);
-    return estaSeleccionado;
+    return seleccionados.some(j => j.id === jugadorId);
+  }
+
+  public yaEstaEnReserva(jugadorId: number): boolean {
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+    const lista = estado?.jugadores || [];
+    return lista.some(j => j.id === jugadorId);
   }
 
   public cancelarAgregarJugadores() {
-    // Regresar al resumen correcto
     if (this.dreservasService.estadoResumen()) {
       this.dreservasService.setMostrarResumenNueva(
         this.dreservasService.estadoResumen()!,
@@ -595,13 +656,14 @@ export class ModalDreservasComponent {
   }
 
   public async confirmarAgregarJugadores() {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const esNueva = !!this.dreservasService.estadoResumen();
+    const estado = esNueva
+      ? this.dreservasService.estadoResumen()
+      : this.dreservasService.miReserva();
 
-    if (!estado || !estado.id) {
+    if (!estado) {
       this.alertaService.error(
-        'No se pudo agregar los jugadores. Por favor, inténtelo de nuevo.',
+        'No hay una reserva para agregar jugadores.',
         5 * 1000,
         this.alertaModalReservas(),
         this.estilosAlerta,
@@ -609,11 +671,11 @@ export class ModalDreservasComponent {
       return;
     }
 
-    // Validar las reglas de jugadores
-    const validacion = this.dreservasService.validarAgregarJugadores();
-    if (!validacion.esValido) {
+    const limites = this.dreservasService.obtenerLimiteJugadores();
+    if (limites.totalFinal > limites.maximo) {
+      const disponibles = limites.maximo - limites.actual;
       this.alertaService.error(
-        validacion.mensaje,
+        `Solo puedes agregar ${disponibles} jugador(es) más. Máximo permitido: ${limites.maximo}`,
         5 * 1000,
         this.alertaModalReservas(),
         this.estilosAlerta,
@@ -621,71 +683,110 @@ export class ModalDreservasComponent {
       return;
     }
 
-    const numJugadoresAAgregar =
-      this.dreservasService.jugadoresSeleccionados().length;
-    const esNuevaReserva = !!this.dreservasService.estadoResumen();
-    const esReservaExistente = !!this.dreservasService.miReserva();
+    const cantidad = this.dreservasService.jugadoresSeleccionados().length;
 
-    this.dreservasService.setCargando('Agregando jugadores...');
+    if (esNueva) {
+      this.dreservasService.confirmarAgregarJugadoresLocal();
+      this.dreservasService.setMostrarResumenNueva(
+        this.dreservasService.estadoResumen()!,
+      );
+    } else {
+      this.dreservasService.confirmarAgregarJugadoresLocalEnExistente();
+      this.dreservasService.setMostrarResumenExistente(
+        this.dreservasService.miReserva()!,
+      );
+    }
+    this.dreservasService.setTerminoBusquedaJugadores('');
+    this.cdr.detectChanges();
 
+    setTimeout(() => {
+      this.alertaService.success(
+        `Se agregaron ${cantidad} jugador(es) localmente.`,
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+    }, 50);
+  }
+
+  public async confirmarReservaFinal() {
+    const estado = this.dreservasService.estadoResumen()!;
+
+    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
+    const totalJug = estado.jugadores?.length ?? 0;
+    if (minOtros > 0 && totalJug < minOtros) {
+      this.alertaService.error(
+        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    const base = this.dreservasService.espacioDetallesQuery.data();
+    const configId = base?.configuracion?.id ?? 0;
+    if (!configId || configId <= 0) {
+      this.alertaService.error(
+        'Falta la configuración base del espacio.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.fecha) {
+      this.alertaService.error(
+        'Falta la fecha de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.hora_inicio) {
+      this.alertaService.error(
+        'Falta la hora de inicio de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    this.dreservasService.setCargando('Confirmando reserva...');
     try {
-      const response = await this.dreservasService.agregarJugadores(estado.id);
+      const response = await this.dreservasService.confirmarReservaFinal();
 
       if (!response.data) {
         this.alertaService.error(
-          'Error al agregar jugadores. Por favor, inténtelo de nuevo.',
+          'No se pudo confirmar la reserva.',
           5 * 1000,
           this.alertaModalReservas(),
           this.estilosAlerta,
         );
-        // Regresar al estado correcto sin limpiar
-        if (esNuevaReserva) {
-          this.dreservasService.setMostrarResumenNueva(estado);
-        } else if (esReservaExistente) {
-          this.dreservasService.setMostrarResumenExistente(estado);
-        }
+        this.dreservasService.setMostrarResumenNueva(estado);
         return;
       }
 
-      this.dreservasService.limpiarJugadoresSeleccionados();
-      this.dreservasService.setTerminoBusquedaJugadores('');
-
-      if (esNuevaReserva) {
-        this.dreservasService.setMostrarResumenNueva(response.data);
-      } else if (esReservaExistente) {
-        this.dreservasService.setMostrarResumenExistente(response.data);
-      }
-
-      this.cdr.detectChanges();
-
-      setTimeout(() => {
-        this.alertaService.success(
-          `Se agregaron ${numJugadoresAAgregar} jugador(es) exitosamente. Total actual: ${
-            response.data.jugadores?.length || 0
-          }`,
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
-      }, 50);
+      this.alertaService.success(
+        'Reserva creada exitosamente.',
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
     } catch (error: any) {
-      console.error('Error al agregar jugadores:', error);
       const mensajeError =
-        error.error?.error ||
-        'Error al agregar jugadores. Por favor, inténtelo de nuevo.';
-
+        error?.error?.error || 'Error al confirmar la reserva.';
       this.alertaService.error(
         mensajeError,
         5 * 1000,
         this.alertaModalReservas(),
         this.estilosAlerta,
       );
-
-      if (esNuevaReserva) {
-        this.dreservasService.setMostrarResumenNueva(estado);
-      } else if (esReservaExistente) {
-        this.dreservasService.setMostrarResumenExistente(estado);
-      }
+      this.dreservasService.setMostrarResumenNueva(estado);
     }
   }
 
@@ -715,29 +816,17 @@ export class ModalDreservasComponent {
 
     setTimeout(() => {
       this.dreservasService
-        .pagarReserva(estadoResumen.id)
-        .then(response => {
-          if (!response.data) {
-            this.alertaService.error(
-              `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
-              5 * 1000,
-              this.alertaModalReservas(),
-              this.estilosAlerta,
-            );
-            if (this.dreservasService.estadoResumen()) {
-              this.dreservasService.setMostrarResumenNueva(
-                this.dreservasService.estadoResumen()!,
-              );
-            } else if (this.dreservasService.miReserva()) {
-              this.dreservasService.setMostrarResumenExistente(
-                this.dreservasService.miReserva()!,
-              );
-            }
-            return;
-          }
-          // TODO: Manejar el éxito del pago
+        .cancelarReserva(estadoResumen.id)
+        .then(() => {
+          this.alertaService.success(
+            'Reserva cancelada correctamente.',
+            4 * 1000,
+            this.alertaModalReservas(),
+            this.estilosAlerta,
+          );
+          this.dreservasService.cerrarModal();
         })
-        .catch(error => {
+        .catch((error: any) => {
           const mensajeError =
             error.error?.error ||
             'Error al cancelar. Por favor, inténtelo de nuevo.';
@@ -758,7 +847,7 @@ export class ModalDreservasComponent {
             );
           }
         });
-    }, 1000);
+    }, 500);
   }
 
   public manejarCierreModal(): void {

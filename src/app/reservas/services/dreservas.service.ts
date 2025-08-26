@@ -17,6 +17,8 @@ import {
   buscarJugadores,
   agregarJugadoresReserva,
   pagarReservaConSaldo,
+  confirmarReserva,
+  eliminarReserva as eliminarReservaAction,
 } from '../actions';
 
 // Definir tipos para el estado del modal
@@ -134,7 +136,7 @@ export class DreservasService {
     queryFn: () => getMiReserva(this.http, this._idMiReserva()),
     select: (response: GeneralResponse<ResumenReserva>) => response.data,
     enabled: !!this._idMiReserva(),
-    staleTime: 0, // Asegurar que siempre se obtengan datos frescos
+    staleTime: 0,
   }));
 
   jugadoresQuery = injectQuery(() => ({
@@ -147,7 +149,7 @@ export class DreservasService {
         this._estadoModal() === EstadoModal.AGREGAR_JUGADORES &&
         this._termino_busqueda_jugadores().trim().length > 0,
     ),
-    staleTime: 30 * 1000, // 30 segundos
+    staleTime: 30 * 1000,
   }));
 
   public setFecha(fecha: string | null) {
@@ -211,8 +213,9 @@ export class DreservasService {
     this._abiertaDesdeMisReservas.set(desdeMisReservas);
   }
 
-  public cerrarModal() {
+  public async cerrarModal() {
     this._modalAbierta.set(false);
+    await new Promise((resolve) => setTimeout(resolve, 300));
     this._idEspacio.set(null);
     this._estadoModal.set(EstadoModal.DISPONIBILIDAD);
     this._mensajeCargando.set('');
@@ -224,13 +227,11 @@ export class DreservasService {
     this._abiertaDesdeMisReservas.set(false);
   }
 
-  // Métodos para cambiar el estado del modal
   public setCargando(): void;
   public setCargando(mensaje: string): void;
   public setCargando(cargando: boolean): void;
   public setCargando(param?: string | boolean) {
     if (typeof param === 'boolean') {
-      // Compatibilidad con método anterior
       if (param) {
         this._mensajeCargando.set('Cargando...');
         this._estadoModal.set(EstadoModal.CARGANDO);
@@ -238,7 +239,6 @@ export class DreservasService {
         this.setMostrarDisponibilidad();
       }
     } else {
-      // Nuevo comportamiento
       this._mensajeCargando.set(param || 'Cargando...');
       this._estadoModal.set(EstadoModal.CARGANDO);
     }
@@ -282,14 +282,12 @@ export class DreservasService {
   }
 
   public setResumen(resumen: boolean) {
-    // Este método se mantiene por compatibilidad pero debería usarse setMostrarResumenNueva
     if (!resumen) {
       this.setMostrarDisponibilidad();
     }
   }
 
   public setPago(pago: boolean) {
-    // Este método se mantiene por compatibilidad
     if (pago) {
       this.setProcesandoPago();
     }
@@ -326,7 +324,6 @@ export class DreservasService {
   }
 
   public setIdMiReserva(idReserva: number | null) {
-    // Limpiar la reserva actual primero
     if (this._idMiReserva() !== idReserva) {
       this._miReserva.set(null);
     }
@@ -341,7 +338,10 @@ export class DreservasService {
     return pagarReservaConSaldo(this.http, idReserva);
   }
 
-  // Métodos para jugadores
+  public cancelarReserva(idReserva: number) {
+    return eliminarReservaAction(this.http, idReserva);
+  }
+
   public setTerminoBusquedaJugadores(termino: string) {
     this._termino_busqueda_jugadores.set(termino);
   }
@@ -364,7 +364,59 @@ export class DreservasService {
     this._jugadoresSeleccionados.set([]);
   }
 
-  // Métodos de validación para jugadores
+  public confirmarAgregarJugadoresLocal() {
+    const resumen = this._estadoResumen();
+    if (!resumen) return;
+
+    const jugadoresActuales = resumen.jugadores || [];
+    const nuevos = this._jugadoresSeleccionados();
+    const combinados = [
+      ...jugadoresActuales,
+      ...nuevos.filter(n => !jugadoresActuales.some(j => j.id === n.id)),
+    ];
+
+    const actualizado = {
+      ...resumen,
+      jugadores: combinados,
+      total_jugadores: combinados.length,
+    } as typeof resumen;
+
+    this._estadoResumen.set(actualizado);
+    this._jugadoresSeleccionados.set([]);
+  }
+
+  public confirmarAgregarJugadoresLocalEnExistente() {
+    const reserva = this._miReserva();
+    if (!reserva) return;
+
+    const jugadoresActuales = reserva.jugadores || [];
+    const nuevos = this._jugadoresSeleccionados();
+    const combinados = [
+      ...jugadoresActuales,
+      ...nuevos.filter(n => !jugadoresActuales.some(j => j.id === n.id)),
+    ];
+
+    const actualizado = {
+      ...reserva,
+      jugadores: combinados,
+      total_jugadores: combinados.length,
+    } as typeof reserva;
+
+    this._miReserva.set(actualizado);
+    this._jugadoresSeleccionados.set([]);
+  }
+
+  public async confirmarReservaFinal() {
+    const response = await confirmarReserva(this.http, this._estadoResumen()!);
+
+    if (response.data) {
+      this._estadoResumen.set(null);
+      this.setMostrarResumenExistente(response.data);
+    }
+
+    return response;
+  }
+
   public puedeAgregarMasJugadores(): boolean {
     const estado = this._estadoResumen() || this._miReserva();
     if (!estado) return false;
@@ -372,9 +424,8 @@ export class DreservasService {
     const jugadoresActuales = estado.total_jugadores || 0;
     const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
     const totalFinal = jugadoresActuales + jugadoresSeleccionados;
-
-    // Permitir agregar uno más si no hemos alcanzado el máximo
-    return totalFinal < estado.maximo_jugadores;
+    const maxOtros = Math.max(0, (estado.maximo_jugadores || 0) - 1);
+    return totalFinal < maxOtros;
   }
 
   public puedeSeleccionarJugador(jugadorId?: number): boolean {
@@ -388,11 +439,16 @@ export class DreservasService {
       return false;
     }
 
+    if (jugadorId && (estado.jugadores || []).some(j => j.id === jugadorId)) {
+      return false;
+    }
+
     const jugadoresActuales = estado.total_jugadores || 0;
     const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
     const totalFinal = jugadoresActuales + jugadoresSeleccionados;
+    const maxOtros = Math.max(0, (estado.maximo_jugadores || 0) - 1);
 
-    return totalFinal + 1 <= estado.maximo_jugadores;
+    return totalFinal + 1 <= maxOtros;
   }
 
   public obtenerLimiteJugadores(): {
@@ -408,10 +464,13 @@ export class DreservasService {
     const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
     const totalFinal = jugadoresActuales + jugadoresSeleccionados;
 
+    const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
+    const maxOtros = Math.max(0, (estado.maximo_jugadores || 0) - 1);
+
     return {
       actual: jugadoresActuales,
-      minimo: estado.minimo_jugadores,
-      maximo: estado.maximo_jugadores,
+      minimo: minOtros,
+      maximo: maxOtros,
       totalFinal,
     };
   }

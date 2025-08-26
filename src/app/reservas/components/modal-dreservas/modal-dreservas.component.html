@@ -78,143 +78,160 @@
       </div>
       }
 
-      <div class="overflow-y-auto overflow-x-auto flex-grow px-2 lg:px-6 py-4">
-        <div class="w-full">
-          @if (dreservasService.mostrandoResumenNueva()) {
-          <div class="flex flex-col h-full">
-            <dreservas-info-reserva
-              [resumen]="estadoResumen()"
-            ></dreservas-info-reserva>
-            @if (estadoResumen()?.necesita_aprobacion) {
-            <div class="alert alert-warning mt-4 rounded-lg text-sm">
-              <div class="flex items-start gap-2">
-                <app-web-icon nombreIcono="alert-circle-outline" estilos="h-5 w-5"></app-web-icon>
-                <span>
-                  Tu reserva está <strong>pendiente de aprobación</strong>, se hará válida tan pronto sea aprobada por un administrador.
-                </span>
-              </div>
+      <div class="flex-grow overflow-y-auto max-h-full px-2 lg:px-6 py-4">
+        @if (dreservasService.mostrandoResumenNueva()) {
+        <div class="flex flex-col h-full">
+          <dreservas-info-reserva
+            [resumen]="estadoResumen()"
+          ></dreservas-info-reserva>
+          @if (estadoResumen()?.necesita_aprobacion) {
+          <div class="alert alert-warning mt-4 rounded-lg text-sm">
+            <div class="flex items-start gap-2">
+              <app-web-icon
+                nombreIcono="alert-circle-outline"
+                estilos="h-5 w-5"
+              ></app-web-icon>
+              <span>
+                Tu reserva está <strong>pendiente de aprobación</strong>, se
+                hará válida tan pronto sea aprobada por un administrador.
+              </span>
             </div>
-            }
           </div>
-          } @else if (dreservasService.mostrandoResumenExistente()) {
-          <div class="flex flex-col h-full">
-            <dreservas-info-reserva
-              [resumen]="miReserva()"
-            ></dreservas-info-reserva>
-            @if (miReserva()?.necesita_aprobacion) {
-            <div class="alert alert-warning mt-4 rounded-lg text-sm">
-              <div class="flex items-start gap-2">
-                <app-web-icon nombreIcono="alert-circle-outline" estilos="h-5 w-5"></app-web-icon>
-                <span>
-                  Tu reserva está <strong>pendiente de aprobación</strong>, se hará válida tan pronto sea aprobada por un administrador.
-                </span>
-              </div>
+          }
+        </div>
+        } @else if (dreservasService.mostrandoResumenExistente()) {
+        <div class="flex flex-col h-full">
+          <dreservas-info-reserva
+            [resumen]="miReserva()"
+          ></dreservas-info-reserva>
+          @if (necesitaPago()) {
+          <div class="alert alert-info mt-4 rounded-lg text-sm">
+            <div class="flex items-start gap-2">
+              <app-web-icon nombreIcono="time-outline" estilos="h-5 w-5"></app-web-icon>
+              <span>
+                Tienes <strong>30 minutos</strong> para realizar el pago; de lo contrario, la reserva se <strong>cancelará automáticamente</strong>.
+              </span>
             </div>
-            }
           </div>
-          } @else if (dreservasService.mostrandoJugadores()) {
-          <div class="flex flex-col h-full">
-            @if (mensajeEstado(); as mensaje) {
-            <div class="alert alert-warning mb-4 rounded-lg text-sm">
-              <div class="flex items-center justify-center w-full">
-                <span>{{ mensaje }}</span>
-              </div>
+          }
+          @if (miReserva()?.necesita_aprobacion) {
+          <div class="alert alert-warning mt-4 rounded-lg text-sm">
+            <div class="flex items-start gap-2">
+              <app-web-icon
+                nombreIcono="alert-circle-outline"
+                estilos="h-5 w-5"
+              ></app-web-icon>
+              <span>
+                Tu reserva está <strong>pendiente de aprobación</strong>, se
+                hará válida tan pronto sea aprobada por un administrador.
+              </span>
             </div>
-            }
+          </div>
+          }
+        </div>
+        } @else if (dreservasService.mostrandoJugadores()) {
+        <div class="flex flex-col h-fit">
+          @if (mensajeEstado(); as mensaje) {
+          <div class="alert alert-warning mb-4 rounded-lg text-sm">
+            <div class="flex items-center justify-center w-full">
+              <span>{{ mensaje }}</span>
+            </div>
+          </div>
+          }
 
-            <div class="form-control w-full mb-4">
-              <label class="label">
-                <span class="label-text font-semibold">Buscar jugadores:</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Escribe el nombre, email o documento..."
-                class="input input-bordered w-full"
-                [value]="dreservasService.terminoBusquedaJugadores()"
-                (input)="onBuscarJugadores($event)"
-              />
-            </div>
+          <div class="form-control w-full max-sm:mb-0.5 mb-2">
+            <label class="label">
+              <span class="label-text font-semibold">Buscar jugadores:</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Escribe el nombre, email o documento..."
+              class="input input-bordered w-full"
+              [value]="dreservasService.terminoBusquedaJugadores()"
+              (input)="onBuscarJugadores($event)"
+            />
+          </div>
 
-            @if (dreservasService.terminoBusquedaJugadores().trim().length > 0)
-            {
-            <div class="flex-1 overflow-y-auto">
-              @if (dreservasService.jugadoresQuery.isPending()) {
-              <div class="flex justify-center items-center py-4">
-                <span
-                  class="loading loading-spinner loading-md text-primary"
-                ></span>
-                <span class="ml-2">Buscando jugadores...</span>
-              </div>
-              } @else if (dreservasService.jugadoresQuery.data()) { @if
-              (dreservasService.jugadoresQuery.data()!.length === 0) {
-              <div class="text-center py-4 text-base-content/70">
-                No se encontraron jugadores con ese criterio de búsqueda.
-              </div>
-              } @else {
-              <div class="space-y-1 mb-3">
-                <h4 class="font-semibold text-lg mb-3">
-                  Jugadores encontrados:
-                </h4>
-                @for (jugador of dreservasService.jugadoresQuery.data()!; track
-                jugador.id) {
-                <div class="card bg-base-300/70 shadow-sm">
-                  <div
-                    class="card-body max-sm:p-1 max-sm:px-2 p-3 flex flex-row items-center justify-between"
-                  >
-                    <div class="flex flex-col">
-                      <span class="font-medium"
-                        >{{ jugador.nombre }} {{ jugador.apellido }}</span
-                      >
-                      <span class="text-sm text-base-content">{{
-                        jugador.email
-                      }}</span>
-                      <span class="text-sm text-base-content">{{
-                        jugador.documento
-                      }}</span>
-                    </div>
-                    <button
-                      type="button"
-                      class="btn btn-primary btn-sm"
-                      (click)="agregarJugador(jugador)"
-                      [disabled]="
-                        !puedeSeleccionarJugadorEspecifico(jugador.id)
-                      "
-                    >
-                      @if (esJugadorSeleccionado(jugador.id)) { Agregado }
-                      <!-- IGNORE -->
-                      @else if (!puedeSeleccionarJugador()) { Límite alcanzado }
-                      @else { Agregar }
-                    </button>
-                  </div>
-                </div>
-                }
-              </div>
-              } }
+          @if (dreservasService.terminoBusquedaJugadores().trim().length > 0) {
+          <div class="flex-1">
+            @if (dreservasService.jugadoresQuery.isPending()) {
+            <div class="flex justify-center items-center py-4">
+              <span
+                class="loading loading-spinner loading-md text-primary"
+              ></span>
+              <span class="ml-2">Buscando jugadores...</span>
             </div>
-            } @if (dreservasService.jugadoresSeleccionados().length > 0) {
-            <div class="border-t pt-4">
-              <h4 class="font-semibold text-lg mb-3">
-                Jugadores seleccionados ({{
-                  dreservasService.jugadoresSeleccionados().length
-                }}):
-              </h4>
-              <div class="space-y-2 mb-4 max-h-40 overflow-y-auto">
-                @for (jugador of dreservasService.jugadoresSeleccionados();
-                track jugador.id) {
+            } @else if (dreservasService.jugadoresQuery.data()) { @if
+            (dreservasService.jugadoresQuery.data()!.length === 0) {
+            <div class="text-center py-4 text-base-content/70">
+              No se encontraron jugadores con ese criterio de búsqueda.
+            </div>
+            } @else {
+            <div class="space-y-1 mb-3">
+              <h4 class="font-semibold text-lg mb-3">Jugadores encontrados:</h4>
+              @for (jugador of dreservasService.jugadoresQuery.data()!; track
+              jugador.id) {
+              <div class="card bg-base-300/70 shadow-sm">
                 <div
-                  class="flex items-center justify-between bg-success/10 rounded-lg p-2"
+                  class="card-body px-2 py-1 flex flex-row items-center justify-between"
                 >
                   <div class="flex flex-col">
-                    <span class="font-medium"
+                    <span class="font-semibold"
                       >{{ jugador.nombre }} {{ jugador.apellido }}</span
                     >
                     <span class="text-sm text-base-content">{{
                       jugador.email
                     }}</span>
+                    <span class="text-sm text-base-content">
+                      <strong>{{ jugador.codigo_tipo_documento }}:</strong>
+                      {{ jugador.documento }}
+                      @if (jugador.ldap_uid) {
+                      <strong>Banner: </strong>{{ jugador.ldap_uid }}
+                      }
+                    </span>
                   </div>
                   <button
                     type="button"
-                    class="btn btn-error btn-outline btn-xs"
+                    class="btn btn-primary btn-sm"
+                    (click)="agregarJugador(jugador)"
+                    [disabled]="!puedeSeleccionarJugadorEspecifico(jugador.id)"
+                  >
+                    @if (esJugadorSeleccionado(jugador.id) ||
+                    yaEstaEnReserva(jugador.id)) { Agregado }
+                    <!-- IGNORE -->
+                    @else if (!puedeSeleccionarJugador()) { Límite alcanzado }
+                    @else { Agregar }
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+            } }
+          </div>
+          } @if (listaJugadoresSeleccionados().length > 0) {
+          <div class="border-t flex-1 pt-2">
+            <h4 class="font-semibold text-lg mb-3">
+              Jugadores seleccionados ({{ listaJugadoresSeleccionados().length
+              }}):
+            </h4>
+            <div class="space-y-2 mb-4">
+              @for (jugador of listaJugadoresSeleccionados(); track
+              jugador.id) {
+              <div
+                class="flex items-center justify-between bg-success/10 rounded-lg p-2"
+              >
+                <div class="flex flex-col">
+                  <span class="font-semibold"
+                    >{{ jugador.nombre }} {{ jugador.apellido }}</span
+                  >
+                  <span class="text-sm text-base-content">{{
+                    jugador.email
+                  }}</span>
+                </div>
+                @if (jugador.id !== userIdActual()) {
+                  <button
+                    type="button"
+                    class="btn btn-error btn-xs"
                     (click)="removerJugador(jugador.id)"
                   >
                     <app-web-icon
@@ -222,221 +239,220 @@
                       estilos="h-4 w-4"
                     ></app-web-icon>
                   </button>
-                </div>
                 }
               </div>
-
-              <div class="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  class="btn max-sm:btn-sm btn-ghost md:h-11 rounded-lg"
-                  (click)="cancelarAgregarJugadores()"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"
-                  (click)="confirmarAgregarJugadores()"
-                  [disabled]="
-                    cargando() ||
-                    dreservasService.jugadoresSeleccionados().length === 0
-                  "
-                >
-                  @if (cargando()) {
-                  <span class="loading loading-spinner loading-sm"></span>
-                  } @if (dreservasService.jugadoresSeleccionados().length === 0)
-                  { Selecciona jugadores } @else { Confirmar ({{
-                    dreservasService.jugadoresSeleccionados().length
-                  }}) }
-                </button>
-              </div>
-            </div>
-            }
-          </div>
-          } @else {
-          @if (dreservasService.espacioDetallesQuery.isPending()) {
-          <!-- Skeleton de la vista de disponibilidad -->
-          <div class="h-full flex flex-col gap-6 animate-pulse">
-            <div class="flex gap-4 w-full flex-shrink-0">
-              <div class="flex flex-col w-1/2 mb-2">
-                <div class="w-full h-[13rem] rounded-lg skeleton bg-gray-300"></div>
-              </div>
-              <div class="flex flex-col w-1/2 gap-3">
-                <div class="flex items-center gap-2">
-                  <div class="skeleton bg-gray-300 h-5 w-5 rounded-full"></div>
-                  <div class="skeleton bg-gray-300 h-5 w-40 rounded"></div>
-                </div>
-                <div class="skeleton bg-gray-300 h-4 w-52 rounded"></div>
-                <div class="skeleton bg-gray-300 h-5 w-48 rounded"></div>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-3 w-full flex-1">
-              <div class="skeleton bg-gray-300 h-6 w-48 mx-auto rounded"></div>
-              <div class="flex-1 overflow-y-auto overflow-x-auto">
-                <div
-                  class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
-                >
-                  <!-- Grid de slots skeleton -->
-                  <ng-container *ngFor="let i of [1,2,3,4,5,6,7,8]">
-                    <div class="h-12 skeleton bg-gray-300 rounded-lg w-full"></div>
-                  </ng-container>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-3 w-full flex-1">
-              <div class="skeleton bg-gray-300 h-6 w-56 mx-auto rounded"></div>
-              <div class="border border-base-content/30 rounded-lg p-4 space-y-3">
-                <div class="skeleton bg-gray-300 h-4 w-full rounded"></div>
-                <div class="skeleton bg-gray-300 h-4 w-11/12 rounded"></div>
-                <div class="skeleton bg-gray-300 h-4 w-10/12 rounded"></div>
-                <div class="skeleton bg-gray-300 h-4 w-8/12 rounded"></div>
-              </div>
+              }
             </div>
           </div>
-          } @else {
-          <div class="h-full flex flex-col">
-            <div class="flex gap-4 w-full flex-shrink-0">
-              <div class="flex flex-col w-1/2 mb-2">
-                <img
-                  class="w-full h-[13rem] object-cover rounded-lg"
-                  [src]="getImagenUrl(espacioDetallesQuery?.imagen?.ubicacion)"
-                  alt=""
-                />
-              </div>
-              <div class="flex flex-col w-1/2">
-                <div class="w-full flex items-center">
-                  <app-web-icon
-                    nombreIcono="location-outline"
-                    estilos="h-5 w-5 font-bold text-secondary !fill-secondary"
-                  >
-                  </app-web-icon>
-                  <span class="font-bold text-sm lg:text-base ml-1">
-                    Sede: {{ espacioDetallesQuery?.sede?.nombre | uppercase }}
-                  </span>
-                </div>
-                <span class="inline-block max-sm:text-sm mt-2 mb-3">
-                  <span class="font-semibold">Reservar desde: </span>
-                  {{
-                    obtenerFechaDeApertura(
-                      espacioDetallesQuery?.configuracion!,
-                      espacioDetallesQuery?.tipo_usuario_config!
-                    )
-                  }}
-                </span>
-                <span class="inline-block max-sm:text-sm align-middle">
-                  <span class="font-bold">Fecha de reserva: </span>
-                  <span class="badge badge-info border-2 font-bold badge-lg">
-                    {{ dreservasService.fecha() | date : 'dd/MM/yyyy' }}
-                  </span>
-                </span>
-              </div>
+          }
+          <div class="flex justify-end h-full flex-1 gap-2">
+            <button
+              type="button"
+              class="btn max-sm:btn-sm btn-ghost md:h-11 rounded-lg"
+              (click)="cancelarAgregarJugadores()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"
+              (click)="confirmarAgregarJugadores()"
+              [disabled]="
+                cargando() ||
+                dreservasService.jugadoresSeleccionados().length === 0
+              "
+            >
+              @if (cargando()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              } @if (dreservasService.jugadoresSeleccionados().length === 0) {
+              Selecciona jugadores } @else { Confirmar ({{
+                dreservasService.jugadoresSeleccionados().length
+              }}) }
+            </button>
+          </div>
+        </div>
+        } @else { @if (dreservasService.espacioDetallesQuery.isPending()) {
+        <!-- Skeleton de la vista de disponibilidad -->
+        <div class="h-full flex flex-col gap-6 animate-pulse">
+          <div class="flex gap-4 w-full flex-shrink-0">
+            <div class="flex flex-col w-1/2 mb-2">
+              <div
+                class="w-full h-[13rem] rounded-lg skeleton bg-gray-300"
+              ></div>
             </div>
+            <div class="flex flex-col w-1/2 gap-3">
+              <div class="flex items-center gap-2">
+                <div class="skeleton bg-gray-300 h-5 w-5 rounded-full"></div>
+                <div class="skeleton bg-gray-300 h-5 w-40 rounded"></div>
+              </div>
+              <div class="skeleton bg-gray-300 h-4 w-52 rounded"></div>
+              <div class="skeleton bg-gray-300 h-5 w-48 rounded"></div>
+            </div>
+          </div>
 
-            <div class="flex flex-col gap-1 w-full flex-1">
-              <span
-                class="flex w-full text-lg font-bold text-center flex-shrink-0"
+          <div class="flex flex-col gap-3 w-full flex-1">
+            <div class="skeleton bg-gray-300 h-6 w-48 mx-auto rounded"></div>
+            <div class="flex-1 overflow-y-auto overflow-x-auto">
+              <div
+                class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
               >
-                Disponibilidad:
-              </span>
-              <div class="flex-1 overflow-y-auto overflow-x-auto">
-                <div
-                  class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
+                <!-- Grid de slots skeleton -->
+                <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]">
+                  <div
+                    class="h-12 skeleton bg-gray-300 rounded-lg w-full"
+                  ></div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3 w-full flex-1">
+            <div class="skeleton bg-gray-300 h-6 w-56 mx-auto rounded"></div>
+            <div class="border border-base-content/30 rounded-lg p-4 space-y-3">
+              <div class="skeleton bg-gray-300 h-4 w-full rounded"></div>
+              <div class="skeleton bg-gray-300 h-4 w-11/12 rounded"></div>
+              <div class="skeleton bg-gray-300 h-4 w-10/12 rounded"></div>
+              <div class="skeleton bg-gray-300 h-4 w-8/12 rounded"></div>
+            </div>
+          </div>
+        </div>
+        } @else {
+        <div class="h-full flex flex-col">
+          <div class="flex gap-4 w-full flex-shrink-0">
+            <div class="flex flex-col w-1/2 mb-2">
+              <img
+                class="w-full h-[13rem] object-cover rounded-lg"
+                [src]="getImagenUrl(espacioDetallesQuery?.imagen?.ubicacion)"
+                alt=""
+              />
+            </div>
+            <div class="flex flex-col w-1/2">
+              <div class="w-full flex items-center">
+                <app-web-icon
+                  nombreIcono="location-outline"
+                  estilos="h-5 w-5 font-bold text-secondary !fill-secondary"
                 >
-                  @for (item of espacioDetallesQuery?.disponibilidad; track
-                  $index) {
-                  <button
-                    type="button"
-                    (click)="
-                      item.mi_reserva
-                        ? verMiReserva(item.id_reserva)
-                        : item.disponible
-                        ? iniciarReserva(espacioDetallesQuery, item)
-                        : null
-                    "
-                    class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
-                    [disabled]="
-                      item.reserva_pasada &&
-                      !item.mi_reserva &&
-                      !item.novedad &&
-                      !item.reservada
-                    "
-                    [class.btn-disabled]="
-                      item.reserva_pasada &&
-                      !item.mi_reserva &&
-                      !item.novedad &&
-                      !item.reservada
-                    "
-                    [class.btn-accent]="item.disponible"
-                    [class.btn-success]="item.mi_reserva"
-                    [class.btn-error]="!item.mi_reserva && item.reservada"
-                    [class.btn-warning]="item.novedad"
-                    [class.tooltip]="
-                      item.novedad_desc && item.novedad_desc.length > 10
-                    "
-                    [attr.data-tip]="
-                      item.novedad_desc && item.novedad_desc.length > 10
-                        ? item.novedad_desc
-                        : null
-                    "
-                    [class.pointer-events-none]="
-                      !item.disponible &&
-                      item.reserva_pasada &&
-                      !item.mi_reserva
-                    "
-                    [ngClass]="{
+                </app-web-icon>
+                <span class="font-bold text-sm lg:text-base ml-1">
+                  Sede: {{ espacioDetallesQuery?.sede?.nombre | uppercase }}
+                </span>
+              </div>
+              <span class="inline-block max-sm:text-sm mt-2 mb-3">
+                <span class="font-semibold">Reservar desde: </span>
+                {{
+                  obtenerFechaDeApertura(
+                    espacioDetallesQuery?.configuracion!,
+                    espacioDetallesQuery?.tipo_usuario_config!
+                  )
+                }}
+              </span>
+              <span class="inline-block max-sm:text-sm align-middle">
+                <span class="font-bold">Fecha de reserva: </span>
+                <span class="badge badge-info border-2 font-bold badge-lg">
+                  {{ dreservasService.fecha() | date : 'dd/MM/yyyy' }}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1 w-full flex-1">
+            <span
+              class="flex w-full text-lg font-bold text-center flex-shrink-0"
+            >
+              Disponibilidad:
+            </span>
+            <div class="flex-1 overflow-y-auto overflow-x-auto">
+              <div
+                class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
+              >
+                @for (item of espacioDetallesQuery?.disponibilidad; track
+                $index) {
+                <button
+                  type="button"
+                  (click)="
+                    item.mi_reserva
+                      ? verMiReserva(item.id_reserva)
+                      : item.disponible
+                      ? iniciarReserva(espacioDetallesQuery, item)
+                      : null
+                  "
+                  class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
+                  [disabled]="
+                    item.reserva_pasada &&
+                    !item.mi_reserva &&
+                    !item.novedad &&
+                    !item.reservada
+                  "
+                  [class.btn-disabled]="
+                    item.reserva_pasada &&
+                    !item.mi_reserva &&
+                    !item.novedad &&
+                    !item.reservada
+                  "
+                  [class.btn-accent]="item.disponible"
+                  [class.btn-success]="item.mi_reserva"
+                  [class.btn-error]="!item.mi_reserva && item.reservada"
+                  [class.btn-warning]="item.novedad"
+                  [class.tooltip]="
+                    item.novedad_desc && item.novedad_desc.length > 10
+                  "
+                  [attr.data-tip]="
+                    item.novedad_desc && item.novedad_desc.length > 10
+                      ? item.novedad_desc
+                      : null
+                  "
+                  [class.pointer-events-none]="
+                    !item.disponible && item.reserva_pasada && !item.mi_reserva
+                  "
+                  [ngClass]="{
                       'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
                     }"
-                  >
-                    @if (item.disponible) {
-                    <span>{{ item.hora_inicio }}</span>
-                    } @else if (item.reservada && !item.novedad) {
-                    <span class="text-wrap text-base leading-tight">
-                      {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
-                    </span>
-                    } @else if (!item.reservada && item.novedad) {
-                    <span class="text-sm">
-                      {{ item.hora_inicio }} -
-                      {{
-                        item.novedad_desc && item.novedad_desc.length > 10
-                          ? item.novedad_desc.slice(0, 10) + '...'
-                          : item.novedad_desc
-                      }}
-                    </span>
-                    }
-                  </button>
+                >
+                  @if (item.disponible) {
+                  <span>{{ item.hora_inicio }}</span>
+                  } @else if (item.reservada && !item.novedad) {
+                  <span class="text-wrap text-base leading-tight">
+                    {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
+                  </span>
+                  } @else if (!item.reservada && item.novedad) {
+                  <span class="text-sm">
+                    {{ item.hora_inicio }} -
+                    {{
+                      item.novedad_desc && item.novedad_desc.length > 10
+                        ? item.novedad_desc.slice(0, 10) + '...'
+                        : item.novedad_desc
+                    }}
+                  </span>
                   }
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-1 w-full flex-1">
-              <span
-                class="flex w-full text-lg font-bold text-center flex-shrink-0"
-              >
-                Notas importantes:
-              </span>
-              <div
-                class="border border-base-content/70 rounded-lg prose quill-reset text-base"
-              >
-                <quill-view-html
-                  class="max-sm:text-sm text-base"
-                  [content]="espacioDetallesQuery?.descripcion || ''"
-                ></quill-view-html>
+                </button>
+                }
               </div>
             </div>
           </div>
-          }
-          }
+
+          <div class="flex flex-col gap-1 w-full flex-1">
+            <span
+              class="flex w-full text-lg font-bold text-center flex-shrink-0"
+            >
+              Notas importantes:
+            </span>
+            <div
+              class="border border-base-content/70 rounded-lg prose quill-reset text-base"
+            >
+              <quill-view-html
+                class="max-sm:text-sm text-base"
+                [content]="espacioDetallesQuery?.descripcion || ''"
+              ></quill-view-html>
+            </div>
+          </div>
         </div>
+        } }
       </div>
     </div>
     }
     <ng-template #alertaModalReservas></ng-template>
     <div
-      class="sticky bottom-0 pt-2 min-lg:mt-2 bg-base-100 border-t border-base-300 px-2 pb-2 lg:px-4 lg:pb-4 xl:px-6 xl:pb-6 z-10 flex-shrink-0"
+      class="sticky bottom-0 pt-2 bg-base-100 border-t border-base-300 px-2 pb-2 lg:px-4 lg:pb-4 xl:px-6 xl:pb-6 z-10 flex-shrink-0"
     >
       <div class="modal-action !mt-0">
         <button
@@ -446,8 +462,7 @@
         >
           Cerrar
         </button>
-        @if(pudeCancelar() && (dreservasService.mostrandoResumenExistente() ||
-        dreservasService.mostrandoResumenNueva())) {
+        @if(pudeCancelar() && dreservasService.mostrandoResumenExistente()) {
 
         <button
           type="button"
@@ -461,8 +476,9 @@
           ></app-web-icon>
           Cancelar
         </button>
-        } @if (puedeAgregarJugadores() &&
-        !dreservasService.mostrandoDisponibilidad()) {
+        } @if (puedeAgregarMasJugadores() &&
+        !dreservasService.mostrandoDisponibilidad() &&
+        !dreservasService.mostrandoJugadores()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-accent md:h-11 rounded-lg"
@@ -475,7 +491,7 @@
           ></app-web-icon>
           Agregar Jugadores
         </button>
-        } @if (necesitaPago() && !dreservasService.mostrandoDisponibilidad()) {
+        } @if (necesitaPago() && dreservasService.mostrandoResumenExistente()) {
         @if((estadoResumen()?.pagar_con_saldo || miReserva()?.pagar_con_saldo))
         {
         <button
@@ -502,6 +518,19 @@
             estilos="h-5 w-5 max-md:hidden mr-2"
           ></app-web-icon>
           Pagar
+        </button>
+        } @if (dreservasService.mostrandoResumenNueva()) {
+        <button
+          type="button"
+          class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
+          (click)="confirmarReservaFinal()"
+          [disabled]="confirmarReservaDisabled()"
+        >
+          <app-web-icon
+            nombreIcono="checkmark-done-circle-outline"
+            estilos="h-5 w-5 max-md:hidden mr-2"
+          ></app-web-icon>
+          Confirmar reserva
         </button>
         }
       </div>

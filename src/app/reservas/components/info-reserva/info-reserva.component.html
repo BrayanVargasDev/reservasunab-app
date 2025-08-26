@@ -8,7 +8,7 @@
     <div>
       <span class="text-sm text-base-content/70">Espacio:</span>
       <p class="font-medium">
-        {{ resumen()?.nombre_espacio   }}
+        {{ resumen()?.nombre_espacio }}
       </p>
     </div>
   </div>
@@ -113,18 +113,22 @@
 </div>
 }
 
-<!-- Jugadores agregados -->
+<!-- Participantes (no incluye al reservante) -->
 @if (resumen()?.jugadores && resumen()?.jugadores!.length > 0) {
 <div class="mt-2 p-2 md:p-4 bg-base-100 rounded-lg border border-base-300">
-  <div class="flex items-center mb-3">
+  <div class="flex items-center mb-2">
     <app-web-icon
       nombreIcono="people-outline"
       estilos="h-5 w-5 mr-3 text-info"
     ></app-web-icon>
     <span class="text-lg font-semibold"
-      >Jugadores agregados ({{ (resumen()?.jugadores)!.length }}):</span
+      >Participantes ({{ (resumen()?.jugadores)!.length }}):</span
     >
   </div>
+  <p class="text-sm text-base-content/70 mb-2">
+    Reservante: <strong>{{ resumen()?.usuario_reserva }}</strong
+    >. La lista a continuación corresponde a los demás participantes.
+  </p>
   <div class="space-y-1">
     @for (jugador of resumen()?.jugadores; track jugador.id) {
     <div
@@ -134,9 +138,13 @@
         <span class="font-semibold text-wrap"
           >{{ jugador.nombre }} {{ jugador.apellido }}</span
         >
-        <span class="text-sm italic text-base-content/70"
-          >CC: {{ jugador.documento || jugador.codigo_usuario }}</span
-        >
+        <span class="text-sm italic text-base-content/70">
+          <strong>{{ jugador.codigo_tipo_documento }}:</strong>
+          {{ jugador.documento || jugador.codigo_usuario }}
+          @if (jugador.ldap_uid) {
+          <strong>Banner: </strong>{{ jugador.ldap_uid }}
+          }
+        </span>
       </div>
       <div class="badge badge-info">Confirmado</div>
     </div>
