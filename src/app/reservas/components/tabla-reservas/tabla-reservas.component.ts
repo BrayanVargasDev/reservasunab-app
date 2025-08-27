@@ -37,6 +37,7 @@ import { TableExpansorComponent } from '@shared/components/table-expansor/table-
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { PagosService } from '@pagos/services/pagos.service';
 import { UpperFirstPipe } from '@shared/pipes';
+import { ModalVerReservaComponent } from '../modal-ver-reserva/modal-ver-reserva.component';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -55,6 +56,7 @@ interface Util {
     ResponsiveTableDirective,
     TableExpansorComponent,
     UpperFirstPipe,
+  ModalVerReservaComponent,
   ],
 })
 export class TablaReservasComponent {
@@ -68,6 +70,7 @@ export class TablaReservasComponent {
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public codigoCell = viewChild.required<TemplateRef<Util>>('codigoCell');
   public horasCell = viewChild.required<TemplateRef<Util>>('horasCell');
+  public modalVerReservaRef = viewChild<ModalVerReservaComponent>('modalVer');
 
   private columnasPorDefecto = signal<ColumnDef<Reserva>[]>([
     {
@@ -123,6 +126,9 @@ export class TablaReservasComponent {
       accessorKey: 'estado',
       header: 'Estado',
       size: 150,
+      meta: {
+        priority: Infinity,
+      },
       cell: this.estadoCell,
       accessorFn: row => this.pagoService.obtenerMensajeEstadoBadge(row.estado),
     },
@@ -136,6 +142,14 @@ export class TablaReservasComponent {
       cell: context => {
         const reserva = context.row.original;
         const acciones: BotonAcciones[] = [];
+        // Ver detalle de la reserva
+        acciones.push({
+          tooltip: 'Ver detalles',
+          icono: 'eye-outline',
+          color: 'info',
+          disabled: this.appService.editando?.(),
+          eventoClick: () => this.modalVerReservaRef()?.open(reserva.id),
+        });
         if (
           reserva.estado === 'pendienteap' &&
           this.authService.tienePermisos?.('RSV000001')

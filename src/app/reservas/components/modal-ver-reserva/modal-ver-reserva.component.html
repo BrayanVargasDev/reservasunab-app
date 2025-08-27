@@ -1,0 +1,39 @@
+<dialog #dialog class="modal p-0 z-50" style="scrollbar-gutter: unset">
+  <div
+    class="modal-box p-0 max-w-[95dvw] lg:max-w-[80dvw] xl:max-w-[45rem] w-full max-h-[90dvh] overflow-hidden relative flex flex-col"
+  >
+    <div
+      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-3 lg:px-6 py-3 flex items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <app-web-icon nombreIcono="information-circle-outline" estilos="h-6 w-6"></app-web-icon>
+        <span class="text-xl font-bold">Detalle de reserva</span>
+      </div>
+      <button class="btn btn-sm btn-ghost" (click)="close()">
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+      </button>
+    </div>
+
+    <div class="flex-grow overflow-y-auto px-3 lg:px-6 py-4">
+      @if (cargando()) {
+      <div class="flex items-center justify-center h-40 gap-2">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+        <span>Cargando detalles...</span>
+      </div>
+      } @else if (error()) {
+      <div class="alert alert-error rounded-lg">
+        <span>{{ error() }}</span>
+      </div>
+      } @else {
+      <dreservas-info-reserva [resumen]="resumen()"></dreservas-info-reserva>
+      }
+    </div>
+
+    <div class="sticky bottom-0 bg-base-100 z-10 border-t border-base-300 px-3 lg:px-6 py-3 flex justify-end">
+      <button class="btn btn-primary" (click)="close()">Cerrar</button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
