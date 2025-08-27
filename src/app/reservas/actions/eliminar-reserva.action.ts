@@ -11,7 +11,7 @@ export const eliminarReserva = async (
   http: HttpClient,
   idReserva: number,
 ): Promise<GeneralResponse<Reserva>> => {
-  const url = `${BASE_URL}/reservas/${idReserva}`;
+  const url = `${BASE_URL}/reservas/${idReserva}/cancelar`;
   return firstValueFrom(
     http.delete<GeneralResponse<Reserva>>(url, {
       headers: { 'Content-Type': 'application/json' },

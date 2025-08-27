@@ -248,6 +248,7 @@ export class TablaPagosComponent implements OnInit {
     this._modalAbierto.set(false);
     this._pagoInfo.set(null);
     this._errorInfo.set(null);
+    this.pagosService.pagosQuery.refetch();
   }
 
   async cargarInfoPago(codigo: string) {

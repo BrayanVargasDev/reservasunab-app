@@ -182,10 +182,22 @@ export class ModalDreservasComponent {
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
 
+    if (estado?.estado === 'completada') return false;
     if (this.esReservaPasada()) return false;
     if (!estado) return false;
     if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
     return estado.estado !== 'pagada' && !!estado.valor && estado.valor > 0;
+  });
+
+  public puedePagarConSaldo = computed(() => {
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+
+    if (estado?.estado === 'completada') return false;
+    if (this.esReservaPasada()) return false;
+    if (!estado) return false;
+    return estado.pagar_con_saldo;
   });
 
   public pudeCancelar = computed(() => {
@@ -473,7 +485,7 @@ export class ModalDreservasComponent {
     }, 1000);
   }
 
-  public procesarPagoConSaldo() {
+  public async procesarPagoConSaldo() {
     this.dreservasService.setProcesandoPago();
 
     const estadoResumen = this.estadoResumen() ?? this.miReserva();
@@ -497,58 +509,77 @@ export class ModalDreservasComponent {
       return;
     }
 
-    setTimeout(() => {
-      this.dreservasService
-        .pagarReservaConSaldo(estadoResumen.id)
-        .then((response: { data: string; message?: string }) => {
-          if (!response.data) {
-            this.alertaService.error(
-              'Error al procesar el pago con saldo.',
-              5 * 1000,
-              this.alertaModalReservas(),
-              this.estilosAlerta,
-            );
-            if (this.dreservasService.estadoResumen()) {
-              this.dreservasService.setMostrarResumenNueva(
-                this.dreservasService.estadoResumen()!,
-              );
-            } else if (this.dreservasService.miReserva()) {
-              this.dreservasService.setMostrarResumenExistente(
-                this.dreservasService.miReserva()!,
-              );
-            }
-            return;
-          }
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-          this.alertaService.success(
-            response.message || 'Pago con saldo exitoso.',
-            4 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
+    try {
+      const data = await this.dreservasService.pagarReservaConSaldo(
+        estadoResumen.id,
+      );
+      if (!data) {
+        this.alertaService.error(
+          'Error al procesar el pago con saldo.',
+          5 * 1000,
+          this.alertaModalReservas(),
+          this.estilosAlerta,
+        );
+        if (this.dreservasService.estadoResumen()) {
+          this.dreservasService.setMostrarResumenNueva(
+            this.dreservasService.estadoResumen()!,
           );
+        } else if (this.dreservasService.miReserva()) {
+          this.dreservasService.setMostrarResumenExistente(
+            this.dreservasService.miReserva()!,
+          );
+        }
+        return;
+      }
 
-          this.dreservasService.cerrarModal();
-        })
-        .catch((error: any) => {
-          const mensajeError =
-            error.error?.error || 'Error al procesar el pago con saldo.';
-          this.alertaService.error(
-            mensajeError,
-            5 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
-          );
-          if (this.dreservasService.estadoResumen()) {
-            this.dreservasService.setMostrarResumenNueva(
-              this.dreservasService.estadoResumen()!,
-            );
-          } else if (this.dreservasService.miReserva()) {
+      try {
+        const result = await this.dreservasService.miReservaQuery.refetch();
+        const reservaActualizada =
+          result.data || this.dreservasService.miReserva();
+        if (reservaActualizada) {
+          this.dreservasService.setMostrarResumenExistente(reservaActualizada);
+        } else {
+          if (this.dreservasService.miReserva()) {
             this.dreservasService.setMostrarResumenExistente(
               this.dreservasService.miReserva()!,
             );
           }
-        });
-    }, 800);
+        }
+      } catch {
+        if (this.dreservasService.miReserva()) {
+          this.dreservasService.setMostrarResumenExistente(
+            this.dreservasService.miReserva()!,
+          );
+        }
+      }
+
+      this.alertaService.success(
+        'Pago realizado con saldo exitosamente.',
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+    } catch (error: any) {
+      const mensajeError =
+        error.error?.error || 'Error al procesar el pago con saldo.';
+      this.alertaService.error(
+        mensajeError,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      if (this.dreservasService.estadoResumen()) {
+        this.dreservasService.setMostrarResumenNueva(
+          this.dreservasService.estadoResumen()!,
+        );
+      } else if (this.dreservasService.miReserva()) {
+        this.dreservasService.setMostrarResumenExistente(
+          this.dreservasService.miReserva()!,
+        );
+      }
+    }
   }
 
   public async verMiReserva(idReserva: number | null) {
@@ -790,9 +821,12 @@ export class ModalDreservasComponent {
     }
   }
 
-  public cancelarReserva() {
+  public async cancelarReserva() {
+    // Activar estado de carga de cancelación en la UI
     this.dreservasService.setCancelandoReserva();
 
+    // Determinar si la vista actual era una reserva nueva o existente
+    const esNueva = !!this.estadoResumen();
     const estadoResumen = this.estadoResumen() ?? this.miReserva();
 
     if (!estadoResumen || !estadoResumen.id) {
@@ -802,11 +836,11 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         this.estilosAlerta,
       );
-      if (this.dreservasService.estadoResumen()) {
+      if (esNueva && this.dreservasService.estadoResumen()) {
         this.dreservasService.setMostrarResumenNueva(
           this.dreservasService.estadoResumen()!,
         );
-      } else if (this.dreservasService.miReserva()) {
+      } else if (!esNueva && this.dreservasService.miReserva()) {
         this.dreservasService.setMostrarResumenExistente(
           this.dreservasService.miReserva()!,
         );
@@ -814,40 +848,60 @@ export class ModalDreservasComponent {
       return;
     }
 
-    setTimeout(() => {
-      this.dreservasService
-        .cancelarReserva(estadoResumen.id)
-        .then(() => {
-          this.alertaService.success(
-            'Reserva cancelada correctamente.',
-            4 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
-          );
-          this.dreservasService.cerrarModal();
-        })
-        .catch((error: any) => {
-          const mensajeError =
-            error.error?.error ||
-            'Error al cancelar. Por favor, inténtelo de nuevo.';
+    await new Promise<void>(resolve => setTimeout(resolve, 500));
 
-          this.alertaService.error(
-            mensajeError,
-            5 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
+    try {
+      const response = await this.dreservasService.cancelarReserva(
+        estadoResumen.id,
+      );
+
+      if (!response.data) {
+        this.alertaService.error(
+          'No se pudo cancelar la reserva.',
+          5 * 1000,
+          this.alertaModalReservas(),
+          this.estilosAlerta,
+        );
+        if (esNueva) {
+          this.dreservasService.setMostrarResumenNueva(
+            this.dreservasService.estadoResumen() || estadoResumen,
           );
-          if (this.dreservasService.estadoResumen()) {
-            this.dreservasService.setMostrarResumenNueva(
-              this.dreservasService.estadoResumen()!,
-            );
-          } else if (this.dreservasService.miReserva()) {
-            this.dreservasService.setMostrarResumenExistente(
-              this.dreservasService.miReserva()!,
-            );
-          }
-        });
-    }, 500);
+        } else {
+          this.dreservasService.setMostrarResumenExistente(
+            this.dreservasService.miReserva() || estadoResumen,
+          );
+        }
+        return;
+      }
+
+      this.alertaService.success(
+        'Reserva cancelada exitosamente.',
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      this.dreservasService.cerrarModal();
+    } catch (error: any) {
+      const mensajeError =
+        error?.error?.error ||
+        error?.errors?.error ||
+        'Error al cancelar la reserva.';
+      this.alertaService.error(
+        mensajeError,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      if (esNueva) {
+        this.dreservasService.setMostrarResumenNueva(
+          this.dreservasService.estadoResumen() || estadoResumen,
+        );
+      } else {
+        this.dreservasService.setMostrarResumenExistente(
+          this.dreservasService.miReserva() || estadoResumen,
+        );
+      }
+    }
   }
 
   public manejarCierreModal(): void {

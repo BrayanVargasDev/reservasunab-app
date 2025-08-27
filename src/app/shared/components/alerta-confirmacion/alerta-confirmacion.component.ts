@@ -47,14 +47,14 @@ export type PosicionAlerta =
         (click)="$event.stopPropagation()"
       >
         <!-- Icono y contenido principal -->
-        <div class="flex items-start gap-4, mb-6">
+        <div class="flex items-start gap-4 mb-6">
           <div
-            class="shrink-0 w-12 h-12 rounded-full flex items-center content-center mr-2 pointer-events-none"
+            class="shrink-0 w-12 h-12 rounded-full flex items-center content-center mr-2 pointer-events-none !p-0"
             [ngClass]="clasesIcono()"
           >
             <app-web-icon
               [nombreIcono]="obtenerNombreIcono()"
-              [estilos]="'h-6 w-6 pointer-events-none'"
+              [estilos]="'h-8 w-8 p-0 pointer-events-none'"
             ></app-web-icon>
           </div>
 

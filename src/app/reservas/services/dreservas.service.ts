@@ -76,7 +76,8 @@ export class DreservasService {
   public cargando = computed(
     () =>
       this._estadoModal() === EstadoModal.CARGANDO ||
-      this._estadoModal() === EstadoModal.PROCESANDO_PAGO,
+      this._estadoModal() === EstadoModal.PROCESANDO_PAGO ||
+      this._estadoModal() === EstadoModal.CANCELANDO_RESERVA,
   );
   public mostrandoDisponibilidad = computed(
     () => this._estadoModal() === EstadoModal.DISPONIBILIDAD,
@@ -215,7 +216,7 @@ export class DreservasService {
 
   public async cerrarModal() {
     this._modalAbierta.set(false);
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300));
     this._idEspacio.set(null);
     this._estadoModal.set(EstadoModal.DISPONIBILIDAD);
     this._mensajeCargando.set('');

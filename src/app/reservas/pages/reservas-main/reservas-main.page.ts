@@ -16,13 +16,14 @@ import { ReservasAdminService } from '@reservas/services/reservas-admin.service'
 import { AppService } from '@app/app.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { AuthService } from '@auth/services/auth.service';
+import { BreadcrumbsComponent } from "@app/shared/components/breadcrumbs/breadcrumbs.component";
 
 @Component({
   selector: 'app-reservas-main',
   templateUrl: './reservas-main.page.html',
   styleUrls: ['./reservas-main.page.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TablaReservasComponent],
+  imports: [CommonModule, ReactiveFormsModule, TablaReservasComponent, BreadcrumbsComponent],
   host: {
     class: 'flex flex-col h-full w-full sm:pl-3',
   },

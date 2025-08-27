@@ -140,21 +140,34 @@ export class TablaReservasComponent {
           reserva.estado === 'pendienteap' &&
           this.authService.tienePermisos?.('RSV000001')
         ) {
+          const esPasada = this.esReservaPasada(reserva);
           acciones.push({
-            tooltip: 'Aprobar',
+            tooltip: esPasada
+              ? 'No se puede aprobar reservas pasadas'
+              : 'Aprobar',
             icono: 'checkmark-done-circle-outline',
             color: 'success',
-            disabled: this.appService.editando?.(),
+            disabled: this.appService.editando?.() || esPasada,
             eventoClick: () => this.aprobarReserva(reserva),
           });
         }
         if (this.authService.tienePermisos?.('RSV000002')) {
+          const yaCancelada = this.estaCancelada(reserva);
+          const esPasada = this.esReservaPasada(reserva);
           acciones.push({
-            tooltip: 'Eliminar',
+            tooltip: yaCancelada
+              ? 'Reserva ya cancelada'
+              : esPasada
+              ? 'No se puede cancelar reservas pasadas'
+              : 'Cancelar',
             icono: 'trash-outline',
             color: 'error',
-            disabled: this.appService.editando?.(),
-            eventoClick: () => this.eliminarReserva(reserva),
+            disabled:
+              this.appService.editando?.() ||
+              yaCancelada ||
+              esPasada ||
+              !context.row.original.puede_cancelar,
+            eventoClick: () => this.cancelarReserva(reserva),
           });
         }
         return flexRenderComponent(AccionesTablaComponent, {
@@ -228,6 +241,15 @@ export class TablaReservasComponent {
   }
 
   public aprobarReserva(reserva: Reserva) {
+    if (this.esReservaPasada(reserva)) {
+      this.alertaService.error(
+        'No se pueden aprobar reservas anteriores al momento actual.',
+        5000,
+        this.alertaReserva(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+      return;
+    }
     this.alertaService
       .confirmarAccion(
         `¿Aprobar la reserva <strong>${reserva.codigo}</strong>?`,
@@ -260,12 +282,58 @@ export class TablaReservasComponent {
       });
   }
 
-  public eliminarReserva(reserva: Reserva) {
+  private estaCancelada(reserva: Reserva): boolean {
+    // Algunos backends marcan estado 'cancelada' y/o establecen eliminado_en
+    const eliminadoEn = (reserva as any)?.eliminado_en;
+    return reserva.estado?.toLowerCase?.() === 'cancelada' || !!eliminadoEn;
+  }
+
+  private combinarFechaYHora(fecha: any, hora: any): Date | null {
+    try {
+      const f = new Date(fecha);
+      const h = new Date(hora);
+      if (isNaN(f.getTime()) || isNaN(h.getTime())) return null;
+      const d = new Date(f);
+      d.setHours(h.getHours(), h.getMinutes(), 0, 0);
+      return d;
+    } catch {
+      return null;
+    }
+  }
+
+  private esReservaPasada(reserva: Reserva): boolean {
+    const ahora = new Date();
+    const inicio = this.combinarFechaYHora(reserva.fecha, reserva.hora_inicio);
+    if (!inicio) return false; // Si no podemos determinar, no bloquear
+    return inicio.getTime() < ahora.getTime();
+  }
+
+  public cancelarReserva(reserva: Reserva) {
+    if (this.estaCancelada(reserva)) {
+      this.alertaService.info(
+        'La reserva ya está cancelada.',
+        4000,
+        this.alertaReserva(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+      return;
+    }
+
+    if (this.esReservaPasada(reserva)) {
+      this.alertaService.error(
+        'No se pueden cancelar reservas anteriores al momento actual.',
+        5000,
+        this.alertaReserva(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
+      );
+      return;
+    }
+
     this.alertaService
       .confirmarAccion(
-        `¿Eliminar la reserva <strong>${reserva.codigo}</strong>?`,
+        `¿Cancelar la reserva <strong>${reserva.codigo}</strong>?`,
         this.alertaReserva(),
-        'Eliminar reserva',
+        'Cancelar reserva',
         'warning',
       )
       .then(confirmado => {
@@ -274,17 +342,18 @@ export class TablaReservasComponent {
           .eliminar(reserva.id)
           .then(() => {
             this.alertaService.success(
-              'Reserva eliminada.',
+              'Reserva cancelada.',
               5000,
               this.alertaReserva(),
               'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
             );
             this.reservasService.reservasQuery.refetch();
+            this.appService.creditosQuery.refetch();
           })
           .catch(err => {
             console.error(err);
             this.alertaService.error(
-              'Error al eliminar la reserva.',
+              'Error al cancelar la reserva.',
               5000,
               this.alertaReserva(),
               'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',

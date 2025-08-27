@@ -154,12 +154,10 @@ export class PagosService {
 
   obtenerColorEstado(
     estado: string,
-  ): 'success' | 'warning' | 'error' | 'primary' {
+  ): 'success' | 'warning' | 'error' | 'primary' | 'info' {
     if (!estado) return 'primary';
     const upper = estado.trim().toUpperCase();
-    console.log('🚀 ✅ ~ PagosService ~ obtenerColorEstado ~ upper:', upper)
 
-    // Normalizar con las mismas equivalencias usadas en mensajes
     const equivalencias: Record<string, string> = {
       PAGADA: 'COMPLETADA',
       CONFIRMADA: 'COMPLETADA',
@@ -174,14 +172,18 @@ export class PagosService {
       CREATED: 'PENDING',
       ENROLLED: 'OK',
       NO_AUTHORIZED: 'NOT_AUTHORIZED',
+      CANCELADA: 'CANCELADA',
     };
     const canon = equivalencias[upper] || upper;
 
     if (['OK', 'COMPLETADA', 'APROBADA'].includes(canon)) return 'success';
 
-    if (['PENDING', 'INICIAL', 'PENDIENTEAP'].includes(canon)) return 'warning';
+    if (['PENDING', 'PENDIENTEAP'].includes(canon)) return 'warning';
 
-    if (['NOT_AUTHORIZED', 'ERROR', 'EXPIRED'].includes(canon)) return 'error';
+    if (['NOT_AUTHORIZED', 'ERROR', 'EXPIRED', 'CANCELADA'].includes(canon))
+      return 'error';
+
+    if (['INICIAL'].includes(canon)) return 'info';
 
     return 'primary';
   }
@@ -204,6 +206,7 @@ export class PagosService {
       CREATED: 'PENDING',
       ENROLLED: 'OK',
       NO_AUTHORIZED: 'NOT_AUTHORIZED',
+      CANCELADA: 'CANCELADA',
     };
     const canon = equivalencias[upper] || upper;
 
@@ -213,6 +216,7 @@ export class PagosService {
       PENDIENTEAP: 'pendiente aprobación',
       APROBADA: 'aprobada',
       COMPLETADA: 'completada',
+      CANCELADA: 'cancelada',
 
       // Pago
       OK: 'aprobado',

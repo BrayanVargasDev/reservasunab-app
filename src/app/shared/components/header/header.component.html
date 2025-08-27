@@ -24,6 +24,24 @@
     </div>
 
     <div class="navbar-end gap-2">
+      <!-- Créditos/saldo del usuario -->
+      <div class="hidden md:flex items-center mr-2">
+        @if (appService.creditosQuery.isLoading()) {
+        <span
+          class="loading loading-spinner loading-sm text-secondary-content"
+        ></span>
+        } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
+        <div class="badge bg-secondary-content h-auto !p-1 text-secondary gap-2 px-3 py-3">
+          <app-web-icon
+            nombreIcono="wallet-outline"
+            estilos="w-4 lg:w-5 w-4 lg:h-5 font-bold"
+          ></app-web-icon>
+          <span class="text-sm lg:text-base font-bold">
+            Créditos: {{ appService.creditosQuery.data() | number }} COP
+          </span>
+        </div>
+        }
+      </div>
       <button
         class="btn btn-secondary font-bold w-10 h-10 btn-circle px-1 text-white md:hidden ml-1"
         (click)="recargarAplicacion()"
@@ -32,7 +50,10 @@
       >
         <app-web-icon
           [nombreIcono]="isRefreshing() ? 'refresh-outline' : 'refresh-outline'"
-          [estilos]="'w-full h-full stroke-3 font-bold' + (isRefreshing() ? ' animate-spin' : '')"
+          [estilos]="
+            'w-full h-full stroke-3 font-bold' +
+            (isRefreshing() ? ' animate-spin' : '')
+          "
         ></app-web-icon>
       </button>
       <div class="flex-col hidden md:inline-flex">
@@ -57,6 +78,25 @@
             tabindex="0"
             class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
           >
+            <li class="md:hidden">
+              @if (appService.creditosQuery.isLoading()) {
+              <div class="flex items-center py-1">
+                <span class="loading loading-spinner loading-xs"></span>
+                <span class="ml-2 text-sm">Cargando</span>
+              </div>
+              } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
+              <div class="badge badge-accent w-full gap-2 py-3">
+                <app-web-icon
+                  nombreIcono="wallet-outline"
+                  estilos="h-5 w-5"
+                ></app-web-icon>
+                <span class="text-base font-semibold"
+                  >Créditos:
+                  {{ appService.creditosQuery.data() | number }}</span
+                >
+              </div>
+              }
+            </li>
             <li>
               <a routerLink="/perfil" tabindex="-1">
                 <app-web-icon

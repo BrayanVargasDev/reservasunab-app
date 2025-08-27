@@ -33,6 +33,22 @@
             <p class="text-xs opacity-80 text-base-content">
               {{ obtenerLeyenda(usuario) | upperFirst }}
             </p>
+            <div class="mt-2">
+              @if (appService.creditosQuery.isLoading()) {
+              <span class="loading loading-spinner loading-xs"></span>
+              } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
+              <div class="badge badge-accent gap-2 px-2 py-3">
+                <app-web-icon
+                  nombreIcono="wallet-outline"
+                  estilos="w-4 h-4"
+                ></app-web-icon>
+                <span class="text-sm font-bold">
+                  Créditos:
+                  {{ appService.creditosQuery.data() | number }} COP
+                </span>
+              </div>
+              }
+            </div>
             }
           </div>
           <button

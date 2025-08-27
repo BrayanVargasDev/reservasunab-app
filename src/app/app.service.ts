@@ -12,6 +12,7 @@ import {
   getPantallas,
   getGrupos,
   getCiudades,
+  getCreditos,
 } from '@shared/actions';
 import {
   GeneralResponse,
@@ -107,6 +108,13 @@ export class AppService {
     queryKey: ['ciudades'],
     queryFn: () => getCiudades(this.http),
     select: (response: any) => response.data,
+    enabled: this.authService.estaAutenticado(),
+  }));
+
+  public creditosQuery = injectQuery(() => ({
+    queryKey: ['creditos'],
+    queryFn: () => getCreditos(this.http),
+    select: (response: GeneralResponse<number>) => response.data,
     enabled: this.authService.estaAutenticado(),
   }));
 

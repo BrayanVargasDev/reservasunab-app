@@ -107,14 +107,18 @@
           @if (necesitaPago()) {
           <div class="alert alert-info mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
-              <app-web-icon nombreIcono="time-outline" estilos="h-5 w-5"></app-web-icon>
+              <app-web-icon
+                nombreIcono="time-outline"
+                estilos="h-5 w-5"
+              ></app-web-icon>
               <span>
-                Tienes <strong>30 minutos</strong> para realizar el pago; de lo contrario, la reserva se <strong>cancelará automáticamente</strong>.
+                Tienes <strong>30 minutos</strong> para realizar el pago; de lo
+                contrario, la reserva se
+                <strong>cancelará automáticamente</strong>.
               </span>
             </div>
           </div>
-          }
-          @if (miReserva()?.necesita_aprobacion) {
+          } @if (miReserva()?.necesita_aprobacion) {
           <div class="alert alert-warning mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
               <app-web-icon
@@ -211,12 +215,13 @@
           } @if (listaJugadoresSeleccionados().length > 0) {
           <div class="border-t flex-1 pt-2">
             <h4 class="font-semibold text-lg mb-3">
-              Jugadores seleccionados ({{ listaJugadoresSeleccionados().length
+              Jugadores seleccionados ({{
+                listaJugadoresSeleccionados().length
               }}):
             </h4>
             <div class="space-y-2 mb-4">
-              @for (jugador of listaJugadoresSeleccionados(); track
-              jugador.id) {
+              @for (jugador of listaJugadoresSeleccionados(); track jugador.id)
+              {
               <div
                 class="flex items-center justify-between bg-success/10 rounded-lg p-2"
               >
@@ -229,16 +234,16 @@
                   }}</span>
                 </div>
                 @if (jugador.id !== userIdActual()) {
-                  <button
-                    type="button"
-                    class="btn btn-error btn-xs"
-                    (click)="removerJugador(jugador.id)"
-                  >
-                    <app-web-icon
-                      nombreIcono="trash-outline"
-                      estilos="h-4 w-4"
-                    ></app-web-icon>
-                  </button>
+                <button
+                  type="button"
+                  class="btn btn-error btn-xs"
+                  (click)="removerJugador(jugador.id)"
+                >
+                  <app-web-icon
+                    nombreIcono="trash-outline"
+                    estilos="h-4 w-4"
+                  ></app-web-icon>
+                </button>
                 }
               </div>
               }
@@ -492,7 +497,7 @@
           Agregar Jugadores
         </button>
         } @if (necesitaPago() && dreservasService.mostrandoResumenExistente()) {
-        @if((estadoResumen()?.pagar_con_saldo || miReserva()?.pagar_con_saldo))
+        @if(puedePagarConSaldo())
         {
         <button
           type="button"
