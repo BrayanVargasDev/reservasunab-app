@@ -175,14 +175,23 @@
               <h4 class="font-semibold text-lg mb-3">Jugadores encontrados:</h4>
               @for (jugador of dreservasService.jugadoresQuery.data()!; track
               jugador.id) {
-              <div class="card bg-base-300/70 shadow-sm">
+              <div
+                class="card shadow-sm rounded-xl"
+                [ngClass]="{
+                  'bg-purple-100': jugador.es_beneficiario,
+                  'bg-base-300/70': !jugador.es_beneficiario
+                }"
+              >
                 <div
                   class="card-body px-2 py-1 flex flex-row items-center justify-between"
                 >
                   <div class="flex flex-col">
-                    <span class="font-semibold"
-                      >{{ jugador.nombre }} {{ jugador.apellido }}</span
-                    >
+                    <span class="font-semibold">
+                      {{ jugador.nombre }} {{ jugador.apellido }}
+                      @if (jugador.es_beneficiario) {
+                      <span class="text-purple-700"> - Beneficiario</span>
+                      }
+                    </span>
                     <span class="text-sm text-base-content">{{
                       jugador.email
                     }}</span>
@@ -226,9 +235,12 @@
                 class="flex items-center justify-between bg-success/10 rounded-lg p-2"
               >
                 <div class="flex flex-col">
-                  <span class="font-semibold"
-                    >{{ jugador.nombre }} {{ jugador.apellido }}</span
-                  >
+                  <span class="font-semibold">
+                    {{ jugador.nombre }} {{ jugador.apellido }}
+                    @if (jugador.es_beneficiario) {
+                    <span class="text-purple-700"> - Beneficiario</span>
+                    }
+                  </span>
                   <span class="text-sm text-base-content">{{
                     jugador.email
                   }}</span>
@@ -497,8 +509,7 @@
           Agregar Jugadores
         </button>
         } @if (necesitaPago() && dreservasService.mostrandoResumenExistente()) {
-        @if(puedePagarConSaldo())
-        {
+        @if(puedePagarConSaldo()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"

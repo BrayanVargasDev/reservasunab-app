@@ -700,6 +700,20 @@
         </div>
       </form>
     </div>
+
+    <input
+      [checked]="selectedTab() === 'beneficiarios'"
+      type="radio"
+      name="my_tabs"
+      (change)="cambiarTab('beneficiarios')"
+      class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto before:bg-none"
+      aria-label="Beneficiarios"
+    />
+    <div
+      class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
+    >
+      <app-beneficiarios />
+    </div>
   </div>
 </div>
 

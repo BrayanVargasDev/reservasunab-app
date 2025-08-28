@@ -9,6 +9,7 @@ const BASE_URL = environment.apiUrl;
 export const buscarJugadores = async (
   http: HttpClient,
   termino: string,
+  permiteExternos: boolean = false,
 ): Promise<GeneralResponse<Usuario[]>> => {
   const url = `${BASE_URL}/usuarios/buscar-jugadores`;
 
@@ -16,6 +17,10 @@ export const buscarJugadores = async (
 
   if (termino?.trim()) {
     httpParams = httpParams.append('term', termino.trim());
+  }
+
+  if (permiteExternos) {
+    httpParams = httpParams.append('permiteExternos', 'true');
   }
 
   return firstValueFrom(

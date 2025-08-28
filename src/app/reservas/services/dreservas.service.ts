@@ -143,7 +143,11 @@ export class DreservasService {
   jugadoresQuery = injectQuery(() => ({
     queryKey: ['jugadores', 'buscar', this._termino_busqueda_jugadores()],
     queryFn: () =>
-      buscarJugadores(this.http, this._termino_busqueda_jugadores()),
+      buscarJugadores(
+        this.http,
+        this._termino_busqueda_jugadores(),
+        this.espacioDetallesQuery.data()?.permite_externos,
+      ),
     select: (response: GeneralResponse<Usuario[]>) => response.data,
     enabled: computed(
       () =>

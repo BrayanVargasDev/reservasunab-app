@@ -6,11 +6,17 @@
       class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-3 lg:px-6 py-3 flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
-        <app-web-icon nombreIcono="information-circle-outline" estilos="h-6 w-6"></app-web-icon>
+        <app-web-icon
+          nombreIcono="information-circle-outline"
+          estilos="h-6 w-6"
+        ></app-web-icon>
         <span class="text-xl font-bold">Detalle de reserva</span>
       </div>
       <button class="btn btn-sm btn-ghost" (click)="close()">
-        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+        <app-web-icon
+          nombreIcono="close-outline"
+          estilos="h-5 w-5"
+        ></app-web-icon>
       </button>
     </div>
 
@@ -29,8 +35,10 @@
       }
     </div>
 
-    <div class="sticky bottom-0 bg-base-100 z-10 border-t border-base-300 px-3 lg:px-6 py-3 flex justify-end">
-      <button class="btn btn-primary" (click)="close()">Cerrar</button>
+    <div
+      class="sticky bottom-0 bg-base-100 z-10 border-t border-base-300 px-3 lg:px-6 py-3 flex justify-end"
+    >
+      <button class="btn max-sm:btn-sm btn-primary sm:h-11" (click)="close()">Cerrar</button>
     </div>
   </div>
   <form method="dialog" class="modal-backdrop">

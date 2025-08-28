@@ -25,4 +25,6 @@ export interface Usuario {
   tipoPersona: string;
   regimenTributario?: number;
   digitoVerificacion?: number;
+  es_beneficiario: boolean;
+  id_beneficiario: number | null;
 }

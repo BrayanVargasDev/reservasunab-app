@@ -45,6 +45,7 @@ import { Ciudad } from '@shared/interfaces';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Usuario } from '@usuarios/intefaces';
 import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
+import { BeneficiariosComponent } from '@app/perfil/components/beneficiarios/beneficiarios.component';
 
 @Component({
   selector: 'app-perfil-main',
@@ -58,6 +59,7 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
     InputSoloNumerosDirective,
     WebIconComponent,
     UpperFirstPipe,
+  BeneficiariosComponent,
   ],
   host: {
     class: 'flex flex-col grow w-full h-full overflow-y-auto',
