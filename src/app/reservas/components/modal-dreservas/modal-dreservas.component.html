@@ -480,7 +480,6 @@
           Cerrar
         </button>
         @if(pudeCancelar() && dreservasService.mostrandoResumenExistente()) {
-
         <button
           type="button"
           class="btn max-sm:btn-sm btn-error md:h-11 rounded-lg"
@@ -508,46 +507,37 @@
           ></app-web-icon>
           Agregar Jugadores
         </button>
-        } @if (necesitaPago() && dreservasService.mostrandoResumenExistente()) {
-        @if(puedePagarConSaldo()) {
-        <button
-          type="button"
-          class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
-          (click)="procesarPagoConSaldo()"
-          [disabled]="cargando()"
-        >
-          <app-web-icon
-            nombreIcono="wallet-outline"
-            estilos="h-5 w-5 max-md:hidden mr-2"
-          ></app-web-icon>
-          Pagar con saldo
-        </button>
         }
-        <button
-          type="button"
-          class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
-          (click)="procesarPago()"
-          [disabled]="cargando()"
-        >
-          <app-web-icon
-            nombreIcono="cash-outline"
-            estilos="h-5 w-5 max-md:hidden mr-2"
-          ></app-web-icon>
-          Pagar
-        </button>
-        } @if (dreservasService.mostrandoResumenNueva()) {
-        <button
-          type="button"
-          class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
-          (click)="confirmarReservaFinal()"
-          [disabled]="confirmarReservaDisabled()"
-        >
-          <app-web-icon
-            nombreIcono="checkmark-done-circle-outline"
-            estilos="h-5 w-5 max-md:hidden mr-2"
-          ></app-web-icon>
-          Confirmar reserva
-        </button>
+        <!-- Pagos -->
+        @if (dreservasService.mostrandoResumenNueva()) {
+        <div class="flex gap-2">
+          @if (necesitaPago() && puedePagarConSaldo()) {
+          <button
+            type="button"
+            class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
+            (click)="confirmarYPagarConSaldo()"
+            [disabled]="confirmarReservaDisabled()"
+          >
+            <app-web-icon
+              nombreIcono="wallet-outline"
+              estilos="h-5 w-5 max-md:hidden mr-2"
+            ></app-web-icon>
+            Confirmar y pagar con saldo
+          </button>
+          }
+          <button
+            type="button"
+            class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
+            (click)="confirmarYPagar()"
+            [disabled]="confirmarReservaDisabled()"
+          >
+            <app-web-icon
+              nombreIcono="checkmark-done-circle-outline"
+              estilos="h-5 w-5 max-md:hidden mr-2"
+            ></app-web-icon>
+            Confirmar @if (necesitaPago()) {y pagar}
+          </button>
+        </div>
         }
       </div>
     </div>

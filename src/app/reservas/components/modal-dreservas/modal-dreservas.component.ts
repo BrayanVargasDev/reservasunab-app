@@ -825,6 +825,179 @@ export class ModalDreservasComponent {
     }
   }
 
+  public async confirmarYPagar() {
+    const estado = this.dreservasService.estadoResumen()!;
+
+    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
+    const totalJug = estado.jugadores?.length ?? 0;
+    if (minOtros > 0 && totalJug < minOtros) {
+      this.alertaService.error(
+        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    const base = this.dreservasService.espacioDetallesQuery.data();
+    const configId = base?.configuracion?.id ?? 0;
+    if (!configId || configId <= 0) {
+      this.alertaService.error(
+        'Falta la configuración base del espacio.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.fecha) {
+      this.alertaService.error(
+        'Falta la fecha de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.hora_inicio) {
+      this.alertaService.error(
+        'Falta la hora de inicio de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    this.dreservasService.setCargando('Confirmando reserva...');
+    try {
+      const response = await this.dreservasService.confirmarReservaFinal();
+
+      if (!response.data) {
+        this.alertaService.error(
+          'No se pudo confirmar la reserva.',
+          5 * 1000,
+          this.alertaModalReservas(),
+          this.estilosAlerta,
+        );
+        this.dreservasService.setMostrarResumenNueva(estado);
+        return;
+      }
+
+      this.alertaService.success(
+        'Reserva creada exitosamente.',
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+
+      if (!this.necesitaPago()) {
+        return;
+      }
+      this.procesarPago();
+    } catch (error: any) {
+      const mensajeError =
+        error?.error?.error || 'Error al confirmar la reserva.';
+      this.alertaService.error(
+        mensajeError,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      this.dreservasService.setMostrarResumenNueva(estado);
+    }
+  }
+
+  public async confirmarYPagarConSaldo() {
+    const estado = this.dreservasService.estadoResumen()!;
+
+    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
+    const totalJug = estado.jugadores?.length ?? 0;
+    if (minOtros > 0 && totalJug < minOtros) {
+      this.alertaService.error(
+        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    const base = this.dreservasService.espacioDetallesQuery.data();
+    const configId = base?.configuracion?.id ?? 0;
+    if (!configId || configId <= 0) {
+      this.alertaService.error(
+        'Falta la configuración base del espacio.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.fecha) {
+      this.alertaService.error(
+        'Falta la fecha de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    if (!estado.hora_inicio) {
+      this.alertaService.error(
+        'Falta la hora de inicio de la reserva.',
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      return;
+    }
+
+    this.dreservasService.setCargando('Confirmando reserva...');
+    try {
+      const response = await this.dreservasService.confirmarReservaFinal();
+
+      if (!response.data) {
+        this.alertaService.error(
+          'No se pudo confirmar la reserva.',
+          5 * 1000,
+          this.alertaModalReservas(),
+          this.estilosAlerta,
+        );
+        this.dreservasService.setMostrarResumenNueva(estado);
+        return;
+      }
+
+      this.alertaService.success(
+        'Reserva creada exitosamente.',
+        4 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+
+      // Encadenar el pago con saldo automáticamente
+      if (!this.necesitaPago()) {
+        return;
+      }
+      await this.procesarPagoConSaldo();
+    } catch (error: any) {
+      const mensajeError =
+        error?.error?.error || 'Error al confirmar la reserva.';
+      this.alertaService.error(
+        mensajeError,
+        5 * 1000,
+        this.alertaModalReservas(),
+        this.estilosAlerta,
+      );
+      this.dreservasService.setMostrarResumenNueva(estado);
+    }
+  }
+
   public async cancelarReserva() {
     // Activar estado de carga de cancelación en la UI
     this.dreservasService.setCancelandoReserva();

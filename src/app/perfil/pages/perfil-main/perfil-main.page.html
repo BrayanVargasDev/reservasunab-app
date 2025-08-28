@@ -701,6 +701,7 @@
       </form>
     </div>
 
+    @if (esEgresado()){
     <input
       [checked]="selectedTab() === 'beneficiarios'"
       type="radio"
@@ -714,6 +715,7 @@
     >
       <app-beneficiarios />
     </div>
+    }
   </div>
 </div>
 

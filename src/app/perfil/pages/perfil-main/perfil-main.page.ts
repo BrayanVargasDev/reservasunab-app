@@ -46,6 +46,7 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
 import { Usuario } from '@usuarios/intefaces';
 import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 import { BeneficiariosComponent } from '@app/perfil/components/beneficiarios/beneficiarios.component';
+import { TipoUsuario } from '@shared/enums';
 
 @Component({
   selector: 'app-perfil-main',
@@ -59,7 +60,7 @@ import { BeneficiariosComponent } from '@app/perfil/components/beneficiarios/ben
     InputSoloNumerosDirective,
     WebIconComponent,
     UpperFirstPipe,
-  BeneficiariosComponent,
+    BeneficiariosComponent,
   ],
   host: {
     class: 'flex flex-col grow w-full h-full overflow-y-auto',
@@ -105,6 +106,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   public ciudadResidenciaSeleccionada = signal<Ciudad | null>(null);
   public indiceOpcionSeleccionadaResidencia = signal<number>(-1);
   private ciudadResidenciaSearchSubject = new Subject<string>();
+
+  public esEgresado = computed(() => {
+    const usuario = this.perfilService.usuario();
+    return usuario ? usuario.tipoUsuario.includes(TipoUsuario.Egresado) : false;
+  });
 
   public perfilForm: FormGroup = this.fb.group({
     nombre: ['', [Validators.required]],
