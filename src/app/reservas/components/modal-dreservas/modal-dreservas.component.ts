@@ -186,7 +186,11 @@ export class ModalDreservasComponent {
     if (this.esReservaPasada()) return false;
     if (!estado) return false;
     if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
-    return estado.estado !== 'pagada' && !!estado.valor && estado.valor > 0;
+    return (
+      estado.estado !== 'pagada' &&
+      !!estado.valor_descuento &&
+      estado.valor_descuento > 0
+    );
   });
 
   public puedePagarConSaldo = computed(() => {

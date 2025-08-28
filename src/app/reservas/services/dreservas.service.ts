@@ -425,6 +425,7 @@ export class DreservasService {
   public puedeAgregarMasJugadores(): boolean {
     const estado = this._estadoResumen() || this._miReserva();
     if (!estado) return false;
+    if (!estado.puede_agregar_jugadores) return false;
 
     const jugadoresActuales = estado.total_jugadores || 0;
     const jugadoresSeleccionados = this._jugadoresSeleccionados().length;
