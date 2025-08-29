@@ -84,7 +84,8 @@
           <dreservas-info-reserva
             [resumen]="estadoResumen()"
           ></dreservas-info-reserva>
-          @if (estadoResumen()?.necesita_aprobacion) {
+          @if (estadoResumen()?.necesita_aprobacion && estadoResumen()?.id !==
+          null) {
           <div class="alert alert-warning mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
               <app-web-icon
@@ -104,7 +105,7 @@
           <dreservas-info-reserva
             [resumen]="miReserva()"
           ></dreservas-info-reserva>
-          @if (necesitaPago()) {
+          @if (necesitaPago() && estadoResumen()?.estado !== 'completada') {
           <div class="alert alert-info mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
               <app-web-icon
@@ -522,9 +523,9 @@
               nombreIcono="wallet-outline"
               estilos="h-5 w-5 max-md:hidden mr-2"
             ></app-web-icon>
-            Confirmar y pagar con saldo
+            Confirmar y pagar con créditos
           </button>
-          }
+          } @else {
           <button
             type="button"
             class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
@@ -537,6 +538,7 @@
             ></app-web-icon>
             Confirmar @if (necesitaPago()) {y pagar}
           </button>
+          }
         </div>
         }
       </div>

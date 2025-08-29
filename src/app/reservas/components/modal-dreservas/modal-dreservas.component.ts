@@ -182,9 +182,9 @@ export class ModalDreservasComponent {
       this.dreservasService.estadoResumen() ||
       this.dreservasService.miReserva();
 
-    if (estado?.estado === 'completada') return false;
-    if (this.esReservaPasada()) return false;
     if (!estado) return false;
+    if (estado.estado === 'completada') return false;
+    if (this.esReservaPasada()) return false;
     if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
     return (
       estado.estado !== 'pagada' &&
@@ -248,6 +248,10 @@ export class ModalDreservasComponent {
   public readonly confirmarReservaDisabled = computed(() => {
     const estado = this.dreservasService.estadoResumen();
     if (!estado) return true;
+
+    // Si estado.estado es pendienteap y estado.id === null entonces false
+    if (estado.estado === 'pendienteap' && estado.id === null) return false;
+
     const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
     const totalOtros = estado.jugadores?.length || 0;
     return totalOtros < minOtros || this.cargando();
@@ -830,7 +834,7 @@ export class ModalDreservasComponent {
 
     const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
     const totalJug = estado.jugadores?.length ?? 0;
-    if (minOtros > 0 && totalJug < minOtros) {
+    if (estado.puede_agregar_jugadores && minOtros > 0 && totalJug < minOtros) {
       this.alertaService.error(
         `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
         5 * 1000,
@@ -999,6 +1003,23 @@ export class ModalDreservasComponent {
   }
 
   public async cancelarReserva() {
+    // Confirmación previa con el sistema de alertas de la app
+    const confirmado = await this.alertaService.confirmacion({
+      tipo: 'error',
+      titulo: 'Cancelar reserva',
+      mensaje:
+        '¿Deseas cancelar esta reserva? Esta acción no se puede deshacer.',
+      referencia: this.alertaModalReservas(),
+      botones: [
+        { texto: 'No, volver', tipo: 'cancelar', estilo: 'btn-ghost' },
+        {
+          texto: 'Sí, cancelar',
+          tipo: 'confirmar',
+        },
+      ],
+    });
+    if (!confirmado) return;
+
     // Activar estado de carga de cancelación en la UI
     this.dreservasService.setCancelandoReserva();
 
@@ -1057,7 +1078,7 @@ export class ModalDreservasComponent {
         this.alertaModalReservas(),
         this.estilosAlerta,
       );
-      this.dreservasService.cerrarModal();
+      this.dreservasService.setMostrarDisponibilidad();
     } catch (error: any) {
       const mensajeError =
         error?.error?.error ||
