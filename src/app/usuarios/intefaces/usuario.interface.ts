@@ -1,5 +1,6 @@
 import { TipoUsuario } from '@shared/enums/usuarios.enum';
 import { Estado } from '@shared/enums/usuarios.enum';
+import { Persona } from '@shared/interfaces/persona.interface';
 
 export interface Usuario {
   id: number;
@@ -27,4 +28,5 @@ export interface Usuario {
   digitoVerificacion?: number;
   es_beneficiario: boolean;
   id_beneficiario: number | null;
+  facturacion: Persona;
 }

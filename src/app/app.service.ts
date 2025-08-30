@@ -13,17 +13,19 @@ import {
   getGrupos,
   getCiudades,
   getCreditos,
+  getEspaciosSelect,
 } from '@shared/actions';
 import {
   GeneralResponse,
   Grupo,
   TipoDocumento,
   Sede,
+  Categoria,
+  EspacioSelect,
 } from '@shared/interfaces';
 import { HttpClient } from '@angular/common/http';
 import { Rol } from '@permisos/interfaces';
 import { AuthService } from '@auth/services/auth.service';
-import { Categoria } from '@shared/interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -94,6 +96,16 @@ export class AppService {
     queryKey: ['categorias'],
     queryFn: () => getCategorias(this.http),
     select: (response: GeneralResponse<Categoria[]>) => response.data,
+    enabled: this.authService.estaAutenticado(),
+  }));
+
+  public espaciosQuery = injectQuery(() => ({
+    queryKey: ['espacios-select'],
+    queryFn: () => getEspaciosSelect(this.http),
+    select: (response: GeneralResponse<EspacioSelect[]>) => response.data.map((espacio) => ({
+      id: espacio.id,
+      nombre: espacio.nombre,
+    })),
     enabled: this.authService.estaAutenticado(),
   }));
 

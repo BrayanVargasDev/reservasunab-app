@@ -2,7 +2,11 @@
   class="flex flex-col md:flex-row md:pr-2 w-full pb-2 md:pb-4 items-stretch justify-center md:justify-between sticky top-0 z-30 bg-base-300"
 >
   <div class="flex items-center justify-center sm:justify-start gap-2">
-    <h2 class="font-bold text-4xl mb-2 md:mb-0 max-md:text-2xl max-sm:text-center">Configuración</h2>
+    <h2
+      class="font-bold text-4xl mb-2 md:mb-0 max-md:text-2xl max-sm:text-center"
+    >
+      Configuración
+    </h2>
   </div>
   <div class="flex flex-col md:flex-row max-md:gap-1 gap-2">
     @if (authService.tienePermisos('PER000001')) {
@@ -45,6 +49,21 @@
   />
   <div class="tab-content border-base-300 bg-base-100 p-2 md:p-5">
     <config-grupos [ngClass]="'flex flex-col overflow-y-auto'"></config-grupos>
+  </div>
+
+  <input
+    #tabGrupos
+    type="radio"
+    name="espaciosTabs"
+    class="tab font-semibold text-[1.125rem] max-sm:text-base"
+    aria-label="Elementos"
+    [checked]="elementosChecked()"
+    (change)="cambiarPestana('elementos')"
+  />
+  <div class="tab-content border-base-300 bg-base-100 p-2 md:p-5">
+    <config-elementos
+      [ngClass]="'flex flex-col overflow-y-auto'"
+    ></config-elementos>
   </div>
 </div>
 

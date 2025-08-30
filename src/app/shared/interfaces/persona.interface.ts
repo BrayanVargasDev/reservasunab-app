@@ -19,4 +19,6 @@ export interface Persona {
   ciudad_expedicion_id: number;
   ciudad_residencia_id: number;
   tipo_documento: TipoDocumento;
+  es_persona_facturacion?: boolean;
+  persona_facturacion_id?: number;
 }

@@ -107,6 +107,14 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   public indiceOpcionSeleccionadaResidencia = signal<number>(-1);
   private ciudadResidenciaSearchSubject = new Subject<string>();
 
+  // Estados para el autocomplete de ciudades en la sección de facturación (expedición y residencia)
+  public ciudadFactTerminoBusquedaExpedicion = signal<string>('');
+  public ciudadesFactFiltradasExpedicion = signal<Ciudad[]>([]);
+  public mostrarOpcionesCiudadesFactExpedicion = signal<boolean>(false);
+  public ciudadFactSeleccionadaExpedicion = signal<Ciudad | null>(null);
+  public indiceOpcionSeleccionadaFactExpedicion = signal<number>(-1);
+  private ciudadFactExpedicionSearchSubject = new Subject<string>();
+
   public esEgresado = computed(() => {
     const usuario = this.perfilService.usuario();
     return usuario ? usuario.tipoUsuario.includes(TipoUsuario.Egresado) : false;
@@ -144,6 +152,31 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     ciudadResidencia: ['', [Validators.required]],
     tipoPersona: ['', [Validators.required]],
     regimenTributario: ['', [Validators.required]],
+    // Control para mostrar/ocultar sección de facturación y grupo anidado
+    usaFacturacionDiferente: [false],
+    facturacion: this.fb.group({
+      nombre: [''],
+      apellido: [''],
+      email: ['', [Validators.pattern(FormUtils.patronEmail)]],
+      telefono: [
+        '',
+        [
+          Validators.pattern(FormUtils.patronSoloNumeros),
+          Validators.minLength(10),
+        ],
+      ],
+      documento: [
+        '',
+        [
+          Validators.pattern(FormUtils.patronSoloNumeros),
+          Validators.minLength(7),
+        ],
+      ],
+      tipoDocumento: [''],
+      ciudadExpedicion: [''],
+      tipoPersona: [''],
+      regimenTributario: [''],
+    }),
   });
 
   // Formulario para cambio de contraseña
@@ -191,6 +224,47 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.configurarAutocompleteCiudades();
 
+    // Validaciones condicionales para el grupo de facturación
+    this.perfilForm
+      .get('usaFacturacionDiferente')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((usa: boolean) => {
+        const factGroup = this.perfilForm.get('facturacion') as FormGroup;
+        const setReq = (ctrl: string, validators: any[]) => {
+          const c = factGroup.get(ctrl);
+          if (!c) return;
+          c.setValidators(usa ? validators : []);
+          c.updateValueAndValidity({ emitEvent: false });
+        };
+
+        setReq('nombre', [Validators.required]);
+        setReq('apellido', [Validators.required]);
+        setReq('email', [
+          Validators.required,
+          Validators.pattern(FormUtils.patronEmail),
+        ]);
+        setReq('telefono', [
+          Validators.required,
+          Validators.pattern(FormUtils.patronSoloNumeros),
+          Validators.minLength(10),
+        ]);
+        // fechaNacimiento se mantiene opcional como en el formulario principal
+        setReq('documento', [
+          Validators.required,
+          Validators.pattern(FormUtils.patronSoloNumeros),
+          Validators.minLength(7),
+        ]);
+        setReq('tipoDocumento', [Validators.required]);
+        setReq('ciudadExpedicion', [Validators.required]);
+        setReq('ciudadResidencia', [Validators.required]);
+        setReq('tipoPersona', [Validators.required]);
+        setReq('regimenTributario', [Validators.required]);
+
+        if (!usa) {
+          factGroup.reset();
+        }
+      });
+
     effect(
       () => {
         const usuario = this.perfilService.usuario();
@@ -223,12 +297,21 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         this.filtrarCiudadesResidencia(termino);
       });
 
+    // Facturación - expedición
+    this.ciudadFactExpedicionSearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(termino => {
+        const ciudadesFiltradas = this.perfilService.filtrarCiudades(termino);
+        this.ciudadesFactFiltradasExpedicion.set(ciudadesFiltradas);
+      });
+
     effect(
       () => {
         const todasLasCiudades = this.perfilService.ciudades();
         if (todasLasCiudades && todasLasCiudades.length > 0) {
           this.ciudadesFiltradas.set(todasLasCiudades);
           this.ciudadesResidenciaFiltradas.set(todasLasCiudades);
+          this.ciudadesFactFiltradasExpedicion.set(todasLasCiudades);
         }
       },
       { injector: this.injector },
@@ -342,6 +425,67 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         break;
     }
   }
+
+  // Autocomplete Facturación - Expedición
+  public onCiudadFactExpedicionInputChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const valor = input.value;
+    this.ciudadFactTerminoBusquedaExpedicion.set(valor);
+    this.mostrarOpcionesCiudadesFactExpedicion.set(true);
+    this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+    this.ciudadFactExpedicionSearchSubject.next(valor);
+
+    const ciudadActual = this.ciudadFactSeleccionadaExpedicion();
+    if (!ciudadActual || ciudadActual.nombre !== valor) {
+      this.perfilForm.get('facturacion.ciudadExpedicion')?.setValue('');
+      this.ciudadFactSeleccionadaExpedicion.set(null);
+    }
+  }
+
+  public onCiudadFactExpedicionKeyDown(event: KeyboardEvent) {
+    const ciudades = this.ciudadesFactFiltradasExpedicion();
+    const indiceActual = this.indiceOpcionSeleccionadaFactExpedicion();
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.indiceOpcionSeleccionadaFactExpedicion.set(
+          indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0,
+        );
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.indiceOpcionSeleccionadaFactExpedicion.set(
+          indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1,
+        );
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (indiceActual >= 0 && ciudades[indiceActual]) {
+          this.seleccionarCiudadFactExpedicion(ciudades[indiceActual]);
+        }
+        break;
+      case 'Escape':
+        this.mostrarOpcionesCiudadesFactExpedicion.set(false);
+        this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+        break;
+    }
+  }
+
+  public seleccionarCiudadFactExpedicion(ciudad: Ciudad) {
+    this.ciudadFactSeleccionadaExpedicion.set(ciudad);
+    this.ciudadFactTerminoBusquedaExpedicion.set(ciudad.nombre);
+    this.mostrarOpcionesCiudadesFactExpedicion.set(false);
+    this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+    this.perfilForm.get('facturacion.ciudadExpedicion')?.setValue(ciudad.id);
+  }
+
+  public ocultarOpcionesCiudadesFactExpedicion() {
+    setTimeout(() => {
+      this.mostrarOpcionesCiudadesFactExpedicion.set(false);
+      this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+    }, 150);
+  }
+
   public seleccionarCiudad(ciudad: Ciudad) {
     this.ciudadSeleccionada.set(ciudad);
     this.ciudadTerminoBusqueda.set(ciudad.nombre);
@@ -384,6 +528,12 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     this.mostrarOpcionesCiudadesResidencia.set(false);
     this.indiceOpcionSeleccionadaResidencia.set(-1);
     this.perfilForm.get('ciudadResidencia')?.setValue('');
+
+    this.ciudadFactTerminoBusquedaExpedicion.set('');
+    this.ciudadFactSeleccionadaExpedicion.set(null);
+    this.mostrarOpcionesCiudadesFactExpedicion.set(false);
+    this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+    this.perfilForm.get('facturacion.ciudadExpedicion')?.setValue('');
   }
 
   private initializePikaday() {
@@ -427,6 +577,29 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       );
     }
 
+    let factTemp = null;
+    // validar que no sea null y que el objeto no venga vacío {}
+    if (
+      usuario.facturacion !== null &&
+      Object.keys(usuario.facturacion).length > 0
+    ) {
+      factTemp = {
+        nombre: `${usuario.facturacion.primer_nombre} ${
+          usuario.facturacion.segundo_nombre ?? ''
+        }`.trim(),
+        apellido: `${usuario.facturacion.primer_apellido} ${
+          usuario.facturacion.segundo_apellido ?? ''
+        }`.trim(),
+        email: usuario.facturacion.direccion || '',
+        telefono: usuario.facturacion.celular || '',
+        documento: usuario.facturacion.numero_documento || '',
+        tipoDocumento: usuario.facturacion.tipo_documento_id || '',
+        ciudadExpedicion: usuario.facturacion.ciudad_expedicion_id || '',
+        tipoPersona: usuario.facturacion.tipo_persona || '',
+        regimenTributario: usuario.facturacion.regimen_tributario_id || '',
+      };
+    }
+
     this.perfilForm.patchValue({
       nombre: usuario.nombre,
       apellido: usuario.apellido,
@@ -442,7 +615,16 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       ciudadResidencia: usuario.ciudadResidencia || '',
       tipoPersona: usuario.tipoPersona || '',
       regimenTributario: usuario.regimenTributario || '',
+      facturacion: factTemp,
     });
+
+    if (
+      usuario.facturacion &&
+      usuario.facturacion.es_persona_facturacion &&
+      usuario.facturacion.persona_facturacion_id
+    ) {
+      this.perfilForm.get('usaFacturacionDiferente')?.setValue(true);
+    }
 
     if (usuario.ciudadExpedicion) {
       const ciudadEncontrada = this.perfilService.buscarCiudadPorId(
@@ -451,6 +633,18 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       if (ciudadEncontrada) {
         this.ciudadSeleccionada.set(ciudadEncontrada);
         this.ciudadTerminoBusqueda.set(ciudadEncontrada.nombre);
+      }
+    }
+
+    if (usuario.facturacion.ciudad_expedicion_id) {
+      const ciudadExpedicionEncontrada = this.perfilService.buscarCiudadPorId(
+        usuario.facturacion.ciudad_expedicion_id,
+      );
+      if (ciudadExpedicionEncontrada) {
+        this.ciudadFactSeleccionadaExpedicion.set(ciudadExpedicionEncontrada);
+        this.ciudadFactTerminoBusquedaExpedicion.set(
+          ciudadExpedicionEncontrada.nombre,
+        );
       }
     }
 
@@ -482,6 +676,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  get facturacionForm(): FormGroup {
+    return this.perfilForm.get('facturacion') as FormGroup;
+  }
+
   async guardarCambios() {
     if (this.perfilForm.invalid) {
       this.perfilForm.markAllAsTouched();
@@ -499,10 +697,24 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         )
       : '';
 
+    let fechaNacimientoFacturacion = '';
+    const usaFacturacion = this.perfilForm.get(
+      'usaFacturacionDiferente',
+    )?.value;
+    const facturacion = (this.perfilForm.get('facturacion') as FormGroup)
+      .value as any;
+    if (usaFacturacion && facturacion?.fechaNacimiento) {
+      fechaNacimientoFacturacion = format(
+        parse(facturacion.fechaNacimiento, 'dd/MM/yyyy', new Date()),
+        'yyyy-MM-dd',
+      );
+    }
+
     const datosActualizados = {
       ...this.perfilService.usuario(),
       ...this.perfilForm.value,
       fechaNacimiento,
+      facturacion: usaFacturacion ? facturacion : null,
     };
 
     try {

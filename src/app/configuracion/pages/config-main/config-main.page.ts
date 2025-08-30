@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { CategoriasComponent } from '@app/configuracion/components/categorias/categorias.component';
 import { GruposComponent } from '@app/configuracion/components/grupos/grupos.component';
+import { ElementosComponent } from '@app/configuracion/components/elementos/elementos.component';
 
 @Component({
   selector: 'config-main-page',
@@ -21,6 +22,7 @@ import { GruposComponent } from '@app/configuracion/components/grupos/grupos.com
     WebIconComponent,
     CategoriasComponent,
     GruposComponent,
+    ElementosComponent,
   ],
   templateUrl: './config-main.page.html',
   styleUrl: './config-main.page.scss',
@@ -39,12 +41,15 @@ export default class ConfigMainPageComponent {
   public gruposChecked = computed(
     () => this.configService.pestana() === 'grupos',
   );
+  public elementosChecked = computed(
+    () => this.configService.pestana() === 'elementos',
+  );
 
   public alertaConfig = viewChild.required('alertaConfig', {
     read: ViewContainerRef,
   });
 
-  public cambiarPestana(pestana: 'categorias' | 'grupos') {
+  public cambiarPestana(pestana: 'categorias' | 'grupos' | 'elementos') {
     this.configService.setPestana(pestana);
     this.configService.setModoCreacionCategoria(false);
     this.appService.setEditando(false);
@@ -66,6 +71,9 @@ export default class ConfigMainPageComponent {
       case 'grupos':
         this.configService.inciarCrearGrupo();
         break;
+      case 'elementos':
+        this.configService.inciarCrearElemento();
+        break;
       default:
         console.error('Pestana no reconocida');
         break;
@@ -78,6 +86,8 @@ export default class ConfigMainPageComponent {
         return 'Crear Categoría';
       case 'grupos':
         return 'Crear Grupo';
+      case 'elementos':
+        return 'Crear Elemento';
       default:
         return 'Crear';
     }

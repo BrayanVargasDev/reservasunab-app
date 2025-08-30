@@ -1,6 +1,7 @@
 export * from './get-categorias.action';
 export * from './get-ciudades.action';
 export * from './get-creditos.action';
+export * from './get-espacios-select.action';
 export * from './get-grupos.action';
 export * from './get-pantallas.action';
 export * from './get-regimenes-tributarios.action';

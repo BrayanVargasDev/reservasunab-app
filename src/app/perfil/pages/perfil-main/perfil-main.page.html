@@ -565,6 +565,388 @@
           </div>
         </div>
 
+        <!-- Checkbox: Facturación diferente -->
+        <div class="my-4 px-1">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              class="checkbox checkbox-primary"
+              formControlName="usaFacturacionDiferente"
+            />
+            <span class="text-sm font-[600] text-base-content">
+              La información de facturación es diferente a la del usuario
+            </span>
+          </label>
+        </div>
+
+        <!-- Sección de Facturación (condicional) -->
+        @if (perfilForm.get('usaFacturacionDiferente')?.value) {
+        <div
+          class="my-4 p-3 rounded-box border border-base-300 bg-base-200/30"
+          formGroupName="facturacion"
+        >
+          <h3 class="text-lg font-semibold text-base-content mb-4">
+            Información de Facturación
+          </h3>
+
+          <div
+            class="mb-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
+          >
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fnombre"
+              >
+                Nombre <span class="text-error">*</span>
+              </label>
+              <input
+                id="fnombre"
+                type="text"
+                formControlName="nombre"
+                placeholder="Nombre (facturación)"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'nombre'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'nombre')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(facturacionForm, 'nombre') }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fapellido"
+              >
+                Apellido <span class="text-error">*</span>
+              </label>
+              <input
+                id="fapellido"
+                type="text"
+                formControlName="apellido"
+                placeholder="Apellido (facturación)"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'apellido'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'apellido')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(facturacionForm, 'apellido')
+                }}
+              </div>
+              }
+            </div>
+          </div>
+
+          <div
+            class="my-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
+          >
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="ftelefono"
+              >
+                Teléfono <span class="text-error">*</span>
+              </label>
+              <input
+                id="ftelefono"
+                type="tel"
+                inputSoloNumeros
+                formControlName="telefono"
+                placeholder="1234567890"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'telefono'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'telefono')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(facturacionForm, 'telefono')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="femail"
+              >
+                Email <span class="text-error">*</span>
+              </label>
+              <input
+                id="femail"
+                type="email"
+                formControlName="email"
+                placeholder="facturacion@correo.com"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'email'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'email')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(facturacionForm, 'email') }}
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Documento facturación -->
+          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+            <div class="flex flex-col w-full md:w-2/6">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="ftipoDocumento"
+              >
+                Tipo Doc. <span class="text-error">*</span>
+              </label>
+              <select
+                id="ftipoDocumento"
+                formControlName="tipoDocumento"
+                [ngClass]="{
+                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'tipoDocumento'
+                  )
+                }"
+              >
+                <option value="" disabled selected>Seleccione</option>
+                @for (tipoDoc of appService.tipoDocQuery.data(); track
+                tipoDoc.id) {
+                <option [value]="tipoDoc.id">
+                  {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
+                </option>
+                }
+              </select>
+              @if (formUtils.esCampoInvalido(facturacionForm, 'tipoDocumento'))
+              {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    facturacionForm,
+                    'tipoDocumento'
+                  )
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-4/6">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fdocumento"
+              >
+                Documento <span class="text-error">*</span>
+              </label>
+              <input
+                id="fdocumento"
+                type="text"
+                inputSoloNumeros
+                inputmode="numeric"
+                formControlName="documento"
+                placeholder="123456789"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'documento'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'documento')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(facturacionForm, 'documento')
+                }}
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Ciudades facturación: expedición -->
+          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fciudadExpedicion"
+              >
+                Ciudad de Expedición <span class="text-error">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  id="fciudadExpedicion"
+                  type="text"
+                  [value]="ciudadFactTerminoBusquedaExpedicion()"
+                  (input)="onCiudadFactExpedicionInputChange($event)"
+                  (keydown)="onCiudadFactExpedicionKeyDown($event)"
+                  (focus)="mostrarOpcionesCiudadesFactExpedicion.set(true)"
+                  (blur)="ocultarOpcionesCiudadesFactExpedicion()"
+                  placeholder="Escriba para buscar una ciudad..."
+                  autocomplete="off"
+                  role="combobox"
+                  [attr.aria-expanded]="mostrarOpcionesCiudadesFactExpedicion()"
+                  [attr.aria-activedescendant]="
+                    indiceOpcionSeleccionadaFactExpedicion() >= 0
+                      ? 'ciudad-fact-exp-option-' +
+                        indiceOpcionSeleccionadaFactExpedicion()
+                      : null
+                  "
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'ciudadExpedicion'
+                    )
+                  }"
+                />
+                @if (mostrarOpcionesCiudadesFactExpedicion() &&
+                ciudadesFactFiltradasExpedicion().length > 0) {
+                <div
+                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                  role="listbox"
+                >
+                  @for (ciudad of ciudadesFactFiltradasExpedicion(); track
+                  ciudad.id; let i = $index) {
+                  <div
+                    [id]="'ciudad-fact-exp-option-' + i"
+                    class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                    [class.highlighted]="
+                      i === indiceOpcionSeleccionadaFactExpedicion()
+                    "
+                    role="option"
+                    [attr.aria-selected]="
+                      i === indiceOpcionSeleccionadaFactExpedicion()
+                    "
+                    (click)="seleccionarCiudadFactExpedicion(ciudad)"
+                  >
+                    {{ ciudad.nombre }}
+                  </div>
+                  }
+                </div>
+                } @if (mostrarOpcionesCiudadesFactExpedicion() &&
+                ciudadesFactFiltradasExpedicion().length === 0 &&
+                ciudadFactTerminoBusquedaExpedicion()) {
+                <div
+                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                >
+                  <div class="py-3 px-4 text-gray-500 italic">
+                    No se encontraron ciudades
+                  </div>
+                </div>
+                }
+              </div>
+              @if (formUtils.esCampoInvalido(facturacionForm,
+              'ciudadExpedicion')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    facturacionForm,
+                    'ciudadExpedicion'
+                  )
+                }}
+              </div>
+              }
+            </div>
+          </div>
+
+
+          <!-- Info tributaria facturación -->
+          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="ftipoPersona"
+              >
+                Tipo de Persona <span class="text-error">*</span>
+              </label>
+              <select
+                id="ftipoPersona"
+                formControlName="tipoPersona"
+                [ngClass]="{
+                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'tipoPersona'
+                  )
+                }"
+              >
+                <option value="" disabled selected>Seleccione</option>
+                <option value="natural">Persona Natural</option>
+                <option value="juridica">Persona Jurídica</option>
+              </select>
+              @if (formUtils.esCampoInvalido(facturacionForm, 'tipoPersona')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(facturacionForm, 'tipoPersona')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fregimenTributario"
+              >
+                Régimen Tributario <span class="text-error">*</span>
+              </label>
+              <select
+                id="fregimenTributario"
+                formControlName="regimenTributario"
+                [ngClass]="{
+                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'regimenTributario'
+                  )
+                }"
+              >
+                <option value="" disabled selected>
+                  @if (perfilService.regimenesTributariosCargando()) {
+                  Cargando... } @else { Seleccione }
+                </option>
+                @for (regimen of perfilService.regimenesTributarios(); track
+                regimen.codigo) {
+                <option [value]="regimen.codigo">{{ regimen.nombre }}</option>
+                }
+              </select>
+              @if (formUtils.esCampoInvalido(facturacionForm,
+              'regimenTributario')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    facturacionForm,
+                    'regimenTributario'
+                  )
+                }}
+              </div>
+              } @if (perfilService.regimenesTributariosError()) {
+              <div class="text-sm text-warning">
+                Error al cargar regímenes tributarios. Por favor, recarga la
+                página.
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+        }
+
         <div class="card-actions justify-end">
           <button
             type="submit"

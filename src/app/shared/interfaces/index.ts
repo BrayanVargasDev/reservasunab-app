@@ -2,6 +2,8 @@ export * from './boton-acciones.interface';
 export * from './categoria.interface';
 export * from './ciudad.interface';
 export * from './creado-por.interface';
+export * from './elemento.interface';
+export * from './espacio-select.interface';
 export * from './general-response.interface';
 export * from './grupo.interface';
 export * from './menu.interface';

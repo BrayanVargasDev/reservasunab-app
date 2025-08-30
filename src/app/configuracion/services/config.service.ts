@@ -18,6 +18,10 @@ import {
   createGrupo,
   updateGrupo,
   getGrupos,
+  getElementos,
+  createElemento,
+  updateElemento,
+  updateEstadoElemento,
 } from '../actions';
 import {
   Categoria,
@@ -25,6 +29,7 @@ import {
   Meta,
   PaginatedResponse,
   GeneralResponse,
+  Elemento,
 } from '@shared/interfaces';
 
 @Injectable({
@@ -34,7 +39,9 @@ export class ConfigService {
   private http = inject(HttpClient);
   private queryClient = inject(QueryClient);
 
-  private _pestana = signal<'categorias' | 'grupos'>('categorias');
+  private _pestana = signal<'categorias' | 'grupos' | 'elementos'>(
+    'categorias',
+  );
   private _alertaConfig = signal<ViewContainerRef | null>(null);
   private _categoriaSeleccionada = signal<Categoria | null>(null);
 
@@ -56,6 +63,16 @@ export class ConfigService {
   });
   private _datosPaginadorGrupos = signal<Meta | null>(null);
 
+  // Elementos
+  private _modoCreacionElemento = signal<boolean>(false);
+  private _filaElementoEditando = signal<{ [id: number]: boolean }>({});
+  private _paginacionElementos = signal<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  private _datosPaginadorElementos = signal<Meta | null>(null);
+  private _elementoSeleccionado = signal<Elemento | null>(null);
+
   public pestana = computed(() => this._pestana());
   public alertaConfig = computed(() => this._alertaConfig());
 
@@ -72,9 +89,16 @@ export class ConfigService {
   public modoCreacionGrupo = computed(() => this._modoCreacionGrupo());
   public filaGrupoEditando = computed(() => this._filaGrupoEditando());
   public paginacionGrupos = computed(() => this._paginacionGrupos());
-  public datosPaginadorGrupos = computed(() =>
-    this._datosPaginadorGrupos(),
+  public datosPaginadorGrupos = computed(() => this._datosPaginadorGrupos());
+
+  // Elementos
+  public modoCreacionElemento = computed(() => this._modoCreacionElemento());
+  public filaElementoEditando = computed(() => this._filaElementoEditando());
+  public paginacionElementos = computed(() => this._paginacionElementos());
+  public datosPaginadorElementos = computed(() =>
+    this._datosPaginadorElementos(),
   );
+  public elementoSeleccionado = computed(() => this._elementoSeleccionado());
 
   public categoriasQuery = injectQuery(() => ({
     queryKey: ['categorias', this.paginacionCategorias()],
@@ -95,6 +119,15 @@ export class ConfigService {
         ...this.paginacionGrupos(),
       }),
     select: (response: PaginatedResponse<Grupo>) => response.data,
+  }));
+
+  public elementosQuery = injectQuery(() => ({
+    queryKey: ['elementos', this.paginacionElementos()],
+    queryFn: () =>
+      getElementos(this.http, {
+        ...this.paginacionElementos(),
+      }),
+    select: (response: PaginatedResponse<Elemento>) => response.data,
   }));
 
   // Métodos para Categorías
@@ -136,6 +169,51 @@ export class ConfigService {
       queryKey: ['categorias', state],
       queryFn: () =>
         getCategorias(this.http, {
+          ...state,
+        }),
+      staleTime: 1000 * 60 * 5,
+    });
+  }
+
+  // Métodos para elementos
+  public setPaginacionElementos(paginacion: PaginationState) {
+    this._paginacionElementos.set(paginacion);
+  }
+
+  public cambiarEstadoElemento(id: number, estado: string) {
+    return updateEstadoElemento(this.http, id, estado);
+  }
+
+  public setModoCreacionElemento(estado: boolean) {
+    this._modoCreacionElemento.set(estado);
+  }
+
+  public setEditandoFilaElemento(id: number, estado: boolean) {
+    this._filaElementoEditando.set({
+      ...this._filaElementoEditando(),
+      [id]: estado,
+    });
+  }
+
+  public async crearElemento(elemento: Partial<Elemento>) {
+    return createElemento(this.http, elemento);
+  }
+
+  public async actualizarElemento(id: number, elemento: Elemento) {
+    return updateElemento(this.http, elemento, id);
+  }
+
+  public inciarCrearElemento() {
+    this.setModoCreacionElemento(true);
+    this.setEditandoFilaElemento(0, true);
+    this.setPestana('elementos');
+  }
+
+  public prefetchElementos(state: PaginationState) {
+    this.queryClient.prefetchQuery({
+      queryKey: ['elementos', state],
+      queryFn: () =>
+        getElementos(this.http, {
           ...state,
         }),
       staleTime: 1000 * 60 * 5,
@@ -188,7 +266,7 @@ export class ConfigService {
   }
 
   // Métodos generales
-  public setPestana(pestana: 'categorias' | 'grupos') {
+  public setPestana(pestana: 'categorias' | 'grupos' | 'elementos') {
     this._pestana.set(pestana);
   }
 
@@ -198,6 +276,10 @@ export class ConfigService {
 
   public setCategoriaeleccionada(pantalla: Categoria | null) {
     this._categoriaSeleccionada.set(pantalla);
+  }
+
+  public setElementoSeleccionado(elemento: Elemento | null) {
+    this._elementoSeleccionado.set(elemento);
   }
 
   public resetAll() {
@@ -219,5 +301,14 @@ export class ConfigService {
       pageSize: 10,
     });
     this._datosPaginadorGrupos.set(null);
+
+    // Reset elementos
+    this._modoCreacionElemento.set(false);
+    this._filaElementoEditando.set({});
+    this._paginacionElementos.set({
+      pageIndex: 0,
+      pageSize: 10,
+    });
+    this._datosPaginadorElementos.set(null);
   }
 }
