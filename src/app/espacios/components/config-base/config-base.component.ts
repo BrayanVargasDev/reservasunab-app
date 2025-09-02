@@ -78,17 +78,14 @@ export class ConfigBaseComponent {
   public configuracionesGuardando = signal<Set<number>>(new Set());
 
   constructor() {
-    // Inicializar formularios inmediatamente con valores por defecto
     this.inicializarFormulariosVacios();
 
-    // Actualizar formularios cuando cambien las configuraciones del servidor
     effect(() => {
       const configuraciones = this.configuracionesFromQuery();
       if (configuraciones.length > 0) {
         this.actualizarFormulariosConDatos(configuraciones);
       }
     });
-
   }
 
   private inicializarFormulariosVacios() {
@@ -161,6 +158,7 @@ export class ConfigBaseComponent {
     {
       header: 'No. Día',
       accessorKey: 'numero',
+      size: 50,
       cell: info => info.getValue(),
     },
     {
@@ -184,18 +182,18 @@ export class ConfigBaseComponent {
         const estaGuardando = this.estaGuardando(dia);
 
         if (estaGuardando) {
-          return '<span class="badge badge-warning">Guardando...</span>';
+          return '<span class="badge badge-warning font-semibold max-sm:text-xs">Guardando...</span>';
         }
 
         if (!tieneConfig) {
-          return '<span class="badge badge-ghost">Sin configurar</span>';
+          return '<span class="badge badge-ghost font-semibold max-sm:text-xs">Sin configurar</span>';
         }
 
         if (!tieneFranjas) {
-          return '<span class="badge badge-error">Sin franjas</span>';
+          return '<span class="badge badge-error font-semibold max-sm:text-xs">Sin franjas</span>';
         }
 
-        return '<span class="badge badge-success">Configurado</span>';
+        return '<span class="badge badge-success font-semibold max-sm:text-xs">Configurado</span>';
       },
     },
   ]);
@@ -323,7 +321,6 @@ export class ConfigBaseComponent {
       await this.configuracionService.saveConfigMutation.mutateAsync(
         configuracion,
       );
-
     } catch (error) {
       console.error('Error guardando configuración:', error);
     } finally {

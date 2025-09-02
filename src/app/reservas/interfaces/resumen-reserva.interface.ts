@@ -1,14 +1,19 @@
 import { Usuario } from '@usuarios/intefaces';
+import { Elemento } from '@shared/interfaces';
+import { Pago, Movimiento } from '@pagos/interfaces';
 
 export interface ResumenReserva {
   id: number;
   nombre_espacio: string;
+  id_espacio: number;
   duracion: number;
   sede: string;
   fecha: string;
   hora_inicio: string;
   valor: number;
   valor_descuento: number;
+  valor_elementos?: number;
+  valor_total_reserva?: number;
   porcentaje_descuento: number;
   estado: string;
   usuario_reserva: string;
@@ -18,6 +23,7 @@ export interface ResumenReserva {
   minimo_jugadores: number;
   maximo_jugadores: number;
   jugadores?: Usuario[];
+  detalles?: Elemento[];
   total_jugadores: number;
   puede_cancelar: boolean;
   es_pasada: boolean;
@@ -25,4 +31,5 @@ export interface ResumenReserva {
   necesita_aprobacion: boolean;
   reserva_aprovada: boolean;
   pagar_con_saldo: boolean;
+  pago: Pago | Movimiento | null;
 }

@@ -17,6 +17,9 @@ export const confirmarReserva = async (
       url,
       {
         ...payload,
+        valor_elementos: payload.valor_elementos ?? 0,
+        valor_total_reserva:
+          (payload.valor_descuento || 0) + (payload.valor_elementos || 0),
         jugadores: payload.jugadores?.map(jugador => jugador.id),
       },
       {

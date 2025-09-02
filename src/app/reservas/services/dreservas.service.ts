@@ -4,6 +4,7 @@ import { injectQuery } from '@tanstack/angular-query-experimental';
 import { getEspaciosAll, getEspacioDetalles } from '@reservas/actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Espacio } from '@espacios/interfaces';
+import { Elemento } from '@shared/interfaces';
 import { Usuario } from '@usuarios/intefaces';
 import {
   EspacioReservas,
@@ -19,6 +20,7 @@ import {
   pagarReservaConSaldo,
   confirmarReserva,
   eliminarReserva as eliminarReservaAction,
+  buscarElementos,
 } from '../actions';
 
 // Definir tipos para el estado del modal
@@ -28,6 +30,7 @@ const EstadoModal = {
   RESUMEN_NUEVA: 'resumen_nueva',
   RESUMEN_EXISTENTE: 'resumen_existente',
   AGREGAR_JUGADORES: 'agregar_jugadores',
+  AGREGAR_DETALLES: 'agregar_detalles',
   PROCESANDO_PAGO: 'procesando_pago',
   CANCELANDO_RESERVA: 'cancelando_reserva',
 } as const;
@@ -59,6 +62,10 @@ export class DreservasService {
   private _termino_busqueda_jugadores = signal<string>('');
   private _jugadoresSeleccionados = signal<Usuario[]>([]);
 
+  // ? Estado para elementos seleccionados (antes "detalles")
+  private _detallesSeleccionados = signal<Elemento[]>([]);
+  private _termino_busqueda_elementos = signal<string>('');
+
   // Computed properties para el estado
   public estadoModal = computed(() => this._estadoModal());
   public mensajeCargando = computed(() => this._mensajeCargando());
@@ -70,6 +77,10 @@ export class DreservasService {
   );
   public jugadoresSeleccionados = computed(() =>
     this._jugadoresSeleccionados(),
+  );
+  public detallesSeleccionados = computed(() => this._detallesSeleccionados());
+  public terminoBusquedaElementos = computed(() =>
+    this._termino_busqueda_elementos(),
   );
 
   // Estados derivados para compatibilidad y claridad
@@ -91,6 +102,9 @@ export class DreservasService {
   public mostrandoJugadores = computed(
     () => this._estadoModal() === EstadoModal.AGREGAR_JUGADORES,
   );
+  public mostrandoDetalles = computed(
+    () => this._estadoModal() === EstadoModal.AGREGAR_DETALLES,
+  );
   public procesandoPago = computed(
     () => this._estadoModal() === EstadoModal.PROCESANDO_PAGO,
   );
@@ -98,6 +112,7 @@ export class DreservasService {
   // Para compatibilidad con el código existente
   public resumen = computed(() => this.mostrandoResumenNueva());
   public mostrarJugadores = computed(() => this.mostrandoJugadores());
+  public mostrarDetalles = computed(() => this.mostrandoDetalles());
 
   public fecha = this._fecha.asReadonly();
   public modalAbierta = this._modalAbierta.asReadonly();
@@ -153,6 +168,23 @@ export class DreservasService {
       () =>
         this._estadoModal() === EstadoModal.AGREGAR_JUGADORES &&
         this._termino_busqueda_jugadores().trim().length > 0,
+    ),
+    staleTime: 30 * 1000,
+  }));
+
+  elementosQuery = injectQuery(() => ({
+    queryKey: ['elementos', 'buscar', this._termino_busqueda_elementos()],
+    queryFn: () =>
+      buscarElementos(
+        this.http,
+        this._termino_busqueda_elementos(),
+        this._idEspacio(),
+      ),
+    select: (response: any) => response.data,
+    enabled: computed(
+      () =>
+        this._estadoModal() === EstadoModal.AGREGAR_DETALLES &&
+        this._termino_busqueda_elementos().trim().length > 0,
     ),
     staleTime: 30 * 1000,
   }));
@@ -229,6 +261,8 @@ export class DreservasService {
     this._idMiReserva.set(null);
     this._termino_busqueda_jugadores.set('');
     this._jugadoresSeleccionados.set([]);
+    this._detallesSeleccionados.set([]);
+    this._termino_busqueda_elementos.set('');
     this._abiertaDesdeMisReservas.set(false);
   }
 
@@ -273,6 +307,12 @@ export class DreservasService {
     this._estadoModal.set(EstadoModal.AGREGAR_JUGADORES);
     this._termino_busqueda_jugadores.set('');
     this._jugadoresSeleccionados.set([]);
+    this._mensajeCargando.set('');
+  }
+
+  public setMostrarDetalles() {
+    this._estadoModal.set(EstadoModal.AGREGAR_DETALLES);
+    this._termino_busqueda_elementos.set('');
     this._mensajeCargando.set('');
   }
 
@@ -369,6 +409,105 @@ export class DreservasService {
     this._jugadoresSeleccionados.set([]);
   }
 
+  public setTerminoBusquedaElementos(termino: string) {
+    this._termino_busqueda_elementos.set(termino);
+  }
+  // -------- Elementos: manejo local (antes "detalles") --------
+  public agregarElemento(el: Elemento, cantidad: number = 1) {
+    if (!el) return;
+    const actuales = this._detallesSeleccionados();
+    const idx = actuales.findIndex(e => e.id === el.id);
+    if (idx >= 0) {
+      const previo = actuales[idx];
+      const actualizado: Elemento = {
+        ...previo,
+        cantidad_seleccionada:
+          (previo.cantidad_seleccionada ?? 0) + Math.max(1, cantidad),
+      };
+      const nuevos = [...actuales];
+      nuevos[idx] = actualizado;
+      this._detallesSeleccionados.set(nuevos);
+    } else {
+      const nuevo: Elemento = {
+        ...el,
+        cantidad_seleccionada:
+          (el.cantidad_seleccionada ?? 0) + Math.max(1, cantidad),
+      };
+      this._detallesSeleccionados.set([...actuales, nuevo]);
+    }
+  }
+
+  public removerElemento(index: number) {
+    const actuales = this._detallesSeleccionados();
+    this._detallesSeleccionados.set(actuales.filter((_, i) => i !== index));
+  }
+
+  public limpiarDetallesSeleccionados() {
+    this._detallesSeleccionados.set([]);
+  }
+
+  public confirmarAgregarDetallesLocal() {
+    const resumen = this._estadoResumen();
+    if (!resumen) return;
+
+    const existentes = resumen.detalles || [];
+    const nuevos = this._detallesSeleccionados();
+    const mapa = new Map<number, Elemento>();
+    for (const e of existentes) mapa.set(e.id, e);
+    for (const n of nuevos) {
+      const prev = mapa.get(n.id);
+      if (prev) {
+        mapa.set(n.id, {
+          ...prev,
+          cantidad_seleccionada:
+            (prev.cantidad_seleccionada ?? 0) + (n.cantidad_seleccionada ?? 0),
+        });
+      } else {
+        mapa.set(n.id, n);
+      }
+    }
+    const combinados = Array.from(mapa.values());
+
+    const actualizado = {
+      ...resumen,
+      detalles: combinados,
+    } as typeof resumen;
+
+    this._estadoResumen.set(actualizado);
+    this.limpiarDetallesSeleccionados();
+  }
+
+  public confirmarAgregarDetallesLocalEnExistente() {
+    const reserva = this._miReserva();
+    if (!reserva) return;
+
+    const existentes = reserva.detalles || [];
+    const nuevos = this._detallesSeleccionados();
+    const mapa = new Map<number, Elemento>();
+    for (const e of existentes) mapa.set(e.id, e);
+    for (const n of nuevos) {
+      const prev = mapa.get(n.id);
+      if (prev) {
+        mapa.set(n.id, {
+          ...prev,
+          cantidad_seleccionada:
+            (prev.cantidad_seleccionada ?? 0) + (n.cantidad_seleccionada ?? 0),
+        });
+      } else {
+        mapa.set(n.id, n);
+      }
+    }
+    const combinados = Array.from(mapa.values());
+
+    const actualizado = {
+      ...reserva,
+      detalles: combinados,
+    } as typeof reserva;
+
+    this._miReserva.set(actualizado);
+    this.limpiarDetallesSeleccionados();
+  }
+
   public confirmarAgregarJugadoresLocal() {
     const resumen = this._estadoResumen();
     if (!resumen) return;
@@ -411,8 +550,19 @@ export class DreservasService {
     this._jugadoresSeleccionados.set([]);
   }
 
-  public async confirmarReservaFinal() {
-    const response = await confirmarReserva(this.http, this._estadoResumen()!);
+  public async confirmarReservaFinal(): Promise<
+    number | GeneralResponse<ResumenReserva>
+  > {
+    const estado = this.estadoResumen() || this.miReserva();
+
+    if (estado!.id) {
+      return estado!.id as number;
+    }
+
+    const response = await confirmarReserva(this.http, {
+      ...estado!,
+      id_espacio: this._idEspacio()!,
+    });
 
     if (response.data) {
       this._estadoResumen.set(null);

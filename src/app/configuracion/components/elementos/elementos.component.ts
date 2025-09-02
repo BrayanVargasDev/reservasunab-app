@@ -344,6 +344,7 @@ export class ElementosComponent {
         creado_en: this.fechaActual(),
         eliminado_en: null,
         actualizado_en: null,
+        cantidad_seleccionada: 0,
       };
       return [elementoVacio, ...elementos];
     }

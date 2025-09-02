@@ -14,19 +14,13 @@ import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
 
 import { QuillViewHTMLComponent } from 'ngx-quill';
-import {
-  format,
-  parse,
-  subDays,
-  set as setTime,
-  parseISO,
-  isValid,
-} from 'date-fns';
+import { format, parse, subDays, set as setTime } from 'date-fns';
 import { formatInBogota } from '@shared/utils/timezone';
+import { parseFlexibleDate } from '@shared/utils/date-flex';
 
 import { environment } from '@environments/environment';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
-import { Configuracion } from '@espacios/interfaces';
+import { Configuracion, TipoUsuarioConfig } from '@espacios/interfaces';
 import { AuthService } from '@auth/services/auth.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import {
@@ -34,7 +28,9 @@ import {
   ReservaEspaciosDetalles,
 } from '@reservas/interfaces/reserva-espacio-detalle.interface';
 import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
-import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
+import { Elemento } from '@shared/interfaces';
+import { TipoUsuario } from '@shared/enums/usuarios.enum';
+import { AppService } from '@app/app.service';
 
 @Component({
   selector: 'modal-dreservas',
@@ -51,7 +47,7 @@ import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.inte
 })
 export class ModalDreservasComponent {
   private injector = inject(Injector);
-  private environment = environment;
+  private appService = inject(AppService);
   private authService = inject(AuthService);
   private alertaService = inject(AlertasService);
   private cdr = inject(ChangeDetectorRef);
@@ -69,35 +65,104 @@ export class ModalDreservasComponent {
 
   public cargando = computed(() => this.dreservasService.cargando());
 
-  private parsearFecha(rawFecha: string): Date | null {
-    if (!rawFecha) {
-      return null;
-    }
-
-    let fechaBase: Date | null = null;
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(rawFecha)) {
-      fechaBase = parse(
-        rawFecha + 'T12:00:00',
-        "yyyy-MM-dd'T'HH:mm:ss",
-        new Date(),
-      );
-    } else {
-      const d = parseISO(rawFecha);
-      fechaBase = isValid(d) ? d : null;
-    }
-
-    if (!fechaBase) {
-      const d = new Date(rawFecha);
-      fechaBase = isValid(d) ? d : null;
-    }
-
-    return fechaBase;
+  // Utilidades internas
+  private showError(mensaje: string, ms = 5000) {
+    this.alertaService.error(
+      mensaje,
+      ms,
+      this.alertaModalReservas(),
+      this.estilosAlerta,
+    );
   }
+
+  private showSuccess(mensaje: string, ms = 4000) {
+    this.alertaService.success(
+      mensaje,
+      ms,
+      this.alertaModalReservas(),
+      this.estilosAlerta,
+    );
+  }
+
+  private getEstadoActual() {
+    return (
+      this.dreservasService.estadoResumen() || this.dreservasService.miReserva()
+    );
+  }
+
+  private isEstadoVacio(estado: any) {
+    return (
+      !estado ||
+      (typeof estado === 'object' && Object.keys(estado).length === 0)
+    );
+  }
+
+  private restoreResumenView() {
+    if (this.dreservasService.estadoResumen()) {
+      this.dreservasService.setMostrarResumenNueva(
+        this.dreservasService.estadoResumen()!,
+      );
+    } else if (this.dreservasService.miReserva()) {
+      this.dreservasService.setMostrarResumenExistente(
+        this.dreservasService.miReserva()!,
+      );
+    }
+  }
+
+  private validarDatosReserva(
+    estado: any,
+    base: ReservaEspaciosDetalles | undefined,
+    usarCondicionPuedeAgregar: boolean,
+  ): string | null {
+    const minOtros = Math.max(0, (estado?.minimo_jugadores ?? 0) - 1);
+    const totalJug = estado?.jugadores?.length ?? 0;
+    if (
+      (!usarCondicionPuedeAgregar && minOtros > 0 && totalJug < minOtros) ||
+      (usarCondicionPuedeAgregar &&
+        estado?.puede_agregar_jugadores &&
+        minOtros > 0 &&
+        totalJug < minOtros)
+    ) {
+      return `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`;
+    }
+
+    const configId = base?.configuracion?.id ?? 0;
+    if (!configId || configId <= 0)
+      return 'Falta la configuración base del espacio.';
+    if (!estado?.fecha) return 'Falta la fecha de la reserva.';
+    if (!estado?.hora_inicio) return 'Falta la hora de inicio de la reserva.';
+    return null;
+  }
+
+  private async confirmarReservaEnServidor(estado: any): Promise<boolean> {
+    this.dreservasService.setCargando('Confirmando reserva...');
+    try {
+      const response = await this.dreservasService.confirmarReservaFinal();
+      if (
+        typeof response !== 'object' ||
+        !('data' in response) ||
+        !response.data
+      ) {
+        this.showError('No se pudo confirmar la reserva.');
+        this.dreservasService.setMostrarResumenNueva(estado);
+        return false;
+      }
+      this.showSuccess('Reserva creada exitosamente.', 4 * 1000);
+      return true;
+    } catch (error: any) {
+      const mensajeError =
+        error?.error?.error || 'Error al confirmar la reserva.';
+      this.showError(mensajeError);
+      this.dreservasService.setMostrarResumenNueva(estado);
+      return false;
+    }
+  }
+
+  // Eliminado: se usa parseFlexibleDate desde util compartido
 
   public estadoResumen = computed(() => {
     const estado = this.dreservasService.estadoResumen();
-
+    const saldo = this.appService.creditosQuery.data() ?? 0;
     if (!estado || !estado.fecha) {
       return estado;
     }
@@ -121,9 +186,9 @@ export class ModalDreservasComponent {
 
     const valorFinal = (valor ?? 0) - (valor_descuento ?? 0);
 
-    const pagarConSaldo = puedePagar && (usuario?.saldo ?? 0) >= valorFinal;
+    const pagarConSaldo = puedePagar && (saldo ?? 0) >= valorFinal;
 
-    const fechaParseada = this.parsearFecha(fecha);
+    const fechaParseada = parseFlexibleDate(fecha);
 
     return {
       ...estado,
@@ -136,6 +201,7 @@ export class ModalDreservasComponent {
 
   public miReserva = computed(() => {
     const reserva = this.dreservasService.miReserva();
+    const saldo = this.appService.creditosQuery.data() ?? 0;
     if (reserva && reserva.fecha) {
       const usuario = this.authService.usuario();
       const puedePagar =
@@ -144,28 +210,9 @@ export class ModalDreservasComponent {
         reserva.valor > 0 &&
         (!reserva.necesita_aprobacion || reserva.reserva_aprovada);
       const valorFinal = (reserva.valor || 0) - (reserva.valor_descuento || 0);
-      const pagarConSaldo =
-        puedePagar && usuario ? usuario.saldo >= valorFinal : false;
-      // Parseo tolerante de fecha
-      const rawFecha = reserva.fecha as string;
-      let fechaBase: Date | null = null;
-      try {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(rawFecha)) {
-          fechaBase = parse(
-            rawFecha + ' 12:00',
-            'yyyy-MM-dd HH:mm',
-            new Date(),
-          );
-        } else if (rawFecha.includes('T')) {
-          const d = parseISO(rawFecha);
-          fechaBase = isValid(d) ? d : null;
-        } else {
-          const d = new Date(rawFecha);
-          fechaBase = isValid(d) ? d : null;
-        }
-      } catch {
-        fechaBase = null;
-      }
+      const pagarConSaldo = puedePagar && usuario ? saldo >= valorFinal : false;
+
+      const fechaBase = parseFlexibleDate(reserva.fecha as string);
       return {
         ...reserva,
         fecha: fechaBase
@@ -178,54 +225,59 @@ export class ModalDreservasComponent {
   });
 
   public necesitaPago = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const estado = this.getEstadoActual();
+
+    const valorTotal = estado?.valor_total_reserva ?? 0;
 
     if (!estado) return false;
+    if (this.isEstadoVacio(estado)) return false;
     if (estado.estado === 'completada') return false;
     if (this.esReservaPasada()) return false;
     if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
-    return (
-      estado.estado !== 'pagada' &&
-      !!estado.valor_descuento &&
-      estado.valor_descuento > 0
-    );
+    return !estado.pago && valorTotal > 0;
   });
 
   public puedePagarConSaldo = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const estado = this.getEstadoActual();
+    const saldo = this.appService.creditosQuery.data() ?? 0;
+    const totalReserva = estado?.valor_total_reserva ?? 0;
+
+    console.log({
+      estado,
+      saldo,
+      totalReserva,
+    });
 
     if (estado?.estado === 'completada') return false;
     if (this.esReservaPasada()) return false;
     if (!estado) return false;
+    if (saldo <= 0) return false;
+    if (totalReserva > saldo) return false;
+
     return estado.pagar_con_saldo;
   });
 
   public pudeCancelar = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const estado = this.getEstadoActual();
 
     if (this.esReservaPasada()) return false;
     return estado?.puede_cancelar;
   });
 
   public esReservaPasada = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const estado = this.getEstadoActual();
     return estado?.es_pasada;
   });
 
   public readonly mostrarJugadores = this.dreservasService.mostrarJugadores;
+  public readonly mostrarDetalles = this.dreservasService.mostrarDetalles;
   public readonly terminoBusquedaJugadores =
     this.dreservasService.terminoBusquedaJugadores;
   public readonly jugadoresQuery = this.dreservasService.jugadoresQuery;
   public readonly jugadoresSeleccionados =
     this.dreservasService.jugadoresSeleccionados;
+  public readonly detallesSeleccionados =
+    this.dreservasService.detallesSeleccionados;
 
   public readonly userIdActual = computed(() => this.authService.usuario()?.id);
   public readonly reservanteActual = computed(() => {
@@ -245,9 +297,36 @@ export class ModalDreservasComponent {
     return [reservante, ...base];
   });
 
+  // Cantidades: mapa para inputs de búsqueda y para seleccionados
+  public cantidadPorAgregar: Record<number, number> = {};
+
+  public getPrecioUnitario(el: Elemento): number {
+    const tipo = this.authService.usuario()?.tipo_usuario?.[0] as
+      | TipoUsuario
+      | undefined;
+    switch (tipo) {
+      case TipoUsuario.Estudiante:
+        return el.valor_estudiante ?? 0;
+      case TipoUsuario.Egresado:
+        return el.valor_egresado ?? 0;
+      case TipoUsuario.Administrativo:
+        return el.valor_administrativo ?? 0;
+      case TipoUsuario.Externo:
+      default:
+        return el.valor_externo ?? 0;
+    }
+  }
+
   public readonly confirmarReservaDisabled = computed(() => {
-    const estado = this.dreservasService.estadoResumen();
-    if (!estado) return true;
+    const estado =
+      this.dreservasService.estadoResumen() ||
+      this.dreservasService.miReserva();
+
+    if (
+      !estado ||
+      (typeof estado === 'object' && Object.keys(estado).length === 0)
+    )
+      return true;
 
     // Si estado.estado es pendienteap y estado.id === null entonces false
     if (estado.estado === 'pendienteap' && estado.id === null) return false;
@@ -392,11 +471,9 @@ export class ModalDreservasComponent {
       .iniciarReserva(base, fechaBaseStr, item.hora_inicio, item.hora_fin)
       .then(response => {
         if (!response.data) {
-          this.alertaService.error(
-            `Error al iniciar la reserva. Por favor, inténtelo de nuevo.`,
+          this.showError(
+            'Error al iniciar la reserva. Por favor, inténtelo de nuevo.',
             5 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
           );
           this.dreservasService.setMostrarDisponibilidad();
           return;
@@ -409,151 +486,126 @@ export class ModalDreservasComponent {
           error.error?.error ||
           'Error al iniciar la reserva. Por favor, inténtelo de nuevo.';
 
-        this.alertaService.error(
-          mensajeError,
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
+        this.showError(mensajeError, 5 * 1000);
         this.dreservasService.setMostrarDisponibilidad();
       });
   }
 
-  public procesarPago() {
-    this.dreservasService.setProcesandoPago();
+  // Metodo centralizado para confirmar y/o pagar
+  public async ejecutarPago(
+    tipo: 'normal' | 'saldo',
+    confirmarPrimero = false,
+  ): Promise<void> {
+    const estado = this.getEstadoActual();
 
-    const estadoResumen = this.estadoResumen() ?? this.miReserva();
-
-    if (!estadoResumen || !estadoResumen.id) {
-      this.alertaService.error(
-        'No se pudo procesar el pago. Por favor, inténtelo de nuevo.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      if (this.dreservasService.estadoResumen()) {
-        this.dreservasService.setMostrarResumenNueva(
-          this.dreservasService.estadoResumen()!,
-        );
-      } else if (this.dreservasService.miReserva()) {
-        this.dreservasService.setMostrarResumenExistente(
-          this.dreservasService.miReserva()!,
-        );
-      }
+    if (this.isEstadoVacio(estado)) {
+      this.showError('No se encontró información de reserva.');
       return;
     }
 
-    setTimeout(() => {
-      this.dreservasService
-        .pagarReserva(estadoResumen.id)
-        .then((response: any) => {
-          if (!response.data) {
-            this.alertaService.error(
-              `Error al procesar el pago. Por favor, inténtelo de nuevo.`,
-              5 * 1000,
-              this.alertaModalReservas(),
-              this.estilosAlerta,
-            );
-            if (this.dreservasService.estadoResumen()) {
-              this.dreservasService.setMostrarResumenNueva(
-                this.dreservasService.estadoResumen()!,
-              );
-            } else if (this.dreservasService.miReserva()) {
-              this.dreservasService.setMostrarResumenExistente(
-                this.dreservasService.miReserva()!,
-              );
-            }
-            return;
-          }
+    const esNueva = !!this.dreservasService.estadoResumen();
 
-          this.dreservasService.cerrarModal();
-          window.location.href = response.data;
-        })
-        .catch((error: any) => {
-          const mensajeError =
-            error.error?.error ||
-            'Error al procesar el pago. Por favor, inténtelo de nuevo.';
-
-          this.alertaService.error(
-            mensajeError,
-            5 * 1000,
-            this.alertaModalReservas(),
-            this.estilosAlerta,
-          );
-          if (this.dreservasService.estadoResumen()) {
-            this.dreservasService.setMostrarResumenNueva(
-              this.dreservasService.estadoResumen()!,
-            );
-          } else if (this.dreservasService.miReserva()) {
-            this.dreservasService.setMostrarResumenExistente(
-              this.dreservasService.miReserva()!,
-            );
-          }
-        });
-    }, 1000);
-  }
-
-  public async procesarPagoConSaldo() {
-    this.dreservasService.setProcesandoPago();
-
-    const estadoResumen = this.estadoResumen() ?? this.miReserva();
-
-    if (!estadoResumen || !estadoResumen.id) {
-      this.alertaService.error(
-        'No se pudo procesar el pago con saldo.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      if (this.dreservasService.estadoResumen()) {
-        this.dreservasService.setMostrarResumenNueva(
-          this.dreservasService.estadoResumen()!,
-        );
-      } else if (this.dreservasService.miReserva()) {
-        this.dreservasService.setMostrarResumenExistente(
-          this.dreservasService.miReserva()!,
-        );
-      }
-      return;
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    try {
-      const data = await this.dreservasService.pagarReservaConSaldo(
-        estadoResumen.id,
-      );
-      if (!data) {
-        this.alertaService.error(
-          'Error al procesar el pago con saldo.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
-        if (this.dreservasService.estadoResumen()) {
-          this.dreservasService.setMostrarResumenNueva(
-            this.dreservasService.estadoResumen()!,
-          );
-        } else if (this.dreservasService.miReserva()) {
-          this.dreservasService.setMostrarResumenExistente(
-            this.dreservasService.miReserva()!,
-          );
-        }
+    // Si NO se requiere confirmar primero, intentar pagar directamente
+    if (!confirmarPrimero) {
+      if (!estado?.id) {
+        const msg =
+          tipo === 'saldo'
+            ? 'No se pudo procesar el pago con saldo.'
+            : 'No se pudo procesar el pago. Por favor, inténtelo de nuevo.';
+        this.showError(msg);
+        this.restoreResumenView();
         return;
       }
+      await this.realizarPago(tipo, estado);
+      return;
+    }
 
+    // Confirmar primero
+    if (!esNueva) {
+      if (this.necesitaPago()) {
+        await this.realizarPago(tipo, estado);
+      }
+      return;
+    }
+
+    const base = this.dreservasService.espacioDetallesQuery.data();
+    const usarCondicionPuedeAgregar = tipo === 'normal' ? true : false;
+    const errorValidacion = this.validarDatosReserva(
+      estado,
+      base,
+      usarCondicionPuedeAgregar,
+    );
+    if (errorValidacion) {
+      this.showError(errorValidacion);
+      return;
+    }
+
+    const ok = await this.confirmarReservaEnServidor(estado);
+    if (!ok) return;
+    if (!this.necesitaPago()) return;
+
+    // Reobtener estado por si se actualizó tras confirmar
+    const estadoActualizado = this.getEstadoActual() ?? estado;
+    await this.realizarPago(tipo, estadoActualizado);
+  }
+
+  private async realizarPago(
+    tipo: 'normal' | 'saldo',
+    estadoResumen: any,
+  ): Promise<void> {
+    if (tipo === 'normal') {
+      this.dreservasService.setProcesandoPago();
+      if (!estadoResumen || !estadoResumen.id) {
+        this.showError(
+          'No se pudo procesar el pago. Por favor, inténtelo de nuevo.',
+        );
+        this.restoreResumenView();
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        const response: any = await this.dreservasService.pagarReserva(
+          estadoResumen.id,
+        );
+        if (!response?.data) {
+          this.showError(
+            'Error al procesar el pago. Por favor, inténtelo de nuevo.',
+          );
+          this.restoreResumenView();
+          return;
+        }
+        this.dreservasService.cerrarModal();
+        window.location.href = response.data;
+      } catch (error: any) {
+        const mensajeError =
+          error?.error?.error ||
+          'Error al procesar el pago. Por favor, inténtelo de nuevo.';
+        this.showError(mensajeError);
+        this.restoreResumenView();
+      }
+      return;
+    }
+
+    // Pago con saldo
+    this.dreservasService.setProcesandoPago();
+    if (!estadoResumen || !estadoResumen.id) {
+      this.showError('No se pudo procesar el pago con saldo.');
+      this.restoreResumenView();
+      return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      await this.dreservasService.pagarReservaConSaldo(estadoResumen.id);
       try {
         const result = await this.dreservasService.miReservaQuery.refetch();
         const reservaActualizada =
           result.data || this.dreservasService.miReserva();
         if (reservaActualizada) {
           this.dreservasService.setMostrarResumenExistente(reservaActualizada);
-        } else {
-          if (this.dreservasService.miReserva()) {
-            this.dreservasService.setMostrarResumenExistente(
-              this.dreservasService.miReserva()!,
-            );
-          }
+        } else if (this.dreservasService.miReserva()) {
+          this.dreservasService.setMostrarResumenExistente(
+            this.dreservasService.miReserva()!,
+          );
         }
       } catch {
         if (this.dreservasService.miReserva()) {
@@ -562,32 +614,21 @@ export class ModalDreservasComponent {
           );
         }
       }
-
-      this.alertaService.success(
-        'Pago realizado con saldo exitosamente.',
-        4 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
+      this.showSuccess('Pago realizado con saldo exitosamente.', 4 * 1000);
     } catch (error: any) {
       const mensajeError =
-        error.error?.error || 'Error al procesar el pago con saldo.';
-      this.alertaService.error(
-        mensajeError,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      if (this.dreservasService.estadoResumen()) {
-        this.dreservasService.setMostrarResumenNueva(
-          this.dreservasService.estadoResumen()!,
-        );
-      } else if (this.dreservasService.miReserva()) {
-        this.dreservasService.setMostrarResumenExistente(
-          this.dreservasService.miReserva()!,
-        );
-      }
+        error?.error?.error || 'Error al procesar el pago con saldo.';
+      this.showError(mensajeError);
+      this.restoreResumenView();
     }
+  }
+
+  public procesarPago() {
+    return this.ejecutarPago('normal');
+  }
+
+  public procesarPagoConSaldo() {
+    return this.ejecutarPago('saldo');
   }
 
   public async verMiReserva(idReserva: number | null) {
@@ -605,21 +646,14 @@ export class ModalDreservasComponent {
       if (reserva) {
         this.dreservasService.setMostrarResumenExistente(reserva);
       } else {
-        this.alertaService.error(
-          'No se pudo cargar la reserva.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
+        this.showError('No se pudo cargar la reserva.', 5 * 1000);
         this.dreservasService.setMostrarDisponibilidad();
       }
     } catch (error) {
       console.error('Error al obtener mi reserva:', error);
-      this.alertaService.error(
+      this.showError(
         'Error al obtener la reserva. Por favor, inténtelo de nuevo.',
         5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
       this.dreservasService.setMostrarDisponibilidad();
     }
@@ -627,6 +661,27 @@ export class ModalDreservasComponent {
 
   public mostrarAgregarJugadores() {
     this.dreservasService.setMostrarJugadores();
+  }
+
+  public mostrarAgregarDetalles() {
+    this.dreservasService.setMostrarDetalles();
+  }
+
+  public onBuscarElementos(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    this.dreservasService.setTerminoBusquedaElementos(input?.value ?? '');
+  }
+
+  public onCantidadInput(id: number, event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    const val = Math.max(1, parseInt(input?.value || '1', 10) || 1);
+    this.cantidadPorAgregar[id] = val;
+  }
+
+  public agregarElemento(el: Elemento) {
+    if (!el) return;
+    const cant = this.cantidadPorAgregar[el.id] || 1;
+    this.dreservasService.agregarElemento(el, cant);
   }
 
   public onBuscarJugadores(event: Event) {
@@ -637,11 +692,9 @@ export class ModalDreservasComponent {
   public agregarJugador(jugador: any) {
     const idActual = this.userIdActual();
     if (idActual && jugador.id === idActual) {
-      this.alertaService.error(
+      this.showError(
         'Ya eres parte de la reserva como reservante. No es necesario agregarte.',
         3 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
       return;
     }
@@ -651,11 +704,9 @@ export class ModalDreservasComponent {
 
       const limites = this.limitesJugadores();
       const disponibles = limites.maximo - limites.totalFinal;
-      this.alertaService.error(
+      this.showError(
         `No puedes seleccionar más jugadores. Límite máximo alcanzado: ${limites.maximo}`,
         3 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
       return;
     }
@@ -694,6 +745,21 @@ export class ModalDreservasComponent {
     this.dreservasService.setTerminoBusquedaJugadores('');
   }
 
+  public cancelarAgregarDetalles() {
+    if (this.dreservasService.estadoResumen()) {
+      this.dreservasService.setMostrarResumenNueva(
+        this.dreservasService.estadoResumen()!,
+      );
+    } else if (this.dreservasService.miReserva()) {
+      this.dreservasService.setMostrarResumenExistente(
+        this.dreservasService.miReserva()!,
+      );
+    }
+    this.dreservasService.limpiarDetallesSeleccionados();
+    this.dreservasService.setTerminoBusquedaElementos('');
+    this.cantidadPorAgregar = {};
+  }
+
   public async confirmarAgregarJugadores() {
     const esNueva = !!this.dreservasService.estadoResumen();
     const estado = esNueva
@@ -701,23 +767,16 @@ export class ModalDreservasComponent {
       : this.dreservasService.miReserva();
 
     if (!estado) {
-      this.alertaService.error(
-        'No hay una reserva para agregar jugadores.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
+      this.showError('No hay una reserva para agregar jugadores.', 5 * 1000);
       return;
     }
 
     const limites = this.dreservasService.obtenerLimiteJugadores();
     if (limites.totalFinal > limites.maximo) {
       const disponibles = limites.maximo - limites.actual;
-      this.alertaService.error(
+      this.showError(
         `Solo puedes agregar ${disponibles} jugador(es) más. Máximo permitido: ${limites.maximo}`,
         5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
       return;
     }
@@ -748,262 +807,108 @@ export class ModalDreservasComponent {
     }, 50);
   }
 
-  public async confirmarReservaFinal() {
-    const estado = this.dreservasService.estadoResumen()!;
+  public confirmarAgregarDetalles() {
+    const esNueva = !!this.dreservasService.estadoResumen();
+    const estado = esNueva
+      ? this.dreservasService.estadoResumen()
+      : this.dreservasService.miReserva();
 
-    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
-    const totalJug = estado.jugadores?.length ?? 0;
-    if (minOtros > 0 && totalJug < minOtros) {
-      this.alertaService.error(
-        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
+    if (!estado) {
+      this.showError('No hay una reserva para agregar detalles.', 5 * 1000);
+      return;
+    }
+
+    const cantidad = this.dreservasService.detallesSeleccionados().length;
+    if (cantidad === 0) {
+      this.showError(
+        'Agrega al menos un elemento antes de confirmar.',
+        3 * 1000,
       );
       return;
     }
 
-    const base = this.dreservasService.espacioDetallesQuery.data();
-    const configId = base?.configuracion?.id ?? 0;
-    if (!configId || configId <= 0) {
-      this.alertaService.error(
-        'Falta la configuración base del espacio.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
+    const seleccionados = this.dreservasService.detallesSeleccionados();
+    const incremento = seleccionados.reduce((acc, el) => {
+      const unit = this.getPrecioUnitario(el);
+      const cant = el.cantidad_seleccionada || 1;
+      if (unit > 0 && cant > 0) return acc + unit * cant;
+      return acc;
+    }, 0);
+
+    if (esNueva) {
+      this.dreservasService.confirmarAgregarDetallesLocal();
+      const est = this.dreservasService.estadoResumen()!;
+      const valorEspacioConDesc = est.valor_descuento || 0;
+      const actualizado = {
+        ...est,
+        valor: est.valor || 0,
+        valor_descuento: est.valor_descuento || 0,
+        valor_elementos: (est.valor_elementos || 0) + incremento,
+        valor_total_reserva:
+          valorEspacioConDesc + (est.valor_elementos || 0) + incremento,
+      } as typeof est;
+      this.dreservasService.setMostrarResumenNueva(actualizado);
+    } else {
+      this.dreservasService.confirmarAgregarDetallesLocalEnExistente();
+      const est = this.dreservasService.miReserva()!;
+      const valorEspacioConDesc = est.valor_descuento || 0;
+      const actualizado = {
+        ...est,
+        valor: est.valor || 0,
+        valor_descuento: est.valor_descuento || 0,
+        valor_elementos: (est.valor_elementos || 0) + incremento,
+        valor_total_reserva:
+          valorEspacioConDesc + (est.valor_elementos || 0) + incremento,
+      } as typeof est;
+      this.dreservasService.setMostrarResumenExistente(actualizado);
     }
+    this.cdr.detectChanges();
 
-    if (!estado.fecha) {
-      this.alertaService.error(
-        'Falta la fecha de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    if (!estado.hora_inicio) {
-      this.alertaService.error(
-        'Falta la hora de inicio de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    this.dreservasService.setCargando('Confirmando reserva...');
-    try {
-      const response = await this.dreservasService.confirmarReservaFinal();
-
-      if (!response.data) {
-        this.alertaService.error(
-          'No se pudo confirmar la reserva.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
-        this.dreservasService.setMostrarResumenNueva(estado);
-        return;
-      }
-
-      this.alertaService.success(
-        'Reserva creada exitosamente.',
+    setTimeout(() => {
+      const total =
+        this.dreservasService.detallesSeleccionados().length || cantidad;
+      this.showSuccess(
+        `Se agregaron ${total} detalle(s) localmente.`,
         4 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
-    } catch (error: any) {
-      const mensajeError =
-        error?.error?.error || 'Error al confirmar la reserva.';
-      this.alertaService.error(
-        mensajeError,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      this.dreservasService.setMostrarResumenNueva(estado);
+    }, 50);
+
+    this.cantidadPorAgregar = {};
+  }
+
+  public removerElementoSeleccionado(el: any, index: number) {
+    this.dreservasService.removerElemento(index);
+  }
+
+  public async confirmarReservaFinal() {
+    const esNueva = !!this.dreservasService.estadoResumen();
+    if (!esNueva) {
+      const existente = this.dreservasService.miReserva();
+      if (existente && this.necesitaPago()) {
+        this.procesarPago();
+      }
+      return;
     }
+
+    const estado = this.dreservasService.estadoResumen()!;
+    const base = this.dreservasService.espacioDetallesQuery.data();
+    const errorValidacion = this.validarDatosReserva(estado, base, false);
+    if (errorValidacion) {
+      this.showError(errorValidacion);
+      return;
+    }
+    await this.confirmarReservaEnServidor(estado);
   }
 
   public async confirmarYPagar() {
-    const estado = this.dreservasService.estadoResumen()!;
-
-    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
-    const totalJug = estado.jugadores?.length ?? 0;
-    if (estado.puede_agregar_jugadores && minOtros > 0 && totalJug < minOtros) {
-      this.alertaService.error(
-        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    const base = this.dreservasService.espacioDetallesQuery.data();
-    const configId = base?.configuracion?.id ?? 0;
-    if (!configId || configId <= 0) {
-      this.alertaService.error(
-        'Falta la configuración base del espacio.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    if (!estado.fecha) {
-      this.alertaService.error(
-        'Falta la fecha de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    if (!estado.hora_inicio) {
-      this.alertaService.error(
-        'Falta la hora de inicio de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    this.dreservasService.setCargando('Confirmando reserva...');
-    try {
-      const response = await this.dreservasService.confirmarReservaFinal();
-
-      if (!response.data) {
-        this.alertaService.error(
-          'No se pudo confirmar la reserva.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
-        this.dreservasService.setMostrarResumenNueva(estado);
-        return;
-      }
-
-      this.alertaService.success(
-        'Reserva creada exitosamente.',
-        4 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-
-      if (!this.necesitaPago()) {
-        return;
-      }
-      this.procesarPago();
-    } catch (error: any) {
-      const mensajeError =
-        error?.error?.error || 'Error al confirmar la reserva.';
-      this.alertaService.error(
-        mensajeError,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      this.dreservasService.setMostrarResumenNueva(estado);
-    }
+    return this.ejecutarPago('normal', true);
   }
 
   public async confirmarYPagarConSaldo() {
-    const estado = this.dreservasService.estadoResumen()!;
-
-    const minOtros = Math.max(0, (estado.minimo_jugadores ?? 0) - 1);
-    const totalJug = estado.jugadores?.length ?? 0;
-    if (minOtros > 0 && totalJug < minOtros) {
-      this.alertaService.error(
-        `Debes agregar al menos ${minOtros} jugador(es) además del reservante.`,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    const base = this.dreservasService.espacioDetallesQuery.data();
-    const configId = base?.configuracion?.id ?? 0;
-    if (!configId || configId <= 0) {
-      this.alertaService.error(
-        'Falta la configuración base del espacio.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    if (!estado.fecha) {
-      this.alertaService.error(
-        'Falta la fecha de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    if (!estado.hora_inicio) {
-      this.alertaService.error(
-        'Falta la hora de inicio de la reserva.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      return;
-    }
-
-    this.dreservasService.setCargando('Confirmando reserva...');
-    try {
-      const response = await this.dreservasService.confirmarReservaFinal();
-
-      if (!response.data) {
-        this.alertaService.error(
-          'No se pudo confirmar la reserva.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
-        this.dreservasService.setMostrarResumenNueva(estado);
-        return;
-      }
-
-      this.alertaService.success(
-        'Reserva creada exitosamente.',
-        4 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-
-      // Encadenar el pago con saldo automáticamente
-      if (!this.necesitaPago()) {
-        return;
-      }
-      await this.procesarPagoConSaldo();
-    } catch (error: any) {
-      const mensajeError =
-        error?.error?.error || 'Error al confirmar la reserva.';
-      this.alertaService.error(
-        mensajeError,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
-      this.dreservasService.setMostrarResumenNueva(estado);
-    }
+    return this.ejecutarPago('saldo', true);
   }
 
   public async cancelarReserva() {
-    // Confirmación previa con el sistema de alertas de la app
     const confirmado = await this.alertaService.confirmacion({
       tipo: 'error',
       titulo: 'Cancelar reserva',
@@ -1020,29 +925,16 @@ export class ModalDreservasComponent {
     });
     if (!confirmado) return;
 
-    // Activar estado de carga de cancelación en la UI
     this.dreservasService.setCancelandoReserva();
 
-    // Determinar si la vista actual era una reserva nueva o existente
     const esNueva = !!this.estadoResumen();
-    const estadoResumen = this.estadoResumen() ?? this.miReserva();
+    const estadoResumen = this.getEstadoActual();
 
     if (!estadoResumen || !estadoResumen.id) {
-      this.alertaService.error(
+      this.showError(
         'No se pudo cancelar la reserva. Por favor, inténtelo de nuevo.',
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
       );
-      if (esNueva && this.dreservasService.estadoResumen()) {
-        this.dreservasService.setMostrarResumenNueva(
-          this.dreservasService.estadoResumen()!,
-        );
-      } else if (!esNueva && this.dreservasService.miReserva()) {
-        this.dreservasService.setMostrarResumenExistente(
-          this.dreservasService.miReserva()!,
-        );
-      }
+      if (esNueva) this.restoreResumenView();
       return;
     }
 
@@ -1054,12 +946,7 @@ export class ModalDreservasComponent {
       );
 
       if (!response.data) {
-        this.alertaService.error(
-          'No se pudo cancelar la reserva.',
-          5 * 1000,
-          this.alertaModalReservas(),
-          this.estilosAlerta,
-        );
+        this.showError('No se pudo cancelar la reserva.');
         if (esNueva) {
           this.dreservasService.setMostrarResumenNueva(
             this.dreservasService.estadoResumen() || estadoResumen,
@@ -1072,24 +959,14 @@ export class ModalDreservasComponent {
         return;
       }
 
-      this.alertaService.success(
-        'Reserva cancelada exitosamente.',
-        4 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
+      this.showSuccess('Reserva cancelada exitosamente.', 4 * 1000);
       this.dreservasService.setMostrarDisponibilidad();
     } catch (error: any) {
       const mensajeError =
         error?.error?.error ||
         error?.errors?.error ||
         'Error al cancelar la reserva.';
-      this.alertaService.error(
-        mensajeError,
-        5 * 1000,
-        this.alertaModalReservas(),
-        this.estilosAlerta,
-      );
+      this.showError(mensajeError);
       if (esNueva) {
         this.dreservasService.setMostrarResumenNueva(
           this.dreservasService.estadoResumen() || estadoResumen,
@@ -1111,7 +988,8 @@ export class ModalDreservasComponent {
     if (
       !this.dreservasService.mostrandoResumenNueva() &&
       !this.dreservasService.mostrandoResumenExistente() &&
-      !this.dreservasService.mostrandoJugadores()
+      !this.dreservasService.mostrandoJugadores() &&
+      !this.dreservasService.mostrandoDetalles()
     ) {
       this.dreservasService.cerrarModal();
     } else {

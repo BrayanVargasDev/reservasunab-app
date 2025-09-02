@@ -31,13 +31,15 @@
           class="loading loading-spinner loading-sm text-secondary-content"
         ></span>
         } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
-        <div class="badge bg-secondary-content h-auto !p-1 text-secondary gap-2 px-3 py-3">
+        <div
+          class="badge bg-secondary-content h-auto !p-1 text-secondary gap-2 px-3 py-3"
+        >
           <app-web-icon
             nombreIcono="wallet-outline"
             estilos="w-4 lg:w-5 w-4 lg:h-5 font-bold"
           ></app-web-icon>
           <span class="text-sm lg:text-base font-bold">
-            Créditos: {{ appService.creditosQuery.data() | number }} COP
+            Créditos: {{ appService.creditosQuery.data() | number }}
           </span>
         </div>
         }

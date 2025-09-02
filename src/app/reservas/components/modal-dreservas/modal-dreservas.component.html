@@ -76,9 +76,21 @@
           <span class="text-xl font-bold">Agregar Jugadores</span>
         </div>
       </div>
+      } @else if (dreservasService.mostrandoDetalles()) {
+      <div class="alert alert-info rounded-lg mt-2 mx-2 lg:mx-6 flex-shrink-0">
+        <div class="flex items-center justify-center w-full">
+          <app-web-icon
+            nombreIcono="briefcase-outline"
+            estilos="h-6 w-6 mr-2"
+          ></app-web-icon>
+          <span class="text-xl font-bold">Agregar Elementos</span>
+        </div>
+      </div>
       }
 
-      <div class="flex-grow overflow-y-auto max-h-full px-2 lg:px-6 py-4">
+      <div
+        class="flex-grow overflow-y-auto max-h-full px-2 lg:px-6 max-sm:py-1 py-2"
+      >
         @if (dreservasService.mostrandoResumenNueva()) {
         <div class="flex flex-col h-full">
           <dreservas-info-reserva
@@ -146,7 +158,9 @@
 
           <div class="form-control w-full max-sm:mb-0.5 mb-2">
             <label class="label">
-              <span class="label-text font-semibold">Buscar jugadores:</span>
+              <span class="label-text font-semibold"
+                >Buscar participantes:</span
+              >
             </label>
             <input
               type="text"
@@ -164,16 +178,18 @@
               <span
                 class="loading loading-spinner loading-md text-primary"
               ></span>
-              <span class="ml-2">Buscando jugadores...</span>
+              <span class="ml-2">Buscando participantes...</span>
             </div>
             } @else if (dreservasService.jugadoresQuery.data()) { @if
             (dreservasService.jugadoresQuery.data()!.length === 0) {
             <div class="text-center py-4 text-base-content/70">
-              No se encontraron jugadores con ese criterio de búsqueda.
+              No se encontraron participantes con ese criterio de búsqueda.
             </div>
             } @else {
             <div class="space-y-1 mb-3">
-              <h4 class="font-semibold text-lg mb-3">Jugadores encontrados:</h4>
+              <h4 class="font-semibold text-lg mb-3">
+                Participantes encontrados:
+              </h4>
               @for (jugador of dreservasService.jugadoresQuery.data()!; track
               jugador.id) {
               <div
@@ -225,7 +241,7 @@
           } @if (listaJugadoresSeleccionados().length > 0) {
           <div class="border-t flex-1 pt-2">
             <h4 class="font-semibold text-lg mb-3">
-              Jugadores seleccionados ({{
+              Participantes seleccionados ({{
                 listaJugadoresSeleccionados().length
               }}):
             </h4>
@@ -286,6 +302,141 @@
               Selecciona jugadores } @else { Confirmar ({{
                 dreservasService.jugadoresSeleccionados().length
               }}) }
+            </button>
+          </div>
+        </div>
+        } @else if (dreservasService.mostrandoDetalles()) {
+        <div class="flex flex-col h-fit">
+          <div class="form-control w-full max-sm:mb-0.5 mb-2">
+            <label class="label">
+              <span class="label-text font-semibold">Buscar elementos:</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Escribe el nombre del elemento..."
+              class="input input-bordered w-full"
+              [value]="dreservasService.terminoBusquedaElementos()"
+              (input)="onBuscarElementos($event)"
+            />
+          </div>
+
+          @if (dreservasService.terminoBusquedaElementos().trim().length > 0) {
+          <div class="flex-1">
+            @if (dreservasService.elementosQuery.isPending()) {
+            <div class="flex justify-center items-center py-4">
+              <span
+                class="loading loading-spinner loading-md text-primary"
+              ></span>
+              <span class="ml-2">Buscando elementos...</span>
+            </div>
+            } @else if (dreservasService.elementosQuery.data()) { @if
+            (dreservasService.elementosQuery.data()!.length === 0) {
+            <div class="text-center py-2 text-base-content/70">
+              No se encontraron elementos con ese criterio.
+            </div>
+            } @else {
+            <div class="space-y-1 mb-3">
+              <h4 class="font-semibold text-lg mb-2">Resultados:</h4>
+              @for (el of dreservasService.elementosQuery.data()!; track el.id)
+              {
+              <div class="card shadow-sm rounded-xl bg-base-300/70">
+                <div
+                  class="card-body px-2 py-1 flex flex-row items-center justify-between gap-2"
+                >
+                  <div class="flex flex-col">
+                    <span class="font-semibold">{{ el.nombre }}</span>
+                    <span class="text-xs text-base-content/70"
+                      >$ {{ getPrecioUnitario(el) | number : '1.0-0' }} (x
+                      unidad)</span
+                    >
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="label-text text-xs">Cantidad</label>
+                    <input
+                      type="number"
+                      min="1"
+                      class="input input-sm input-bordered w-20 text-right"
+                      [value]="cantidadPorAgregar[el.id] || 1"
+                      (input)="onCantidadInput(el.id, $event)"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      (click)="agregarElemento(el)"
+                    >
+                      Agregar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+            } }
+          </div>
+          } @if (dreservasService.detallesSeleccionados().length > 0) {
+          <div class="border-t flex-1 pt-2">
+            <h4 class="font-semibold text-lg mb-3">
+              Elementos agregados ({{
+                dreservasService.detallesSeleccionados().length
+              }}):
+            </h4>
+            <div class="space-y-2 mb-4">
+              @for (el of dreservasService.detallesSeleccionados(); track
+              $index) {
+              <div
+                class="flex items-center justify-between bg-success/10 rounded-lg p-2 gap-2"
+              >
+                <div class="flex flex-col min-w-0">
+                  <span class="font-medium truncate">{{ el.nombre }}</span>
+                  <span class="text-xs text-base-content/70"
+                    >Cant: {{ el.cantidad_seleccionada || 1 }}</span
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-semibold text-base-content/80"
+                    >$
+                    {{
+                      getPrecioUnitario(el) * (el.cantidad_seleccionada || 1)
+                        | number : '1.0-0'
+                    }}
+                  </span>
+                  <button
+                    type="button"
+                    class="btn btn-error btn-xs"
+                    (click)="removerElementoSeleccionado(el, $index)"
+                  >
+                    <app-web-icon
+                      nombreIcono="trash-outline"
+                      estilos="h-4 w-4"
+                    ></app-web-icon>
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
+          <div class="flex justify-end h-full flex-1 gap-2">
+            <button
+              type="button"
+              class="btn max-sm:btn-sm btn-ghost md:h-11 rounded-lg"
+              (click)="cancelarAgregarDetalles()"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"
+              (click)="confirmarAgregarDetalles()"
+              [disabled]="
+                cargando() ||
+                dreservasService.detallesSeleccionados().length === 0
+              "
+            >
+              @if (cargando()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              } @else { Confirmar }
             </button>
           </div>
         </div>
@@ -356,7 +507,9 @@
                 </span>
               </div>
               <span class="inline-block max-sm:text-sm mt-2 mb-3">
-                <span class="font-semibold">Reservar desde: </span>
+                <span class="font-semibold"
+                  >Disponible para reservar desde:
+                </span>
                 {{
                   obtenerFechaDeApertura(
                     espacioDetallesQuery?.configuracion!,
@@ -472,7 +625,7 @@
     <div
       class="sticky bottom-0 pt-2 bg-base-100 border-t border-base-300 px-2 pb-2 lg:px-4 lg:pb-4 xl:px-6 xl:pb-6 z-10 flex-shrink-0"
     >
-      <div class="modal-action !mt-0">
+      <div class="modal-action !mt-0 flex-wrap">
         <button
           type="button"
           class="btn max-sm:btn-sm btn-ghost md:h-11 rounded-lg"
@@ -495,6 +648,7 @@
         </button>
         } @if (puedeAgregarMasJugadores() &&
         !dreservasService.mostrandoDisponibilidad() &&
+        !dreservasService.mostrandoDetalles() &&
         !dreservasService.mostrandoJugadores()) {
         <button
           type="button"
@@ -506,11 +660,27 @@
             nombreIcono="people-outline"
             estilos="h-5 w-5 max-md:hidden mr-2"
           ></app-web-icon>
-          Agregar Jugadores
+          Participantes
+        </button>
+        } @if (!dreservasService.mostrandoDisponibilidad() &&
+        !dreservasService.mostrandoDetalles() &&
+        !dreservasService.mostrandoJugadores() && !esReservaPasada()) {
+        <button
+          type="button"
+          class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
+          (click)="mostrarAgregarDetalles()"
+          [disabled]="cargando()"
+        >
+          <app-web-icon
+            nombreIcono="briefcase-outline"
+            estilos="h-5 w-5 max-md:hidden mr-2"
+          ></app-web-icon>
+          Elementos
         </button>
         }
         <!-- Pagos -->
-        @if (dreservasService.mostrandoResumenNueva()) {
+        @if (dreservasService.mostrandoResumenNueva() ||
+        dreservasService.mostrandoResumenExistente()) {
         <div class="flex gap-2">
           @if (necesitaPago() && puedePagarConSaldo()) {
           <button
@@ -525,7 +695,7 @@
             ></app-web-icon>
             Confirmar y pagar con créditos
           </button>
-          } @else {
+          } @else if(necesitaPago()) {
           <button
             type="button"
             class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
@@ -536,7 +706,8 @@
               nombreIcono="checkmark-done-circle-outline"
               estilos="h-5 w-5 max-md:hidden mr-2"
             ></app-web-icon>
-            Confirmar @if (necesitaPago()) {y pagar}
+            @if(!estadoResumen()?.id && !miReserva()?.id) {Confirmar} @if
+            (necesitaPago()) {y pagar}
           </button>
           }
         </div>

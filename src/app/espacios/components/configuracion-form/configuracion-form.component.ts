@@ -207,6 +207,7 @@ export class ConfiguracionFormComponent<T> {
       id: 'hora_inicio',
       header: 'Hora Inicio',
       accessorKey: 'hora_inicio',
+      size: 50,
       cell: info => {
         const d = parse(info.getValue() as string, 'HH:mm', new Date());
         return format(d, 'hh:mm a');
@@ -216,6 +217,7 @@ export class ConfiguracionFormComponent<T> {
       id: 'hora_fin',
       header: 'Hora Fin',
       accessorKey: 'hora_fin',
+      size: 50,
       cell: info => {
         const d = parse(info.getValue() as string, 'HH:mm', new Date());
         return format(d, 'hh:mm a');

@@ -10,4 +10,5 @@ export interface Elemento {
   creado_en: string;
   eliminado_en: string | null;
   actualizado_en: string | null;
+  cantidad_seleccionada: number;
 }

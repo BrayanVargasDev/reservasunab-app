@@ -79,7 +79,7 @@
   </div>
 </div>
 
-<!-- Valor si existe -->
+<!-- Valor del espacio -->
 @if (resumen()?.valor && resumen()?.valor! > 0) {
 <div class="mt-2 p-2 bg-base-100 rounded-lg border border-base-300">
   <div class="flex items-center justify-between">
@@ -88,7 +88,9 @@
         nombreIcono="card-outline"
         estilos="h-5 w-5 max-sm:mr-1 mr-3 text-success"
       ></app-web-icon>
-      <span class="max-sm:text-base text-lg font-semibold">Valor total:</span>
+      <span class="max-sm:text-base text-lg font-semibold"
+        >Valor del espacio:</span
+      >
     </div>
     <div class="flex gap-1 items-center">
       <span
@@ -115,7 +117,7 @@
 
 <!-- Participantes (no incluye al reservante) -->
 @if (resumen()?.jugadores && resumen()?.jugadores!.length > 0) {
-<div class="mt-2 p-2 md:p-4 bg-base-100 rounded-lg border border-base-300">
+<div class="mt-2 p-2 bg-base-100 rounded-lg border border-base-300">
   <div class="flex items-center mb-2">
     <app-web-icon
       nombreIcono="people-outline"
@@ -134,7 +136,7 @@
     <div
       class="flex items-center justify-between bg-info/10 rounded-lg px-3 py-1"
     >
-      <div class="flex flex-col max-[380px]:max-w-1/2">
+      <div class="flex flex-col max-[380px]:max-w-1/2 gap-0.5">
         <span class="font-semibold text-wrap"
           >{{ jugador.nombre }} {{ jugador.apellido }}</span
         >
@@ -149,6 +151,73 @@
       <div class="badge badge-info">Confirmado</div>
     </div>
     }
+  </div>
+</div>
+}
+
+<!-- Elementos seleccionados (con cantidades y subtotales) -->
+@if (resumen()?.detalles && resumen()?.detalles!.length > 0) {
+<div class="mt-2 p-2 bg-base-100 rounded-lg border border-base-300">
+  <div class="flex items-center mb-2">
+    <app-web-icon
+      nombreIcono="briefcase-outline"
+      estilos="h-5 w-5 mr-3 text-secondary"
+    ></app-web-icon>
+    <span class="text-lg font-semibold">Elementos:</span>
+  </div>
+  <div class="space-y-1">
+    @for (el of resumen()?.detalles; track el.id) {
+    <div
+      class="flex items-center justify-between bg-secondary/5 rounded px-2 py-1 gap-2"
+    >
+      <div class="flex flex-col min-w-0">
+        <span class="text-sm font-medium truncate">{{ el.nombre }}</span>
+        <span class="text-xs text-base-content/70">
+          Cant: {{ el.cantidad_seleccionada || 1 }} x ${{
+            precioElemento(el) | number : '1.0-0'
+          }}
+        </span>
+      </div>
+      <span class="text-sm font-semibold text-base-content/80">
+        ${{
+          precioElemento(el) * (el.cantidad_seleccionada || 1)
+            | number : '1.0-0'
+        }}
+      </span>
+    </div>
+    }
+  </div>
+  @if (resumen()?.valor_elementos) {
+  <div class="flex items-center justify-between mt-2 pt-2 border-t">
+    <span class="text-sm font-semibold">Subtotal elementos:</span>
+    <span class="text-sm font-bold"
+      >${{ resumen()?.valor_elementos!.toLocaleString('es-CO') }}</span
+    >
+  </div>
+  }
+</div>
+}
+
+<!-- Total a pagar (espacio + elementos) -->
+@if ((resumen()?.valor_descuento || 0) + (resumen()?.valor_elementos || 0) > 0)
+{
+<div class="mt-2 p-2 bg-base-100 rounded-lg border border-base-300">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <app-web-icon
+        nombreIcono="cash-outline"
+        estilos="h-5 w-5 max-sm:mr-1 mr-3 text-primary"
+      ></app-web-icon>
+      <span class="max-sm:text-base text-lg font-semibold">Total a pagar:</span>
+    </div>
+    <div class="flex gap-1 items-center">
+      <span class="max-sm:text-xl text-2xl font-bold text-primary">
+        ${{
+          (resumen()?.valor_descuento || 0) + (resumen()?.valor_elementos || 0)
+            | number : '1.0-0'
+        }}
+      </span>
+    </div>
   </div>
 </div>
 }

@@ -6,6 +6,7 @@ export * from './iniciar-reserva.action';
 export * from './pagar-reserva.action';
 export * from './pagar-reserva-saldo.action';
 export * from './buscar-jugadores.action';
+export * from './buscar-elementos.action';
 export * from './agregar-jugadores-reserva.action';
 export * from './get-reservas.action';
 export * from './aprobar-reserva.action';

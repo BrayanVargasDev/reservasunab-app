@@ -86,7 +86,7 @@
             <div class="divider my-1"></div>
             } @if (getFormPorDiaSafe(row.original.numero); as form) {
             <configuracion-form
-              [ngClass]="'flex flex-col h-full w-full p-4'"
+              [ngClass]="'flex flex-col h-full w-full px-2 lg:px-4'"
               [configuracionForm]="form"
               [diaNumero]="row.original.numero"
               (agregarFranja)="agregarFranja($event.dia, $event.franja)"
@@ -105,11 +105,11 @@
 
             <!-- Botón para guardar configuración -->
             @if (authService.tienePermisos('ESP000005')){
-            <div class="divider my-2 px-4"></div>
-            <div class="flex justify-end px-4 pb-4">
+            <div class="divider my-2"></div>
+            <div class="flex justify-end px-1 lg:px-4 lg:pb-4 pb-1">
               @if (getFormPorDiaSafe(row.original.numero); as form) {
               <button
-                class="btn btn-primary"
+                class="btn btn-primary max-sm:btn-sm sm:h-11"
                 [class.btn-loading]="estaGuardando(row.original.numero)"
                 [disabled]="
                   !form.valid ||
