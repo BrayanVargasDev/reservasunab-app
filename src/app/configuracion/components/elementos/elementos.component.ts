@@ -111,6 +111,15 @@ export class ElementosComponent {
   public espacioCell = viewChild.required<TemplateRef<Util>>('espacioCell');
   public fechaCell = viewChild.required<TemplateRef<Util>>('fechaCell');
   public cantidadCell = viewChild.required<TemplateRef<Util>>('cantidadCell');
+  // Nuevas celdas para precios en columnas
+  public valorEstudianteCell = viewChild.required<TemplateRef<Util>>(
+    'valorEstudianteCell',
+  );
+  public valorAdministrativoCell = viewChild.required<TemplateRef<Util>>(
+    'valorAdministrativoCell',
+  );
+  public valorEgresadoCell =
+    viewChild.required<TemplateRef<Util>>('valorEgresadoCell');
 
   public accionesNuevo = computed(() => [
     {
@@ -152,19 +161,34 @@ export class ElementosComponent {
       size: 150,
       cell: this.nombreCell,
     },
+    // Columnas de precios
     {
-      id: 'espacio',
-      accessorKey: 'espacio.nombre',
-      size: 150,
-      header: 'Espacio',
-      cell: this.espacioCell,
+      id: 'valor_estudiante',
+      header: 'Estudiante',
+      size: 140,
+      accessorKey: 'valor_estudiante',
+      cell: this.valorEstudianteCell,
     },
     {
-      id: 'cantidad',
-      accessorKey: 'cantidad',
-      header: 'Cantidad',
-      size: 150,
-      cell: this.cantidadCell,
+      id: 'valor_administrativo',
+      header: 'Administrativo',
+      size: 160,
+      accessorKey: 'valor_administrativo',
+      cell: this.valorAdministrativoCell,
+    },
+    // {
+    //   id: 'valor_externo',
+    //   header: 'Externo',
+    //   size: 140,
+    //   accessorKey: 'valor_externo',
+    //   // Si se desea mostrar en el futuro, crear una celda similar y descomentar
+    // },
+    {
+      id: 'valor_egresado',
+      header: 'Egresado',
+      size: 140,
+      accessorKey: 'valor_egresado',
+      cell: this.valorEgresadoCell,
     },
     {
       accessorKey: 'creado_en',
@@ -188,6 +212,9 @@ export class ElementosComponent {
     {
       id: 'acciones',
       header: 'Acciones',
+      meta: {
+        priority: Infinity,
+      },
       cell: context => {
         const elemento = context.row.original;
         const id = elemento.id;
@@ -499,9 +526,8 @@ export class ElementosComponent {
 
   public async onGuardarNuevo() {
     this.nombre.markAsTouched();
-    this.espacio.markAsTouched();
-
-    if (this.nombre.invalid || this.espacio.invalid) {
+    // Ya no se requiere espacio/cantidad
+    if (this.nombre.invalid) {
       this.alertaService.error(
         'Todos los campos son requeridos.',
         5000,
@@ -516,8 +542,7 @@ export class ElementosComponent {
 
     const nuevoElemento: Partial<Elemento> = {
       nombre: this.nombre.value?.trim(),
-      id_espacio: this.espacio.value ?? 0,
-      cantidad: this.cantidad.value ?? 0,
+      // Se omiten id_espacio y cantidad
       valor_estudiante: this.valorEstudiante.value ?? undefined,
       valor_administrativo: this.valorAdministrativo.value ?? undefined,
       valor_externo: this.valorExterno.value ?? undefined,
@@ -558,9 +583,7 @@ export class ElementosComponent {
 
   private async onGuardarEdicion(row: Row<Elemento>) {
     this.nombre.markAsTouched();
-    this.espacio.markAsTouched();
-
-    if (this.nombre.invalid || this.espacio.invalid) {
+    if (this.nombre.invalid) {
       this.alertaService.error(
         'Por favor, complete todos los campos requeridos.',
         5000,
@@ -578,8 +601,9 @@ export class ElementosComponent {
     const elementoActualizado: Elemento = {
       ...elemento,
       nombre: this.nombre.value!,
-      cantidad: this.cantidad.value ?? 0,
-      id_espacio: this.espacio.value!,
+      // Mantener espacio y cantidad sin cambios
+      cantidad: elemento.cantidad,
+      id_espacio: elemento.id_espacio,
       valor_estudiante: this.valorEstudiante.value ?? 0,
       valor_administrativo: this.valorAdministrativo.value ?? 0,
       valor_externo: this.valorExterno.value ?? 0,

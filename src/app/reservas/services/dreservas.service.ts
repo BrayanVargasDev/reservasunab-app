@@ -1,7 +1,11 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { injectQuery } from '@tanstack/angular-query-experimental';
-import { getEspaciosAll, getEspacioDetalles } from '@reservas/actions';
+import {
+  getEspaciosAll,
+  getEspacioDetalles,
+  pagarMensualidad,
+} from '@reservas/actions';
 import { GeneralResponse } from '@shared/interfaces';
 import { Espacio } from '@espacios/interfaces';
 import { Elemento } from '@shared/interfaces';
@@ -65,6 +69,8 @@ export class DreservasService {
   // ? Estado para elementos seleccionados (antes "detalles")
   private _detallesSeleccionados = signal<Elemento[]>([]);
   private _termino_busqueda_elementos = signal<string>('');
+  // Flag para indicar si hay cambios locales en una reserva existente que requieren reconfirmación
+  private _requiere_reconfirmacion = signal<boolean>(false);
 
   // Computed properties para el estado
   public estadoModal = computed(() => this._estadoModal());
@@ -81,6 +87,9 @@ export class DreservasService {
   public detallesSeleccionados = computed(() => this._detallesSeleccionados());
   public terminoBusquedaElementos = computed(() =>
     this._termino_busqueda_elementos(),
+  );
+  public requiereReconfirmacion = computed(() =>
+    this._requiere_reconfirmacion(),
   );
 
   // Estados derivados para compatibilidad y claridad
@@ -263,6 +272,7 @@ export class DreservasService {
     this._jugadoresSeleccionados.set([]);
     this._detallesSeleccionados.set([]);
     this._termino_busqueda_elementos.set('');
+    this._requiere_reconfirmacion.set(false);
     this._abiertaDesdeMisReservas.set(false);
   }
 
@@ -301,6 +311,7 @@ export class DreservasService {
     this._estadoResumen.set(null);
     this._estadoModal.set(EstadoModal.RESUMEN_EXISTENTE);
     this._mensajeCargando.set('');
+    this._requiere_reconfirmacion.set(false);
   }
 
   public setMostrarJugadores() {
@@ -477,7 +488,7 @@ export class DreservasService {
     this.limpiarDetallesSeleccionados();
   }
 
-  public confirmarAgregarDetallesLocalEnExistente() {
+  public async confirmarAgregarDetallesLocalEnExistente() {
     const reserva = this._miReserva();
     if (!reserva) return;
 
@@ -506,6 +517,9 @@ export class DreservasService {
 
     this._miReserva.set(actualizado);
     this.limpiarDetallesSeleccionados();
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+    this._requiere_reconfirmacion.set(true);
   }
 
   public confirmarAgregarJugadoresLocal() {
@@ -548,14 +562,16 @@ export class DreservasService {
 
     this._miReserva.set(actualizado);
     this._jugadoresSeleccionados.set([]);
+    // Marcar que hay cambios locales pendientes de reconfirmación
+    this._requiere_reconfirmacion.set(true);
   }
 
   public async confirmarReservaFinal(): Promise<
     number | GeneralResponse<ResumenReserva>
   > {
     const estado = this.estadoResumen() || this.miReserva();
-
-    if (estado!.id) {
+    // Si ya hay id, solo reconfirmar si hay cambios locales
+    if (estado!.id && !this._requiere_reconfirmacion()) {
       return estado!.id as number;
     }
 
@@ -567,6 +583,7 @@ export class DreservasService {
     if (response.data) {
       this._estadoResumen.set(null);
       this.setMostrarResumenExistente(response.data);
+      this._requiere_reconfirmacion.set(false);
     }
 
     return response;
@@ -664,5 +681,15 @@ export class DreservasService {
   public async agregarJugadores(idReserva: number) {
     const jugadoresIds = this._jugadoresSeleccionados().map(j => j.id);
     return agregarJugadoresReserva(this.http, idReserva, jugadoresIds);
+  }
+
+  public async pagarMensualidad() {
+    const espacio = this.espacioDetallesQuery.data();
+
+    if (espacio) {
+      return pagarMensualidad(this.http, espacio.id);
+    }
+
+    throw new Error('No se encontró información del espacio');
   }
 }

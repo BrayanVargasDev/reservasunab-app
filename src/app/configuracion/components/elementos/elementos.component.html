@@ -37,9 +37,7 @@
     type="text"
   />
   } @else {
-  <span class="font-semibold text-sm md:text-base">{{
-    context.getValue()
-  }}</span>
+  <span class="font-semibold">{{ context.getValue() }}</span>
   }
 </ng-template>
 
@@ -54,9 +52,7 @@
     type="number"
   />
   } @else {
-  <span class="font-semibold text-sm md:text-base">{{
-    context.getValue()
-  }}</span>
+  <span class="font-semibold">{{ context.getValue() }}</span>
   }
 </ng-template>
 
@@ -88,6 +84,67 @@
   } @else {
   <span>
     {{ context.getValue() }}
+  </span>
+  }
+</ng-template>
+
+<!-- Precios como columnas -->
+<ng-template #valorEstudianteCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaElementoEditando()[context.row.original.id]) {
+  <input
+    [formControl]="valorEstudiante"
+    class="input input-sm h-9 w-full placeholder:text-gray-400"
+    type="number"
+    min="0"
+    placeholder="Valor"
+  />
+  } @else {
+  <span>
+    {{
+      context.row.original.valor_estudiante ?? 0
+        | currency : '$' : 'symbol' : '1.0-0'
+    }}
+  </span>
+  }
+</ng-template>
+
+<ng-template #valorAdministrativoCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaElementoEditando()[context.row.original.id]) {
+  <input
+    [formControl]="valorAdministrativo"
+    class="input input-sm h-9 w-full placeholder:text-gray-400"
+    type="number"
+    min="0"
+    placeholder="Valor"
+  />
+  } @else {
+  <span>
+    {{
+      context.row.original.valor_administrativo ?? 0
+        | currency : '$' : 'symbol' : '1.0-0'
+    }}
+  </span>
+  }
+</ng-template>
+
+<ng-template #valorEgresadoCell let-context>
+  @if(context.row.original.id === -1 ||
+  configService.filaElementoEditando()[context.row.original.id]) {
+  <input
+    [formControl]="valorEgresado"
+    class="input input-sm h-9 w-full placeholder:text-gray-400"
+    type="number"
+    min="0"
+    placeholder="Valor"
+  />
+  } @else {
+  <span>
+    {{
+      context.row.original.valor_egresado ?? 0
+        | currency : '$' : 'symbol' : '1.0-0'
+    }}
   </span>
   }
 </ng-template>
@@ -156,107 +213,7 @@
     <tr class="bg-base-300 border-none">
       <td [attr.colspan]="row.getVisibleCells().length + 1">
         <div class="bg-base-100 rounded-md p-2 md:p-4 shadow-md w-full">
-          <h4 class="text-lg font-semibold mb-1 md:mb-4 text-center">
-            Configuración del valor por tipo de usuario
-          </h4>
-
-          <div
-            class="grid w-full grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-2 md:gap-4"
-          >
-            <!-- Valor Estudiante -->
-            <div class="flex flex-col">
-              <label
-                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
-              >
-                Estudiante:
-              </label>
-              @if (row.original.id === -1 ||
-              configService.filaElementoEditando()[row.original.id]) {
-              <input
-                [formControl]="valorEstudiante"
-                class="input input-sm h-9 w-full placeholder:text-gray-400"
-                type="number"
-                min="0"
-                placeholder="Valor"
-              />
-              } @else {
-              <span class="p-2 bg-base-200 rounded">
-                {{ row.original.valor_estudiante || 'No definido' }}
-              </span>
-              }
-            </div>
-            <!-- Valor Administrativo -->
-            <div class="flex flex-col">
-              <label
-                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
-              >
-                Administrativo:
-              </label>
-              @if (row.original.id === -1 ||
-              configService.filaElementoEditando()[row.original.id]) {
-              <input
-                [formControl]="valorAdministrativo"
-                class="input input-sm h-9 w-full placeholder:text-gray-400"
-                type="number"
-                min="0"
-                placeholder="Valor"
-              />
-              } @else {
-              <span class="p-2 bg-base-200 rounded">
-                {{ row.original.valor_administrativo || 'No definido' }}
-              </span>
-              }
-            </div>
-
-            <!-- Valor Externo -->
-            <div class="flex flex-col">
-              <label
-                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
-              >
-                Externo:
-              </label>
-              @if (row.original.id === -1 ||
-              configService.filaElementoEditando()[row.original.id]) {
-              <input
-                [formControl]="valorExterno"
-                class="input input-sm h-9 w-full placeholder:text-gray-400"
-                type="number"
-                min="0"
-                placeholder="Valor"
-              />
-              } @else {
-              <span class="p-2 bg-base-200 rounded">
-                {{ row.original.valor_externo || 'No definido' }}
-              </span>
-              }
-            </div>
-
-            <!-- Valor Egresado -->
-            <div class="flex flex-col">
-              <label
-                class="font-bold text-base-content max-sm:text-xs text-sm mb-2"
-              >
-                Egresado:
-              </label>
-              @if (row.original.id === -1 ||
-              configService.filaElementoEditando()[row.original.id]) {
-              <input
-                [formControl]="valorEgresado"
-                class="input input-sm h-9 w-full placeholder:text-gray-400"
-                type="number"
-                min="0"
-                placeholder="Valor"
-              />
-              } @else {
-              <span class="p-2 bg-base-200 rounded">
-                {{ row.original.valor_egresado || 'No definido' }}
-              </span>
-              }
-            </div>
-          </div>
-
           @if (tablaElemento.hiddenColumnIds().size !== 0) {
-          <div class="divider max-md:my-1 my-4"></div>
           <div class="space-y-2">
             <ul>
               @for (col of tablaElementos.getAllLeafColumns(); track $index) {
@@ -280,6 +237,10 @@
               } }
             </ul>
           </div>
+          } @else {
+          <span class="text-sm text-base-content/70"
+            >No hay detalles adicionales.</span
+          >
           }
         </div>
       </td>

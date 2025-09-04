@@ -495,7 +495,7 @@
                 alt=""
               />
             </div>
-            <div class="flex flex-col w-1/2">
+            <div class="flex flex-col w-1/2 gap-2">
               <div class="w-full flex items-center">
                 <app-web-icon
                   nombreIcono="location-outline"
@@ -506,7 +506,7 @@
                   Sede: {{ espacioDetallesQuery?.sede?.nombre | uppercase }}
                 </span>
               </div>
-              <span class="inline-block max-sm:text-sm mt-2 mb-3">
+              <span class="inline-block max-sm:text-sm">
                 <span class="font-semibold"
                   >Disponible para reservar desde:
                 </span>
@@ -523,6 +523,24 @@
                   {{ dreservasService.fecha() | date : 'dd/MM/yyyy' }}
                 </span>
               </span>
+              @if (espacioDetallesQuery?.pago_mensual) {
+              <span
+                class="inline-block alert alert-info p-2 font-semibold alert-outline rounded-lg max-sm:text-sm align-middle"
+              >
+                Este espacio requiere pago mensual.
+              </span>
+              } @if (!espacioDetallesQuery?.usuario_mensualidad_activa) {
+              <button
+                (click)="pagarMensualidad()"
+                class="btn btn-secondary max-md:p-1 p-2 max-sm:h-fit sm:h-10"
+              >
+                Pagar mensualidad:
+                {{
+                  espacioDetallesQuery?.valor_mensualidad
+                    | currency : '$' : 'symbol' : '1.0-0'
+                }}
+              </button>
+              }
             </div>
           </div>
 
@@ -563,7 +581,7 @@
                   [class.btn-accent]="item.disponible"
                   [class.btn-success]="item.mi_reserva"
                   [class.btn-error]="!item.mi_reserva && item.reservada"
-                  [class.btn-warning]="item.novedad"
+                  [class.btn-warning]="item.novedad && !item.mi_reserva"
                   [class.tooltip]="
                     item.novedad_desc && item.novedad_desc.length > 10
                   "
@@ -581,7 +599,7 @@
                 >
                   @if (item.disponible) {
                   <span>{{ item.hora_inicio }}</span>
-                  } @else if (item.reservada && !item.novedad) {
+                  } @else if (item.reservada) {
                   <span class="text-wrap text-base leading-tight">
                     {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
                   </span>
@@ -590,10 +608,12 @@
                     {{ item.hora_inicio }} -
                     {{
                       item.novedad_desc && item.novedad_desc.length > 10
-                        ? item.novedad_desc.slice(0, 10) + '...'
+                        ? item.novedad_desc.slice(0, 8) + '...'
                         : item.novedad_desc
                     }}
                   </span>
+                  } @else {
+                  <span> {{ item.hora_inicio }} </span>
                   }
                 </button>
                 }
@@ -677,37 +697,71 @@
           ></app-web-icon>
           Elementos
         </button>
-        }
-        <!-- Pagos -->
-        @if (dreservasService.mostrandoResumenNueva() ||
+        } @if (dreservasService.mostrandoResumenNueva() ||
         dreservasService.mostrandoResumenExistente()) {
         <div class="flex gap-2">
-          @if (necesitaPago() && puedePagarConSaldo()) {
+          @if (!necesitaPago() && !esReservaPasada()) {
           <button
             type="button"
-            class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
-            (click)="confirmarYPagarConSaldo()"
-            [disabled]="confirmarReservaDisabled()"
-          >
-            <app-web-icon
-              nombreIcono="wallet-outline"
-              estilos="h-5 w-5 max-md:hidden mr-2"
-            ></app-web-icon>
-            Confirmar y pagar con créditos
-          </button>
-          } @else if(necesitaPago()) {
-          <button
-            type="button"
-            class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
-            (click)="confirmarYPagar()"
+            class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"
+            (click)="confirmarReservaFinal()"
             [disabled]="confirmarReservaDisabled()"
           >
             <app-web-icon
               nombreIcono="checkmark-done-circle-outline"
               estilos="h-5 w-5 max-md:hidden mr-2"
             ></app-web-icon>
-            @if(!estadoResumen()?.id && !miReserva()?.id) {Confirmar} @if
-            (necesitaPago()) {y pagar}
+            Confirmar
+          </button>
+          } @if (necesitaPago() && puedePagarConSaldo()) {
+          <button
+            type="button"
+            class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
+            (click)="
+              confirmadaConCambiosPendientes()
+                ? confirmarYPagarConSaldo()
+                : yaConfirmadaSinPago()
+                ? procesarPagoConSaldo()
+                : confirmarYPagarConSaldo()
+            "
+            [disabled]="cargando() || confirmarReservaDisabled()"
+          >
+            <app-web-icon
+              nombreIcono="wallet-outline"
+              estilos="h-5 w-5 max-md:hidden mr-2"
+            ></app-web-icon>
+            {{
+              confirmadaConCambiosPendientes()
+                ? 'Confirmar y pagar con créditos'
+                : yaConfirmadaSinPago()
+                ? 'Pagar con créditos'
+                : 'Confirmar y pagar con créditos'
+            }}
+          </button>
+          } @else if(necesitaPago()) {
+          <button
+            type="button"
+            class="btn max-sm:btn-sm btn-primary md:h-11 rounded-lg"
+            (click)="
+              confirmadaConCambiosPendientes()
+                ? confirmarYPagar()
+                : yaConfirmadaSinPago()
+                ? procesarPago()
+                : confirmarYPagar()
+            "
+            [disabled]="cargando() || confirmarReservaDisabled()"
+          >
+            <app-web-icon
+              nombreIcono="checkmark-done-circle-outline"
+              estilos="h-5 w-5 max-md:hidden mr-2"
+            ></app-web-icon>
+            {{
+              confirmadaConCambiosPendientes()
+                ? 'Confirmar y pagar'
+                : yaConfirmadaSinPago()
+                ? 'Pagar'
+                : 'Confirmar y pagar'
+            }}
           </button>
           }
         </div>

@@ -14,6 +14,8 @@ export interface EspacioParaConfig {
   maximo_jugadores: number;
   reservas_simultaneas: number;
   permite_externos: boolean;
+  pago_mensual: boolean;
+  valor_mensualidad: number | null;
   id_sede: string;
   id_categoria: string;
   creado_por: CreadoPor;
@@ -28,4 +30,7 @@ export interface EspacioParaConfig {
   novedades: Novedad[];
   imagen: Imagen;
   tipo_usuario_config: TipoUsuarioConfig[];
+  tiempo_limite_reserva: number;
+  despues_hora: boolean;
+  id_edificio: string;
 }

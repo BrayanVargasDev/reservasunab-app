@@ -40,6 +40,7 @@ import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
 import { AuthService } from '@auth/services/auth.service';
 import { ConfigBaseService } from '@espacios/services/config-base.service';
+import { tr } from 'date-fns/locale';
 
 @Component({
   selector: 'espacio-general',
@@ -80,9 +81,14 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     permitirJugadores: [false],
     permitirExternos: [false],
     aprobarReservas: [false],
+    limiteTiempoReserva: [null, [Validators.required, Validators.min(0)]],
+    despuesHora: [false],
+    codigoEdificio: [''],
     minimoJugadores: [''],
     maximoJugadores: [''],
     reservasSimultaneas: [1, [Validators.min(1)]],
+    pagoMensualidad: [false],
+    valorMensualidad: [{ value: null, disabled: true }, [Validators.min(0)]],
   });
   public tiltuloImagen = signal<{ nombre: string; peso: string } | null>(null);
 
@@ -145,25 +151,20 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
       { injector: this.injector },
     );
 
-    // Configurar el editor Quill para deshabilitar elementos binarios
     this.configurarEditorQuill();
   }
 
   private configurarEditorQuill() {
-    // Esperar a que el editor esté disponible
     setTimeout(() => {
       const editorComponent = this.editor();
       if (editorComponent && editorComponent.quillEditor) {
         const quill = editorComponent.quillEditor;
 
-        // Deshabilitar la capacidad de pegar imágenes
         quill.clipboard.addMatcher(
           Node.ELEMENT_NODE,
           (node: any, delta: any) => {
-            // Filtrar cualquier inserción de imagen
             const ops = delta.ops || [];
             const filteredOps = ops.filter((op: any) => {
-              // Remover operaciones que contengan imágenes
               if (
                 op.insert &&
                 typeof op.insert === 'object' &&
@@ -174,13 +175,11 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
               return true;
             });
 
-            // Crear un nuevo delta con las operaciones filtradas
             const Delta = Quill.import('delta');
             return new Delta(filteredOps);
           },
         );
 
-        // Prevenir drag & drop de archivos
         const editorContainer = quill.container;
         editorContainer.addEventListener('drop', (e: DragEvent) => {
           const files = e.dataTransfer?.files;
@@ -213,9 +212,14 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         permitirJugadores: espacio?.agregar_jugadores || false,
         permitirExternos: espacio?.permite_externos || false,
         aprobarReservas: espacio?.aprobar_reserva ?? false,
+        limiteTiempoReserva: espacio?.tiempo_limite_reserva || null,
+        despuesHora: espacio.despues_hora || false,
+        codigoEdificio: espacio?.id_edificio || '',
         minimoJugadores: espacio?.minimo_jugadores || '',
         maximoJugadores: espacio?.maximo_jugadores || '',
         reservasSimultaneas: espacio?.reservas_simultaneas || 1,
+        pagoMensualidad: espacio?.pago_mensual || false,
+        valorMensualidad: espacio?.valor_mensualidad ?? null,
       });
 
       if (espacio.imagen) {
@@ -237,6 +241,23 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         minimoControl?.updateValueAndValidity();
         maximoControl?.updateValueAndValidity();
       }
+
+      const pagoMensualidadCtrl = this.espacioForm.get('pagoMensualidad');
+      const valorMensualidadCtrl = this.espacioForm.get('valorMensualidad');
+      const enEdicion = this.espacioConfigService.modoEdicionGeneral();
+
+      if (enEdicion && pagoMensualidadCtrl?.value) {
+        valorMensualidadCtrl?.enable({ emitEvent: false });
+        valorMensualidadCtrl?.setValidators([
+          Validators.required,
+          Validators.min(0),
+        ]);
+      } else {
+        valorMensualidadCtrl?.disable({ emitEvent: false });
+        valorMensualidadCtrl?.clearValidators();
+      }
+
+      valorMensualidadCtrl?.updateValueAndValidity({ emitEvent: false });
 
       if (!this.espacioConfigService.modoEdicionGeneral()) {
         this.espacioForm.disable();
@@ -359,10 +380,41 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
       });
   }
 
+  public onPagoMensualidadChange(event: Event) {
+    const checkbox = event.target as HTMLInputElement;
+    const valorMensualidadCtrl = this.espacioForm.get('valorMensualidad');
+    if (checkbox.checked) {
+      valorMensualidadCtrl?.enable();
+      valorMensualidadCtrl?.setValidators([
+        Validators.required,
+        Validators.min(0),
+      ]);
+    } else {
+      valorMensualidadCtrl?.clearValidators();
+      valorMensualidadCtrl?.setValue(null);
+      valorMensualidadCtrl?.disable();
+    }
+    valorMensualidadCtrl?.updateValueAndValidity();
+  }
+
   public editarGeneral() {
     this.espacioConfigService.setModoEdicionGeneral(true);
     this.appService.setEditando(true);
     this.espacioForm.enable();
+    // Al entrar en edición, aplicar la lógica condicional para valorMensualidad
+    const pagoMensualidadCtrl = this.espacioForm.get('pagoMensualidad');
+    const valorMensualidadCtrl = this.espacioForm.get('valorMensualidad');
+    if (pagoMensualidadCtrl?.value) {
+      valorMensualidadCtrl?.enable();
+      valorMensualidadCtrl?.setValidators([
+        Validators.required,
+        Validators.min(0),
+      ]);
+    } else {
+      valorMensualidadCtrl?.clearValidators();
+      valorMensualidadCtrl?.disable();
+    }
+    valorMensualidadCtrl?.updateValueAndValidity();
     this.espacioForm.markAsPristine();
   }
 

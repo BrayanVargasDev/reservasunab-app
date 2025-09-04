@@ -24,6 +24,9 @@ export interface ReservaEspaciosDetalles {
   categoria: Categoria;
   configuracion: Configuracion;
   novedades: Novedad[];
+  pago_mensual: boolean;
+  valor_mensualidad: number;
+  usuario_mensualidad_activa: boolean;
   tipo_usuario_config: TipoUsuarioConfig[];
 }
 

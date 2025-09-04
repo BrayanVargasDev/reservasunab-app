@@ -31,6 +31,7 @@ import { InfoReservaComponent } from '../info-reserva/info-reserva.component';
 import { Elemento } from '@shared/interfaces';
 import { TipoUsuario } from '@shared/enums/usuarios.enum';
 import { AppService } from '@app/app.service';
+import { ResumenReserva } from '@app/reservas/interfaces';
 
 @Component({
   selector: 'modal-dreservas',
@@ -158,8 +159,6 @@ export class ModalDreservasComponent {
     }
   }
 
-  // Eliminado: se usa parseFlexibleDate desde util compartido
-
   public estadoResumen = computed(() => {
     const estado = this.dreservasService.estadoResumen();
     const saldo = this.appService.creditosQuery.data() ?? 0;
@@ -171,7 +170,6 @@ export class ModalDreservasComponent {
       fecha,
       es_pasada,
       estado: estadoReserva,
-      valor,
       valor_descuento,
       necesita_aprobacion,
       reserva_aprovada,
@@ -180,13 +178,13 @@ export class ModalDreservasComponent {
 
     const puedePagar =
       !es_pasada &&
-      estadoReserva !== 'pagada' &&
-      valor > 0 &&
+      (valor_descuento ?? 0) > 0 &&
       (!necesita_aprobacion || reserva_aprovada);
 
-    const valorFinal = (valor ?? 0) - (valor_descuento ?? 0);
+    const totalReserva =
+      (estado as any)?.valor_total_reserva ?? valor_descuento ?? 0;
 
-    const pagarConSaldo = puedePagar && (saldo ?? 0) >= valorFinal;
+    const pagarConSaldo = puedePagar && (saldo ?? 0) >= (totalReserva ?? 0);
 
     const fechaParseada = parseFlexibleDate(fecha);
 
@@ -206,11 +204,12 @@ export class ModalDreservasComponent {
       const usuario = this.authService.usuario();
       const puedePagar =
         !reserva.es_pasada &&
-        reserva.estado !== 'pagada' &&
-        reserva.valor > 0 &&
+        (reserva.valor_descuento ?? 0) > 0 &&
         (!reserva.necesita_aprobacion || reserva.reserva_aprovada);
-      const valorFinal = (reserva.valor || 0) - (reserva.valor_descuento || 0);
-      const pagarConSaldo = puedePagar && usuario ? saldo >= valorFinal : false;
+      const totalReserva =
+        (reserva as any)?.valor_total_reserva ?? (reserva.valor_descuento || 0);
+      const pagarConSaldo =
+        puedePagar && usuario ? saldo >= (totalReserva ?? 0) : false;
 
       const fechaBase = parseFlexibleDate(reserva.fecha as string);
       return {
@@ -226,27 +225,25 @@ export class ModalDreservasComponent {
 
   public necesitaPago = computed(() => {
     const estado = this.getEstadoActual();
-
-    const valorTotal = estado?.valor_total_reserva ?? 0;
-
     if (!estado) return false;
     if (this.isEstadoVacio(estado)) return false;
-    if (estado.estado === 'completada') return false;
     if (this.esReservaPasada()) return false;
-    if (estado.necesita_aprobacion && !estado.reserva_aprovada) return false;
-    return !estado.pago && valorTotal > 0;
+    if (estado.necesita_aprobacion) return false;
+
+    const totalReserva =
+      (estado as ResumenReserva)?.valor_total_reserva ??
+      Math.max(0, estado?.valor_descuento ?? 0);
+    if (totalReserva <= 0) return false;
+
+    if (this.dreservasService.mostrandoResumenExistente()) return true;
+
+    return !estado.pago && totalReserva > 0;
   });
 
   public puedePagarConSaldo = computed(() => {
     const estado = this.getEstadoActual();
     const saldo = this.appService.creditosQuery.data() ?? 0;
     const totalReserva = estado?.valor_total_reserva ?? 0;
-
-    console.log({
-      estado,
-      saldo,
-      totalReserva,
-    });
 
     if (estado?.estado === 'completada') return false;
     if (this.esReservaPasada()) return false;
@@ -255,6 +252,22 @@ export class ModalDreservasComponent {
     if (totalReserva > saldo) return false;
 
     return estado.pagar_con_saldo;
+  });
+
+  public yaConfirmadaSinPago = computed(() => {
+    const estado = this.getEstadoActual();
+    if (!estado) return false;
+    const totalReserva = estado?.valor_total_reserva ?? 0;
+    const sinPago = !estado.pago && totalReserva > 0;
+    return !!estado.id && sinPago && !this.esReservaPasada();
+  });
+
+  public confirmadaConCambiosPendientes = computed(() => {
+    this.dreservasService.requiereReconfirmacion();
+    return (
+      this.yaConfirmadaSinPago() &&
+      this.dreservasService.requiereReconfirmacion()
+    );
   });
 
   public pudeCancelar = computed(() => {
@@ -506,7 +519,7 @@ export class ModalDreservasComponent {
     const esNueva = !!this.dreservasService.estadoResumen();
 
     // Si NO se requiere confirmar primero, intentar pagar directamente
-    if (!confirmarPrimero) {
+    if (!confirmarPrimero && !this.dreservasService.requiereReconfirmacion()) {
       if (!estado?.id) {
         const msg =
           tipo === 'saldo'
@@ -516,12 +529,13 @@ export class ModalDreservasComponent {
         this.restoreResumenView();
         return;
       }
-      await this.realizarPago(tipo, estado);
+      const estadoActualizado = this.getEstadoActual() ?? estado;
+      await this.realizarPago(tipo, estadoActualizado);
       return;
     }
 
     // Confirmar primero
-    if (!esNueva) {
+    if (!esNueva && !this.dreservasService.requiereReconfirmacion()) {
       if (this.necesitaPago()) {
         await this.realizarPago(tipo, estado);
       }
@@ -851,14 +865,13 @@ export class ModalDreservasComponent {
     } else {
       this.dreservasService.confirmarAgregarDetallesLocalEnExistente();
       const est = this.dreservasService.miReserva()!;
-      const valorEspacioConDesc = est.valor_descuento || 0;
+
       const actualizado = {
         ...est,
         valor: est.valor || 0,
         valor_descuento: est.valor_descuento || 0,
         valor_elementos: (est.valor_elementos || 0) + incremento,
-        valor_total_reserva:
-          valorEspacioConDesc + (est.valor_elementos || 0) + incremento,
+        valor_total_reserva: (est.valor_elementos || 0) + incremento,
       } as typeof est;
       this.dreservasService.setMostrarResumenExistente(actualizado);
     }
@@ -977,6 +990,15 @@ export class ModalDreservasComponent {
         );
       }
     }
+  }
+
+  public async pagarMensualidad(): Promise<void> {
+    const url = (await this.dreservasService.pagarMensualidad()).data;
+    console.log(
+      '🚀 ✅ ~ ModalDreservasComponent ~ pagarMensualidad ~ url:',
+      url,
+    );
+    window.location.assign(url);
   }
 
   public manejarCierreModal(): void {
