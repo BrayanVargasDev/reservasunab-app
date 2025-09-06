@@ -223,7 +223,7 @@
 }
 
 <!-- Mensaje de éxito final -->
-@if (resumen()?.estado === 'completada') {
+@if (resumen()?.estado === 'completada' && resumen()?.id) {
 <div class="text-center text-base-content/70">
   <p class="text-lg">¡Tu reserva ha sido completada exitosamente!</p>
 </div>

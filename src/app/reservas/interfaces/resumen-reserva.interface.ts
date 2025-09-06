@@ -31,5 +31,6 @@ export interface ResumenReserva {
   necesita_aprobacion: boolean;
   reserva_aprovada: boolean;
   pagar_con_saldo: boolean;
+  cubierta_por_mensualidad: boolean;
   pago: Pago | Movimiento | null;
 }

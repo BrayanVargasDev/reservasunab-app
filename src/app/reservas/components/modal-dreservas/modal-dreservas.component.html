@@ -97,7 +97,7 @@
             [resumen]="estadoResumen()"
           ></dreservas-info-reserva>
           @if (estadoResumen()?.necesita_aprobacion && estadoResumen()?.id !==
-          null) {
+          null && estadoResumen()?.estado === 'pendienteap') {
           <div class="alert alert-warning mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
               <app-web-icon
@@ -523,23 +523,55 @@
                   {{ dreservasService.fecha() | date : 'dd/MM/yyyy' }}
                 </span>
               </span>
-              @if (espacioDetallesQuery?.pago_mensual) {
+              @if (espacioDetallesQuery?.pago_mensual && !esEstudiante() &&
+              !espacioDetallesQuery?.usuario_mensualidad_activa) {
               <span
-                class="inline-block alert alert-info p-2 font-semibold alert-outline rounded-lg max-sm:text-sm align-middle"
+                class="inline-block alert alert-error p-2 font-semibold rounded-lg max-sm:text-sm align-middle"
               >
-                Este espacio requiere pago mensual.
+                No tienes una mensualidad activa para este espacio.
               </span>
-              } @if (!espacioDetallesQuery?.usuario_mensualidad_activa) {
+              }
+              <!--.-->
+              @if (esEstudiante()) {
+              <span class="alert alert-success font-semibold rounded-lg p-2">
+                Los estudiantes no pagan mensualidad.
+              </span>
+              }
+              <!--.-->
+              @if (espacioDetallesQuery?.pago_mensual &&
+              !espacioDetallesQuery?.usuario_mensualidad_activa) {
               <button
                 (click)="pagarMensualidad()"
                 class="btn btn-secondary max-md:p-1 p-2 max-sm:h-fit sm:h-10"
+                [disabled]="pagandoMensualidad()"
               >
-                Pagar mensualidad:
+                @if (!pagandoMensualidad()) { Pagar mensualidad:
                 {{
                   espacioDetallesQuery?.valor_mensualidad
                     | currency : '$' : 'symbol' : '1.0-0'
                 }}
+                }@else {
+                <span class="loading loading-spinner loading-sm mr-2"></span>
+                Redirigiendo... }
               </button>
+              }
+              <!--.-->
+              @if (espacioDetallesQuery?.usuario_mensualidad_activa &&
+              espacioDetallesQuery?.mensualidad) {
+              <span class="alert alert-success font-semibold rounded-lg p-2">
+                Mensualidad activa desde
+                {{
+                  espacioDetallesQuery?.mensualidad?.fecha_inicio
+                    | date : 'dd/MM/yyyy'
+                }}
+
+                hasta
+
+                {{
+                  espacioDetallesQuery?.mensualidad?.fecha_fin
+                    | date : 'dd/MM/yyyy'
+                }}
+              </span>
               }
             </div>
           </div>
@@ -550,7 +582,7 @@
             >
               Disponibilidad:
             </span>
-            <div class="flex-1 overflow-y-auto overflow-x-auto">
+            <div class="flex-1">
               <div
                 class="grid p-1 gap-2 items-center grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] min-w-max"
               >
@@ -567,13 +599,13 @@
                   "
                   class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
                   [disabled]="
-                    item.reserva_pasada &&
+                    item.reserva_pasada || !item.disponible &&
                     !item.mi_reserva &&
                     !item.novedad &&
                     !item.reservada
                   "
                   [class.btn-disabled]="
-                    item.reserva_pasada &&
+                    item.reserva_pasada || !item.disponible &&
                     !item.mi_reserva &&
                     !item.novedad &&
                     !item.reservada
@@ -588,7 +620,7 @@
                   [attr.data-tip]="
                     item.novedad_desc && item.novedad_desc.length > 10
                       ? item.novedad_desc
-                      : null
+                      : 'No disponible'
                   "
                   [class.pointer-events-none]="
                     !item.disponible && item.reserva_pasada && !item.mi_reserva
@@ -597,12 +629,14 @@
                       'hover:opacity-90 hover:scale-101 transition-all duration-200': item.disponible,
                     }"
                 >
-                  @if (item.disponible) {
+                  @if (item.disponible && !item.reservada && !item.mi_reserva) {
                   <span>{{ item.hora_inicio }}</span>
                   } @else if (item.reservada) {
                   <span class="text-wrap text-base leading-tight">
-                    {{ item.mi_reserva ? `Mi reserva` : `${item.hora_inicio} - Reservado` }}
+                    {{ `${item.hora_inicio} - Reservado` }}
                   </span>
+                  } @else if (item.mi_reserva) {
+                  <span class="text-sm">{{ `Mi reserva` }}</span>
                   } @else if (!item.reservada && item.novedad) {
                   <span class="text-sm">
                     {{ item.hora_inicio }} -
@@ -684,7 +718,8 @@
         </button>
         } @if (!dreservasService.mostrandoDisponibilidad() &&
         !dreservasService.mostrandoDetalles() &&
-        !dreservasService.mostrandoJugadores() && !esReservaPasada()) {
+        !dreservasService.mostrandoJugadores() && !esReservaPasada() &&
+        permiteElementoDespuesReservado()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
@@ -700,7 +735,8 @@
         } @if (dreservasService.mostrandoResumenNueva() ||
         dreservasService.mostrandoResumenExistente()) {
         <div class="flex gap-2">
-          @if (!necesitaPago() && !esReservaPasada()) {
+          @if (!necesitaPago() && !esReservaPasada() && !yaConfirmadaSinPago())
+          {
           <button
             type="button"
             class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"

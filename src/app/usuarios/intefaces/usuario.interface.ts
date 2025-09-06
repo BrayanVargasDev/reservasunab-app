@@ -28,5 +28,5 @@ export interface Usuario {
   digitoVerificacion?: number;
   es_beneficiario: boolean;
   id_beneficiario: number | null;
-  facturacion: Persona;
+  facturacion: Persona | null;
 }

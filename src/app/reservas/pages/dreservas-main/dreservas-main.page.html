@@ -229,7 +229,7 @@
 </div>
 } @else if (espacios().length > 0) {
 <div
-  class="grid w-full justify-center sm:justify-start auto-rows-[15rem] grid-cols-[repeat(auto-fit,11rem)] gap-4 mt-2 place-items-center"
+  class="grid w-full justify-center sm:justify-start auto-rows-[15rem] grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3 mt-2 place-items-center"
 >
   @for (espacio of espacios(); track trackByEspacioId($index, espacio)) {
   <espacio-booking-item

@@ -1,6 +1,7 @@
 import { Sede, Categoria } from '@shared/interfaces';
 import { Configuracion, Novedad, Imagen } from '@espacios/interfaces';
 import { TipoUsuarioConfig } from '@espacios/interfaces/tipo-usuario-config.interface';
+import { Mensualidad } from './mensualidad.interface';
 
 export interface ReservaEspaciosDetalles {
   id: number;
@@ -27,6 +28,7 @@ export interface ReservaEspaciosDetalles {
   pago_mensual: boolean;
   valor_mensualidad: number;
   usuario_mensualidad_activa: boolean;
+  mensualidad: Mensualidad;
   tipo_usuario_config: TipoUsuarioConfig[];
 }
 

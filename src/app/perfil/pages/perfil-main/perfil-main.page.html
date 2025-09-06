@@ -387,6 +387,8 @@
               id="direccion"
               formControlName="direccion"
               placeholder="Calle X # 123A-45"
+              (keydown)="bloquearPuntoYComa($event)"
+              (input)="sanearDireccionInput('direccion')"
               [ngClass]="{
                 'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
                 'input-error': formUtils.esCampoInvalido(
@@ -708,6 +710,124 @@
             </div>
           </div>
 
+          <!-- Dirección y Ciudad de Residencia (facturación) -->
+          <div
+            class="flex flex-col md:flex-row w-full px-1 gap-2 md:gap-3 mb-4"
+          >
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fdireccion"
+              >
+                Dirección <span class="text-error">*</span>
+              </label>
+              <input
+                (keydown)="bloquearPuntoYComa($event)"
+                (input)="sanearDireccionInput('facturacion.direccion')"
+                type="text"
+                id="fdireccion"
+                formControlName="direccion"
+                placeholder="Calle X # 123A-45"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'direccion'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm, 'direccion')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(facturacionForm, 'direccion')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/2">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fciudadResidencia"
+              >
+                Ciudad de Residencia <span class="text-error">*</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="fciudadResidencia"
+                  [value]="ciudadFactTerminoBusquedaResidencia()"
+                  (input)="onCiudadFactResidenciaInputChange($event)"
+                  (keydown)="onCiudadFactResidenciaKeyDown($event)"
+                  (focus)="mostrarOpcionesCiudadesFactResidencia.set(true)"
+                  (blur)="ocultarOpcionesCiudadesFactResidencia()"
+                  placeholder="Escriba para buscar una ciudad..."
+                  autocomplete="off"
+                  role="combobox"
+                  [attr.aria-expanded]="mostrarOpcionesCiudadesFactResidencia()"
+                  [attr.aria-activedescendant]="
+                    indiceOpcionSeleccionadaFactResidencia() >= 0
+                      ? 'ciudad-fact-res-option-' +
+                        indiceOpcionSeleccionadaFactResidencia()
+                      : null
+                  "
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'ciudadResidencia'
+                    )
+                  }"
+                />
+                @if (mostrarOpcionesCiudadesFactResidencia() &&
+                ciudadesFactFiltradasResidencia().length > 0) {
+                <div
+                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                  role="listbox"
+                >
+                  @for (ciudad of ciudadesFactFiltradasResidencia(); track
+                  ciudad.id; let i = $index) {
+                  <div
+                    [id]="'ciudad-fact-res-option-' + i"
+                    class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                    [class.highlighted]="
+                      i === indiceOpcionSeleccionadaFactResidencia()
+                    "
+                    role="option"
+                    [attr.aria-selected]="
+                      i === indiceOpcionSeleccionadaFactResidencia()
+                    "
+                    (click)="seleccionarCiudadFactResidencia(ciudad)"
+                  >
+                    {{ ciudad.nombre }}
+                  </div>
+                  }
+                </div>
+                } @if (mostrarOpcionesCiudadesFactResidencia() &&
+                ciudadesFactFiltradasResidencia().length === 0 &&
+                ciudadFactTerminoBusquedaResidencia()) {
+                <div
+                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                >
+                  <div class="py-3 px-4 text-gray-500 italic">
+                    No se encontraron ciudades
+                  </div>
+                </div>
+                }
+              </div>
+              @if (formUtils.esCampoInvalido(facturacionForm,
+              'ciudadResidencia')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    facturacionForm,
+                    'ciudadResidencia'
+                  )
+                }}
+              </div>
+              }
+            </div>
+          </div>
+
           <!-- Documento facturación -->
           <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
             <div class="flex flex-col w-full md:w-2/6">
@@ -748,7 +868,7 @@
               </div>
               }
             </div>
-            <div class="flex flex-col w-full md:w-4/6">
+            <div class="flex flex-col w-full md:w-3/6">
               <label
                 class="label text-sm font-[600] text-base-content mb-1"
                 for="fdocumento"
@@ -774,6 +894,39 @@
               <div class="text-sm text-error">
                 {{
                   formUtils.obtenerErrorDelCampo(facturacionForm, 'documento')
+                }}
+              </div>
+              }
+            </div>
+            <div class="flex flex-col w-full md:w-1/6">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="fdigitoVerificacion"
+              >
+                DV
+              </label>
+              <input
+                id="fdigitoVerificacion"
+                type="text"
+                formControlName="digitoVerificacion"
+                placeholder="0"
+                maxlength="1"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    facturacionForm,
+                    'digitoVerificacion'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(facturacionForm,
+              'digitoVerificacion')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    facturacionForm,
+                    'digitoVerificacion'
+                  )
                 }}
               </div>
               }
@@ -818,6 +971,7 @@
                 />
                 @if (mostrarOpcionesCiudadesFactExpedicion() &&
                 ciudadesFactFiltradasExpedicion().length > 0) {
+
                 <div
                   class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
                   role="listbox"
@@ -865,7 +1019,6 @@
               }
             </div>
           </div>
-
 
           <!-- Info tributaria facturación -->
           <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">

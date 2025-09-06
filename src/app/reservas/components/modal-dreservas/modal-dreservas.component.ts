@@ -9,6 +9,7 @@ import {
   computed,
   ChangeDetectorRef,
   ChangeDetectionStrategy,
+  signal,
 } from '@angular/core';
 import { DreservasService } from '@reservas/services/dreservas.service';
 import { CommonModule } from '@angular/common';
@@ -32,6 +33,7 @@ import { Elemento } from '@shared/interfaces';
 import { TipoUsuario } from '@shared/enums/usuarios.enum';
 import { AppService } from '@app/app.service';
 import { ResumenReserva } from '@app/reservas/interfaces';
+import { es } from 'date-fns/locale';
 
 @Component({
   selector: 'modal-dreservas',
@@ -55,6 +57,7 @@ export class ModalDreservasComponent {
   private estilosAlerta =
     'flex justify-center transition-all mx-auto ease-in-out w-[80%] text-lg';
   public dreservasService = inject(DreservasService);
+  public pagandoMensualidad = signal(false);
 
   constructor() {}
   public dreservasModal =
@@ -65,6 +68,18 @@ export class ModalDreservasComponent {
   });
 
   public cargando = computed(() => this.dreservasService.cargando());
+  public permiteElementoDespuesReservado = computed(() => {
+    const estado = this.getEstadoActual();
+
+    if (!estado?.id) return true;
+
+    return environment.elementosPostReserva;
+  });
+  public esEstudiante = computed(() => {
+    return this.authService
+      .usuario()
+      ?.tipo_usuario.includes(TipoUsuario.Estudiante);
+  });
 
   // Utilidades internas
   private showError(mensaje: string, ms = 5000) {
@@ -115,8 +130,13 @@ export class ModalDreservasComponent {
     base: ReservaEspaciosDetalles | undefined,
     usarCondicionPuedeAgregar: boolean,
   ): string | null {
-    const minOtros = Math.max(0, (estado?.minimo_jugadores ?? 0) - 1);
-    const totalJug = estado?.jugadores?.length ?? 0;
+    const minOtros = estado.puede_agregar_jugadores
+      ? Math.max(0, (estado?.minimo_jugadores ?? 0) - 1)
+      : 0;
+    const totalJug = estado.puede_agregar_jugadores
+      ? estado?.jugadores?.length ?? 0
+      : 0;
+
     if (
       (!usarCondicionPuedeAgregar && minOtros > 0 && totalJug < minOtros) ||
       (usarCondicionPuedeAgregar &&
@@ -230,9 +250,14 @@ export class ModalDreservasComponent {
     if (this.esReservaPasada()) return false;
     if (estado.necesita_aprobacion) return false;
 
+    let valorEspacio = Math.max(0, estado?.valor_descuento ?? 0);
+
+    if (estado.cubierta_por_mensualidad) {
+      valorEspacio = 0;
+    }
+
     const totalReserva =
-      (estado as ResumenReserva)?.valor_total_reserva ??
-      Math.max(0, estado?.valor_descuento ?? 0);
+      (estado as ResumenReserva)?.valor_total_reserva ?? valorEspacio;
     if (totalReserva <= 0) return false;
 
     if (this.dreservasService.mostrandoResumenExistente()) return true;
@@ -258,8 +283,15 @@ export class ModalDreservasComponent {
     const estado = this.getEstadoActual();
     if (!estado) return false;
     const totalReserva = estado?.valor_total_reserva ?? 0;
-    const sinPago = !estado.pago && totalReserva > 0;
-    return !!estado.id && sinPago && !this.esReservaPasada();
+    const sinPago = !estado.pago && totalReserva >= 0;
+    console.log({
+      estado: !!estado.id,
+      sinPago: !estado.pago && totalReserva > 0,
+      totalReservaMayorCero: totalReserva > 0,
+      totalReserva: estado?.valor_total_reserva ?? 0,
+      todo: estado.id && sinPago && !this.esReservaPasada()
+    })
+    return estado.id && sinPago && !this.esReservaPasada();
   });
 
   public confirmadaConCambiosPendientes = computed(() => {
@@ -905,7 +937,11 @@ export class ModalDreservasComponent {
 
     const estado = this.dreservasService.estadoResumen()!;
     const base = this.dreservasService.espacioDetallesQuery.data();
-    const errorValidacion = this.validarDatosReserva(estado, base, false);
+    const errorValidacion = this.validarDatosReserva(
+      estado,
+      base,
+      estado.puede_agregar_jugadores,
+    );
     if (errorValidacion) {
       this.showError(errorValidacion);
       return;
@@ -993,12 +1029,23 @@ export class ModalDreservasComponent {
   }
 
   public async pagarMensualidad(): Promise<void> {
-    const url = (await this.dreservasService.pagarMensualidad()).data;
-    console.log(
-      '🚀 ✅ ~ ModalDreservasComponent ~ pagarMensualidad ~ url:',
-      url,
-    );
-    window.location.assign(url);
+    if (this.pagandoMensualidad()) return; // evitar clicks múltiples
+    this.pagandoMensualidad.set(true);
+    try {
+      const resp = await this.dreservasService.pagarMensualidad();
+      const url = resp?.data;
+      if (!url) {
+        this.showError('No se obtuvo la URL de pago de la mensualidad.');
+        this.pagandoMensualidad.set(false);
+        return;
+      }
+      window.location.assign(url);
+    } catch (error: any) {
+      const mensaje =
+        error?.error?.error || 'Error al iniciar el pago de la mensualidad.';
+      this.showError(mensaje);
+      this.pagandoMensualidad.set(false);
+    }
   }
 
   public manejarCierreModal(): void {

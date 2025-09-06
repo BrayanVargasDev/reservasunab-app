@@ -184,7 +184,6 @@ export class AuthService {
 
     void this.validationCache.limpiarEstadosValidacion();
 
-    this._usuario.set(null);
     this._accessToken.set(null);
     this._estadoAutenticacion.set('noAutenticado');
 
