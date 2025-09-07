@@ -71,31 +71,55 @@ export class PagoInfoCardComponent {
   });
 
   infoUsuarioItems = computed(() => {
-    if (!this.pagoInfo().reserva.usuario) return [];
+    if (
+      !this.pagoInfo().reserva?.usuario &&
+      !this.pagoInfo().mensualidad?.usuario
+    )
+      return [];
+
+    console.log({
+      reserva: this.pagoInfo().reserva?.usuario,
+      mensualidad: this.pagoInfo().mensualidad?.usuario,
+    });
 
     return [
       {
         label: 'Nombre',
-        value: this.pagoInfo().reserva.usuario.nombre_completo,
+        value:
+          this.pagoInfo().reserva?.usuario.nombre_completo ||
+          this.pagoInfo().mensualidad?.usuario.nombre_completo,
       },
       {
         label: 'Correo electrónico',
-        value: this.pagoInfo().reserva.usuario.email,
+        value:
+          this.pagoInfo().reserva?.usuario.email ||
+          this.pagoInfo().mensualidad?.usuario.email ||
+          'No proporcionado',
       },
       {
         label: 'Documento',
-        value: `${this.pagoInfo().reserva.usuario.tipo_docuemnto}`,
+        value: `${
+          this.pagoInfo().reserva?.usuario.tipo_documento ||
+          this.pagoInfo().mensualidad?.usuario.tipo_documento
+        }: ${
+          this.pagoInfo().reserva?.usuario.documento ||
+          this.pagoInfo().mensualidad?.usuario.documento
+        }`,
         class: 'font-semibold',
       },
       {
         label: 'Teléfono',
-        value: this.pagoInfo().reserva.usuario.celular || 'No proporcionado',
+        value:
+          this.pagoInfo().reserva?.usuario.celular ||
+          this.pagoInfo().mensualidad?.usuario.celular ||
+          'No proporcionado',
       },
     ];
   });
 
   infoReservaItems = computed(() => {
     if (!this.pagoInfo().reserva) return [];
+    if (this.pagoInfo().mensualidad) return [];
 
     return [
       {
@@ -120,6 +144,54 @@ export class PagoInfoCardComponent {
       },
     ];
   });
+
+  infoMensualidadItems = computed(() => {
+    const mensu = this.pagoInfo().mensualidad;
+    if (!mensu || this.pagoInfo().reserva) return [];
+
+    return [
+      {
+        label: 'ID Mensualidad',
+        value: String(mensu.id),
+        class:
+          'bg-secondary uppercase w-fit border-secondary font-semibold px-2 py-1 border text-secondary-content rounded-xl',
+      },
+      {
+        label: 'Fecha inicio',
+        value: this.formatearFecha()(mensu.fecha_inicio),
+      },
+      {
+        label: 'Fecha fin',
+        value: this.formatearFecha()(mensu.fecha_fin),
+      },
+      {
+        label: 'Duración (días)',
+        value: this.calcularDuracion(mensu.fecha_inicio, mensu.fecha_fin),
+        class: 'font-semibold',
+      },
+      {
+        label: 'Espacio asignado',
+        value: mensu.espacio.nombre,
+      },
+    ];
+  });
+
+  esMensualidad = computed(() => {
+    const info = this.pagoInfo();
+    return !!info.mensualidad && !info.reserva; // exclusión mutua
+  });
+
+  private calcularDuracion(inicio: string, fin: string): string {
+    try {
+      const d1 = new Date(inicio);
+      const d2 = new Date(fin);
+      const diff = Math.max(0, d2.getTime() - d1.getTime());
+      const dias = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      return String(dias);
+    } catch {
+      return '-';
+    }
+  }
 
   getEstadoClass(estado: string): string {
     const completado =

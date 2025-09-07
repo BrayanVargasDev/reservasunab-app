@@ -23,11 +23,20 @@
   >
   </pago-info-item>
 
+  <!-- Mostrar reserva si existe y no es mensualidad -->
+  @if (infoReservaItems().length > 0) {
   <pago-info-item
     [items]="infoReservaItems()"
     [title]="'Información de la reserva'"
   ></pago-info-item>
-
+  }
+  <!-- Mostrar mensualidad si aplica -->
+  @if (infoMensualidadItems().length > 0) {
+  <pago-info-item
+    [items]="infoMensualidadItems()"
+    [title]="'Información de la mensualidad'"
+  ></pago-info-item>
+  }
   <!-- Información del usuario -->
   <pago-info-item
     [items]="infoUsuarioItems()"

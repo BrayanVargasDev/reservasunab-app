@@ -2,6 +2,7 @@ export interface PagoInfo {
   pago: PagoDatum;
   transaccion: TransaccionPago;
   reserva: ReservaPago;
+  mensualidad: MensualidadPago;
 }
 
 export interface PagoDatum {
@@ -30,7 +31,7 @@ export interface EspacioPago {
 
 export interface UsuarioPago {
   id: null;
-  tipo_docuemnto: string;
+  tipo_documento: string;
   documento: string;
   nombre_completo: string;
   email: string;
@@ -51,4 +52,12 @@ export interface TransaccionPago {
 
 export interface GetPagoInfoParams {
   codigo: string;
+}
+
+export interface MensualidadPago {
+  id: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  usuario: UsuarioPago;
+  espacio: EspacioPago;
 }

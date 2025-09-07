@@ -599,13 +599,13 @@
                   "
                   class="h-12 text-semibold text-lg w-full items-center justify-center rounded-lg btn disabled:text-sm disabled:text-gray-500"
                   [disabled]="
-                    item.reserva_pasada || !item.disponible &&
+                    item.reserva_pasada &&
                     !item.mi_reserva &&
                     !item.novedad &&
                     !item.reservada
                   "
                   [class.btn-disabled]="
-                    item.reserva_pasada || !item.disponible &&
+                    item.reserva_pasada &&
                     !item.mi_reserva &&
                     !item.novedad &&
                     !item.reservada
