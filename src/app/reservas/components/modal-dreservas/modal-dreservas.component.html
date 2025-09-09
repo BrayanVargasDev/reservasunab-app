@@ -131,7 +131,8 @@
               </span>
             </div>
           </div>
-          } @if (miReserva()?.necesita_aprobacion) {
+          } @if (miReserva()?.necesita_aprobacion && miReserva().estado ===
+          'pendienteap') {
           <div class="alert alert-warning mt-4 rounded-lg text-sm">
             <div class="flex items-start gap-2">
               <app-web-icon
@@ -532,7 +533,7 @@
               </span>
               }
               <!--.-->
-              @if (esEstudiante()) {
+              @if (esEstudiante() && espacioDetallesQuery?.pago_mensual) {
               <span class="alert alert-success font-semibold rounded-lg p-2">
                 Los estudiantes no pagan mensualidad.
               </span>
@@ -631,7 +632,7 @@
                 >
                   @if (item.disponible && !item.reservada && !item.mi_reserva) {
                   <span>{{ item.hora_inicio }}</span>
-                  } @else if (item.reservada) {
+                  } @else if (item.reservada && !item.mi_reserva) {
                   <span class="text-wrap text-base leading-tight">
                     {{ `${item.hora_inicio} - Reservado` }}
                   </span>

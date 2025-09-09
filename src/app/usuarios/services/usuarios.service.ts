@@ -74,7 +74,7 @@ export class UsuariosService {
   });
 
   public tituloModal = computed(() => {
-    return this._modoEdicion() ? 'Editar Usuario' : 'Nuevo Usuario';
+    return this._modoEdicion() ? 'Editar Usuario' : 'Nuevo Egresado';
   });
 
   public guardarUsuario(usuario: Usuario) {

@@ -33,4 +33,5 @@ export interface EspacioParaConfig {
   tiempo_limite_reserva: number;
   despues_hora: boolean;
   id_edificio: string;
+  codigo: string;
 }

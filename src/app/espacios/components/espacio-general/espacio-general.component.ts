@@ -13,6 +13,7 @@ import {
   OnDestroy,
   ViewEncapsulation,
   CUSTOM_ELEMENTS_SCHEMA,
+  computed,
 } from '@angular/core';
 import {
   FormBuilder,
@@ -83,7 +84,11 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     aprobarReservas: [false],
     limiteTiempoReserva: [null, [Validators.required, Validators.min(0)]],
     despuesHora: [false],
-    codigoEdificio: [''],
+    codigoEdificio: [null, [Validators.required]],
+    codigoEspacio: [
+      null,
+      [Validators.required, Validators.pattern('[0-9A-Za-z]+')],
+    ],
     minimoJugadores: [''],
     maximoJugadores: [''],
     reservasSimultaneas: [1, [Validators.min(1)]],
@@ -91,7 +96,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     valorMensualidad: [{ value: null, disabled: true }, [Validators.min(0)]],
   });
   public tiltuloImagen = signal<{ nombre: string; peso: string } | null>(null);
-
+  public edificios = computed(() => this.espaciosService.edificiosQuery.data());
   // Configuración del editor Quill sin imágenes ni elementos binarios
   public quillConfig = {
     toolbar: [
@@ -215,6 +220,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
         limiteTiempoReserva: espacio?.tiempo_limite_reserva || null,
         despuesHora: espacio.despues_hora || false,
         codigoEdificio: espacio?.id_edificio || '',
+        codigoEspacio: espacio?.codigo || '',
         minimoJugadores: espacio?.minimo_jugadores || '',
         maximoJugadores: espacio?.maximo_jugadores || '',
         reservasSimultaneas: espacio?.reservas_simultaneas || 1,

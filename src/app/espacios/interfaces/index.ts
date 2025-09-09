@@ -1,6 +1,7 @@
 export * from './campos-facturacion.interface';
 export * from './configuracion.interface';
 export * from './dia-config.interface';
+export * from './edificio.interface';
 export * from './espacio-para-config.interface';
 export * from './espacio.interface';
 export * from './form-espacio.interface';

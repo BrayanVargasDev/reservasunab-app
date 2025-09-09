@@ -77,11 +77,6 @@ export class PagoInfoCardComponent {
     )
       return [];
 
-    console.log({
-      reserva: this.pagoInfo().reserva?.usuario,
-      mensualidad: this.pagoInfo().mensualidad?.usuario,
-    });
-
     return [
       {
         label: 'Nombre',

@@ -5,6 +5,7 @@ export * from './create-tipo-usuario-config.action';
 export * from './eliminar-novedad.action';
 export * from './get-config-por-fecha.action';
 export * from './get-configs-base.interface';
+export * from './get-edificios.action';
 export * from './get-espacio-por-id.action';
 export * from './get-espacios.action';
 export * from './get-novedades.action';

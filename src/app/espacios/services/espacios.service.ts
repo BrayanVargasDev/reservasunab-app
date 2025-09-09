@@ -4,13 +4,18 @@ import { HttpClient } from '@angular/common/http';
 import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { PaginationState } from '@tanstack/angular-table';
 
-import { type Meta, PaginatedResponse } from '@shared/interfaces';
+import {
+  type Meta,
+  PaginatedResponse,
+  GeneralResponse,
+} from '@shared/interfaces';
 import {
   getEspacios,
   createEspacio,
   updateEspacioEstado,
+  getEdificios,
 } from '@espacios/actions';
-import { Espacio, FormEspacio } from '@espacios/interfaces';
+import { Espacio, FormEspacio, Edificio } from '@espacios/interfaces';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 
 @Injectable({
@@ -41,6 +46,13 @@ export class EspaciosService {
       this._datosPaginador.set(response.meta);
       return response.data;
     },
+  }));
+
+  public edificiosQuery = injectQuery(() => ({
+    queryKey: ['edificios'],
+    queryFn: () => getEdificios(this.http),
+    select: (response: GeneralResponse<Edificio[]>) => response.data,
+    staleTime: 1000 * 60 * 3, // 3 minutos
   }));
 
   public setPaginacion(paginacion: PaginationState) {
