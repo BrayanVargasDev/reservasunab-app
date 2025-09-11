@@ -244,42 +244,10 @@
               </div>
               }
             </div>
-            <div class="flex flex-col w-full md:w-1/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="digitoVerificacion"
-              >
-                DV
-              </label>
-              <input
-                type="text"
-                id="digitoVerificacion"
-                formControlName="digitoVerificacion"
-                placeholder="0"
-                maxlength="1"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'digitoVerificacion'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(perfilForm, 'digitoVerificacion'))
-              {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    perfilForm,
-                    'digitoVerificacion'
-                  )
-                }}
-              </div>
-              }
-            </div>
           </div>
 
           <!-- Ciudad de Expedición del Documento -->
+          @if (!esNitPerfil()) {
           <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
             <div class="flex flex-col w-full md:w-1/2">
               <label
@@ -354,6 +322,7 @@
               }
             </div>
           </div>
+          }
         </div>
 
         <div class="my-2 px-1 flex flex-col w-full">
@@ -898,12 +867,13 @@
               </div>
               }
             </div>
+            @if (esNitFacturacion()) {
             <div class="flex flex-col w-full md:w-1/6">
               <label
                 class="label text-sm font-[600] text-base-content mb-1"
                 for="fdigitoVerificacion"
               >
-                DV
+                DV <span class="text-error">*</span>
               </label>
               <input
                 id="fdigitoVerificacion"
@@ -931,9 +901,11 @@
               </div>
               }
             </div>
+            }
           </div>
 
           <!-- Ciudades facturación: expedición -->
+          @if (!esNitFacturacion()) {
           <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
             <div class="flex flex-col w-full md:w-1/2">
               <label
@@ -1019,6 +991,7 @@
               }
             </div>
           </div>
+          }
 
           <!-- Info tributaria facturación -->
           <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">

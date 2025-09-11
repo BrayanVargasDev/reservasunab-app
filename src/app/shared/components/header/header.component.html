@@ -32,7 +32,8 @@
         ></span>
         } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
         <div
-          class="badge bg-secondary-content h-auto !p-1 text-secondary gap-2 px-3 py-3"
+          [attr.data-tip]="'Solo podrá hacer uso de los créditos en reservas'"
+          class="badge bg-secondary-content h-auto !p-1 text-secondary gap-2 px-3 py-3 tooltip-bottom tooltip"
         >
           <app-web-icon
             nombreIcono="wallet-outline"

@@ -165,21 +165,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     facturacion: this.fb.group({
       nombre: [''],
       apellido: [''],
-      email: ['', [Validators.pattern(FormUtils.patronEmail)]],
-      telefono: [
-        '',
-        [
-          Validators.pattern(FormUtils.patronSoloNumeros),
-          Validators.minLength(10),
-        ],
-      ],
-      documento: [
-        '',
-        [
-          Validators.pattern(FormUtils.patronSoloNumeros),
-          Validators.minLength(7),
-        ],
-      ],
+      email: [''],
+      telefono: [''],
+      documento: [''],
       tipoDocumento: [''],
       digitoVerificacion: [''],
       ciudadExpedicion: [''],
@@ -235,49 +223,86 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.configurarAutocompleteCiudades();
 
-    // Validaciones condicionales para el grupo de facturación
     this.perfilForm
       .get('usaFacturacionDiferente')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((usa: boolean) => {
-        const factGroup = this.perfilForm.get('facturacion') as FormGroup;
-        const setReq = (ctrl: string, validators: any[]) => {
-          const c = factGroup.get(ctrl);
-          if (!c) return;
-          c.setValidators(usa ? validators : []);
-          c.updateValueAndValidity({ emitEvent: false });
-        };
+        const factGroup = this.facturacionForm;
 
-        setReq('nombre', [Validators.required]);
-        setReq('apellido', [Validators.required]);
-        setReq('email', [
-          Validators.required,
-          Validators.pattern(FormUtils.patronEmail),
-        ]);
-        setReq('telefono', [
-          Validators.required,
-          Validators.pattern(FormUtils.patronSoloNumeros),
-          Validators.minLength(10),
-        ]);
-        // fechaNacimiento se mantiene opcional como en el formulario principal
-        setReq('documento', [
-          Validators.required,
-          Validators.pattern(FormUtils.patronSoloNumeros),
-          Validators.minLength(7),
-        ]);
-        setReq('tipoDocumento', [Validators.required]);
-        setReq('ciudadExpedicion', [Validators.required]);
-        // Nuevos requeridos en facturación
-        setReq('direccion', [Validators.required]);
-        setReq('ciudadResidencia', [Validators.required]);
-        setReq('ciudadResidencia', [Validators.required]);
-        setReq('tipoPersona', [Validators.required]);
-        setReq('regimenTributario', [Validators.required]);
+        Object.values(factGroup.controls).forEach(ctrl => {
+          ctrl.clearValidators();
+          ctrl.updateValueAndValidity({ emitEvent: false });
+        });
 
-        if (!usa) {
+        if (usa) {
+          factGroup.enable({ emitEvent: false });
+          factGroup.get('nombre')?.addValidators([Validators.required]);
+          factGroup.get('apellido')?.addValidators([Validators.required]);
+          factGroup
+            .get('email')
+            ?.addValidators([
+              Validators.required,
+              Validators.pattern(FormUtils.patronEmail),
+            ]);
+          factGroup
+            .get('telefono')
+            ?.addValidators([
+              Validators.required,
+              Validators.pattern(FormUtils.patronSoloNumeros),
+              Validators.minLength(10),
+            ]);
+          factGroup
+            .get('documento')
+            ?.addValidators([
+              Validators.required,
+              Validators.pattern(FormUtils.patronSoloNumeros),
+              Validators.minLength(7),
+            ]);
+          factGroup.get('tipoDocumento')?.addValidators([Validators.required]);
+          factGroup
+            .get('ciudadExpedicion')
+            ?.addValidators([Validators.required]);
+          factGroup.get('direccion')?.addValidators([Validators.required]);
+          factGroup
+            .get('ciudadResidencia')
+            ?.addValidators([Validators.required]);
+          factGroup.get('tipoPersona')?.addValidators([Validators.required]);
+          factGroup
+            .get('regimenTributario')
+            ?.addValidators([Validators.required]);
+
+          // Recalcular después de añadir
+          Object.values(factGroup.controls).forEach(c =>
+            c.updateValueAndValidity({ emitEvent: false }),
+          );
+        } else {
+          // Al no usar facturación diferente, limpiar y deshabilitar el grupo para que no afecte la validez global
           factGroup.reset();
+          factGroup.disable({ emitEvent: false });
         }
       });
+
+    if (!this.perfilForm.get('usaFacturacionDiferente')?.value) {
+      this.facturacionForm.disable({ emitEvent: false });
+    }
+
+    this.perfilForm
+      .get('tipoDocumento')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.actualizarValidacionesPerfilDocumento();
+      });
+
+    this.perfilForm
+      .get('facturacion.tipoDocumento')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.actualizarValidacionesFacturacionDocumento();
+      });
+
+    // Inicializar validaciones condicionales
+    this.actualizarValidacionesPerfilDocumento();
+    this.actualizarValidacionesFacturacionDocumento();
 
     effect(
       () => {
@@ -801,6 +826,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       const date = parse(fechaFormateada, 'dd/MM/yyyy', new Date());
       this.pikaday.setDate(date, true);
     }
+
+    // Recalcular validaciones después de cargar datos
+    this.actualizarValidacionesPerfilDocumento();
+    this.actualizarValidacionesFacturacionDocumento();
   }
 
   get facturacionForm(): FormGroup {
@@ -935,6 +964,89 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
 
     if (this.pikaday) {
       this.pikaday.destroy();
+    }
+  }
+
+  public esNitPerfil(): boolean {
+    const tipoId = parseInt(this.perfilForm.get('tipoDocumento')?.value, 10);
+    if (!tipoId) return false;
+    const tipo = this.appService.tipoDocQuery
+      .data()
+      ?.find(t => parseInt(t.id, 10) === tipoId);
+    return !!tipo && tipo.codigo?.toUpperCase() === 'NT';
+  }
+
+  public esNitFacturacion(): boolean {
+    const tipoId = parseInt(
+      this.perfilForm.get('facturacion.tipoDocumento')?.value,
+      10,
+    );
+    if (!tipoId) return false;
+    const tipo = this.appService.tipoDocQuery
+      .data()
+      ?.find(t => parseInt(t.id, 10) === tipoId);
+    return !!tipo && tipo.codigo?.toUpperCase() === 'NT';
+  }
+
+  private actualizarValidacionesPerfilDocumento() {
+    const esNit = this.esNitPerfil();
+    const dvCtrl = this.perfilForm.get('digitoVerificacion');
+    const ciudadExpCtrl = this.perfilForm.get('ciudadExpedicion');
+    if (dvCtrl) {
+      dvCtrl.clearValidators();
+      dvCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+    if (ciudadExpCtrl) {
+      if (esNit) {
+        ciudadExpCtrl.clearValidators();
+      } else {
+        ciudadExpCtrl.setValidators([Validators.required]);
+      }
+      ciudadExpCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  private actualizarValidacionesFacturacionDocumento() {
+    const esNit = this.esNitFacturacion();
+    const factGroup = this.perfilForm.get('facturacion') as FormGroup;
+    if (!factGroup) return;
+    // Si el grupo está deshabilitado o no se usa facturación diferente, no aplicar validaciones
+    if (
+      !this.perfilForm.get('usaFacturacionDiferente')?.value ||
+      factGroup.disabled
+    ) {
+      const dv = factGroup.get('digitoVerificacion');
+      const cx = factGroup.get('ciudadExpedicion');
+      dv?.clearValidators();
+      dv?.updateValueAndValidity({ emitEvent: false });
+      cx?.clearValidators();
+      cx?.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+    const dvCtrl = factGroup.get('digitoVerificacion');
+    const ciudadExpCtrl = factGroup.get('ciudadExpedicion');
+    if (dvCtrl) {
+      if (esNit) {
+        dvCtrl.setValidators([
+          Validators.required,
+          Validators.pattern(FormUtils.patronSoloNumeros),
+          Validators.minLength(1),
+          Validators.maxLength(1),
+        ]);
+      } else {
+        dvCtrl.clearValidators();
+        dvCtrl.setValue('', { emitEvent: false });
+      }
+      dvCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+    if (ciudadExpCtrl) {
+      if (esNit) {
+        ciudadExpCtrl.clearValidators();
+        ciudadExpCtrl.setValue('', { emitEvent: false });
+      } else {
+        ciudadExpCtrl.setValidators([Validators.required]);
+      }
+      ciudadExpCtrl.updateValueAndValidity({ emitEvent: false });
     }
   }
 }

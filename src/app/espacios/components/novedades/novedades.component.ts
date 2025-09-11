@@ -172,12 +172,14 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
       id: 'hora_inicio',
       accessorKey: 'hora_inicio',
       header: 'Hora Inicio',
+      size: 100,
       cell: this.horaInicioCell,
     },
     {
       id: 'hora_fin',
       accessorKey: 'hora_fin',
       header: 'Hora Fin',
+      size: 100,
       cell: this.horaFinCell,
     },
     {
