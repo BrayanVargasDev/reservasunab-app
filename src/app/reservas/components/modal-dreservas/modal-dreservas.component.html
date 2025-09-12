@@ -708,7 +708,8 @@
         } @if (puedeAgregarMasJugadores() &&
         !dreservasService.mostrandoDisponibilidad() &&
         !dreservasService.mostrandoDetalles() &&
-        !dreservasService.mostrandoJugadores()) {
+        !dreservasService.mostrandoJugadores() && !esReservaPasada() && noCancelada())
+        {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-accent md:h-11 rounded-lg"
@@ -724,7 +725,7 @@
         } @if (!dreservasService.mostrandoDisponibilidad() &&
         !dreservasService.mostrandoDetalles() &&
         !dreservasService.mostrandoJugadores() && !esReservaPasada() &&
-        permiteElementoDespuesReservado()) {
+        permiteElementoDespuesReservado() && noCancelada()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-secondary md:h-11 rounded-lg"
@@ -738,10 +739,9 @@
           Elementos
         </button>
         } @if (dreservasService.mostrandoResumenNueva() ||
-        dreservasService.mostrandoResumenExistente()) {
+        dreservasService.mostrandoResumenExistente() && noCancelada()) {
         <div class="flex gap-2">
-          @if (!necesitaPago() && !esReservaPasada() && !yaConfirmadaSinPago())
-          {
+          @if (!necesitaPago() && !esReservaPasada() && noConfirmada()) {
           <button
             type="button"
             class="btn max-sm:btn-sm btn-success md:h-11 rounded-lg"

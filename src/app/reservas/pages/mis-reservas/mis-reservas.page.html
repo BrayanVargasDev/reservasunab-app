@@ -112,19 +112,6 @@
             >
             <span class="sm:hidden max-sm:text-sm text-base">Ver</span>
           </button>
-          @if (sePuedeCancelar(reserva)) {
-          <button
-            (click)="cancelarReserva(reserva)"
-            class="btn btn-error btn-sm"
-            title="Cancelar reserva"
-          >
-            <app-web-icon
-              estilos="h-4 w-4"
-              nombreIcono="close-outline"
-            ></app-web-icon>
-            <span class="hidden lg:inline">Cancelar</span>
-          </button>
-          }
         </div>
       </div>
     </div>

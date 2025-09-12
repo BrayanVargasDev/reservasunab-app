@@ -12,6 +12,13 @@ import { FormatearDuracionPipe } from '@shared/pipes';
 import { AuthService } from '@auth/services/auth.service';
 import { TipoUsuario } from '@shared/enums/usuarios.enum';
 import { Elemento } from '@shared/interfaces';
+import { Pago, Movimiento } from '@pagos/interfaces';
+
+interface InfoPago {
+  codigoPago: string;
+  estado: string;
+  valorPagado: number;
+}
 
 @Component({
   selector: 'dreservas-info-reserva',
@@ -34,16 +41,39 @@ export class InfoReservaComponent {
       | TipoUsuario
       | undefined;
 
-    switch (tipo) {
-      case TipoUsuario.Estudiante:
-        return el.valor_estudiante ?? 0;
-      case TipoUsuario.Egresado:
-        return el.valor_egresado ?? 0;
-      case TipoUsuario.Administrativo:
-        return el.valor_administrativo ?? 0;
-      case TipoUsuario.Externo:
-      default:
-        return el.valor_externo ?? 0;
-    }
+    return el.valor ?? 0;
   };
+
+  public obtenerInfoPago(): InfoPago | null {
+    if (!this.resumen() || !this.resumen()?.pago) {
+      return null;
+    }
+
+    const pago = this.resumen()!.pago!;
+
+    const pagosDict: Record<string, string> = {
+      CREATED: 'Creado',
+      PENDING: 'Pendiente',
+      OK: 'Completado',
+      FAILED: 'Fallido',
+      EXPIRED: 'Expirado',
+      NON_AUTHORIZED: 'No Autorizado',
+    };
+
+    if ('codigo' in pago && 'estado' in pago) {
+      return {
+        codigoPago: pago.codigo,
+        estado: pagosDict[pago.estado] || pago.estado,
+        valorPagado: parseFloat(pago.valor),
+      };
+    } else if ('id' in pago) {
+      return {
+        codigoPago: `Movimiento #${pago.id}`,
+        estado: 'OK',
+        valorPagado: parseFloat(pago.valor),
+      };
+    }
+
+    return null;
+  }
 }

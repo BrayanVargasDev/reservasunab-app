@@ -34,6 +34,7 @@ import { TipoUsuario } from '@shared/enums/usuarios.enum';
 import { AppService } from '@app/app.service';
 import { ResumenReserva } from '@app/reservas/interfaces';
 import { es } from 'date-fns/locale';
+import { Pago } from '@pagos/interfaces';
 
 @Component({
   selector: 'modal-dreservas',
@@ -249,7 +250,8 @@ export class ModalDreservasComponent {
     if (this.isEstadoVacio(estado)) return false;
     if (this.esReservaPasada()) return false;
     if (estado.necesita_aprobacion) return false;
-
+    if (estado.estado === 'completada') return false;
+    if (estado.pago && (estado.pago as Pago).estado === 'OK') return false;
     let valorEspacio = Math.max(0, estado?.valor_descuento ?? 0);
 
     if (estado.cubierta_por_mensualidad) {
@@ -279,23 +281,44 @@ export class ModalDreservasComponent {
     return estado.pagar_con_saldo;
   });
 
+  public noConfirmada = computed(() => {
+    const estado = this.getEstadoActual();
+
+    return !estado?.id;
+  });
+
+  public noCancelada = computed(() => {
+    const estado = this.getEstadoActual();
+
+    return !estado?.estado?.toLowerCase().includes('cancelada');
+  });
+
   public yaConfirmadaSinPago = computed(() => {
     const estado = this.getEstadoActual();
     if (!estado) return false;
-    const totalReserva = estado?.valor_total_reserva ?? 0;
-    const sinPago = !estado.pago && totalReserva >= 0;
-    console.log({
-      estado: !!estado.id,
-      sinPago: !estado.pago && totalReserva > 0,
-      totalReservaMayorCero: totalReserva > 0,
-      totalReserva: estado?.valor_total_reserva ?? 0,
-      todo: estado.id && sinPago && !this.esReservaPasada()
-    })
-    return estado.id && sinPago && !this.esReservaPasada();
+
+    const yaConfirmada = estado.id;
+    let sinPago = true;
+    const pago = estado.pago;
+
+    if (!pago) {
+      sinPago = true;
+      return yaConfirmada && sinPago;
+    }
+
+    if ('codigo' in pago && 'estado' in pago) {
+      sinPago = pago.estado !== 'OK';
+    }
+
+    return yaConfirmada && sinPago;
   });
 
   public confirmadaConCambiosPendientes = computed(() => {
     this.dreservasService.requiereReconfirmacion();
+    console.log({
+      yaConfirmada: this.yaConfirmadaSinPago(),
+      requiereReconfirmacion: this.dreservasService.requiereReconfirmacion(),
+    });
     return (
       this.yaConfirmadaSinPago() &&
       this.dreservasService.requiereReconfirmacion()
