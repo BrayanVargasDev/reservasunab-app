@@ -90,10 +90,14 @@
         >
           <span class="text-gray-400 max-sm:text-xs text-sm">Estado:</span>
           <span
-            class="badge font-semibold max-sm:text-xs text-sm"
+            class="badge font-semibold max-sm:text-xs text-sm w-min"
             [ngClass]="`badge-${pagosService.obtenerColorEstado(reserva.estado)}`"
           >
-            {{ reserva.estado | upperFirst }}
+            {{
+              reserva.estado === 'pendienteap'
+                ? 'Pendiente de aprobación'
+                : (reserva.estado | upperFirst)
+            }}
           </span>
         </div>
 

@@ -9,7 +9,12 @@ import { Usuario } from '@usuarios/intefaces';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AlertasService } from '@shared/services/alertas.service';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
-import { getPerfil, cambiarPassword, CambiarPasswordRequest } from '../actions';
+import {
+  getPerfil,
+  cambiarPassword,
+  CambiarPasswordRequest,
+  buscarPersonaFacturacion,
+} from '../actions';
 import { AuthService } from '@auth/services/auth.service';
 import { saveUsuario } from '@usuarios/actions';
 import { getCiudades, getRegimenesTributarios } from '@shared/actions';
@@ -202,5 +207,19 @@ export class PerfilService {
 
   public invalidarCiudades() {
     this.queryClient.invalidateQueries({ queryKey: ['ciudades'] });
+  }
+
+  // Facturación: buscar persona por documento
+  public async buscarPersonaFact(params: {
+    tipo_documento_id?: number;
+    numero_documento: string;
+  }) {
+    try {
+      const resp = await buscarPersonaFacturacion(this.http, params);
+      return resp.data || null;
+    } catch (error) {
+      console.error('Error buscando persona de facturación:', error);
+      throw error;
+    }
   }
 }

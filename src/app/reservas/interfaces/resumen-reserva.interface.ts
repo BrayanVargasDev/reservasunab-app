@@ -33,4 +33,5 @@ export interface ResumenReserva {
   pagar_con_saldo: boolean;
   cubierta_por_mensualidad: boolean;
   pago: Pago | Movimiento | null;
+  creado_en: string;
 }

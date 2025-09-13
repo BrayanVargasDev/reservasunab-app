@@ -1,4 +1,5 @@
 import { TipoDocumento } from './tipo-documento.interface';
+import { Usuario } from '@usuarios/intefaces';
 
 export interface Persona {
   id_persona: number;
@@ -9,6 +10,7 @@ export interface Persona {
   primer_apellido: string;
   segundo_apellido: string;
   fecha_nacimiento: string;
+  digito_verificacion: number;
   direccion: string;
   celular: string;
   id_usuario: number;
@@ -21,4 +23,5 @@ export interface Persona {
   tipo_documento: TipoDocumento;
   es_persona_facturacion?: boolean;
   persona_facturacion_id?: number;
+  usuario?: Usuario;
 }

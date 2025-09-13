@@ -524,7 +524,7 @@
                   {{ dreservasService.fecha() | date : 'dd/MM/yyyy' }}
                 </span>
               </span>
-              @if (espacioDetallesQuery?.pago_mensual && !esEstudiante() &&
+              @if (espacioDetallesQuery?.pago_mensual &&
               !espacioDetallesQuery?.usuario_mensualidad_activa) {
               <span
                 class="inline-block alert alert-error p-2 font-semibold rounded-lg max-sm:text-sm align-middle"
@@ -533,9 +533,11 @@
               </span>
               }
               <!--.-->
-              @if (esEstudiante() && espacioDetallesQuery?.pago_mensual) {
+              @if ( espacioDetallesQuery?.usuario_mensualidad_activa &&
+              espacioDetallesQuery?.pago_mensual) {
               <span class="alert alert-success font-semibold rounded-lg p-2">
-                Estudiante habilitado para reservar.
+                {{ esEstudiante() ? 'Estudiante' : 'Usuario' }} habilitado para
+                reservar.
               </span>
               }
               <!--.-->
@@ -708,8 +710,8 @@
         } @if (puedeAgregarMasJugadores() &&
         !dreservasService.mostrandoDisponibilidad() &&
         !dreservasService.mostrandoDetalles() &&
-        !dreservasService.mostrandoJugadores() && !esReservaPasada() && noCancelada())
-        {
+        !dreservasService.mostrandoJugadores() && !esReservaPasada() &&
+        noCancelada()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-accent md:h-11 rounded-lg"
