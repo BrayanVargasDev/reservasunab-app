@@ -1,12 +1,12 @@
 <div class="flex w-full gap-2 items-center">
   <label
-    class="label text-base font-[600] text-base-content mb-1 md:mb-0"
+    class="label text-base max-sm:text-sm font-[600] text-base-content md:mb-0"
     for="fecha"
   >
     Seleccione la fecha:
   </label>
   <label
-    class="input input-bordered w-full max-w-60 h-11 rounded-box"
+    class="input input-bordered max-sm:input-sm w-full max-w-60 sm:h-11 rounded-box"
     [ngClass]="{ 'text-gray-400': !fechaSeleccionada() }"
   >
     <input

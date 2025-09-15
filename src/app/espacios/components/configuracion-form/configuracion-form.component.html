@@ -1,10 +1,10 @@
 <form [formGroup]="configuracionForm()">
-  <div class="my-4 mt-0 lg:mt-4 flex flex-col w-full gap-2 md:gap-3">
-    <div
-      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-1"
-    >
+  <div
+    class="my-4 mt-0 lg:mt-4 grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(25rem,1fr))] w-full gap-1 gap-x-4"
+  >
+    <div class="flex justify-between w-full gap-1">
       <label
-        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        class="label text-sm font-[600] text-base-content md:mb-0 md:items-center max-sm:w-1/2 wrap-break-word text-wrap"
         for="minutos_uso"
       >
         Minutos de uso:
@@ -17,16 +17,12 @@
         min="15"
         max="480"
         step="15"
-        [ngClass]="{
-            'input input-bordered w-full sm:max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+        class="input input-bordered w-full max-w-36 md:max-w-40 max-sm:input-sm sm:h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm max-sm:w-1/2"
       />
     </div>
-    <div
-      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-1"
-    >
+    <div class="flex justify-between w-full gap-1">
       <label
-        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        class="label text-sm font-[600] text-base-content md:mb-0 md:items-center max-sm:w-1/2 wrap-break-word text-wrap"
         for="dias_previos_apertura"
       >
         Dias previos de apertura:
@@ -38,16 +34,12 @@
         placeholder="3"
         min="1"
         max="30"
-        [ngClass]="{
-            'input input-bordered w-full sm:max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+        class="input input-bordered w-full max-w-36 md:max-w-40 max-sm:input-sm sm:h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm max-sm:w-1/2"
       />
     </div>
-    <div
-      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-1"
-    >
+    <div class="flex justify-between w-full gap-1">
       <label
-        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        class="label text-sm font-[600] text-base-content md:mb-0 md:items-center max-sm:w-1/2 wrap-break-word text-wrap"
         for="hora_apertura"
       >
         Hora de apertura:
@@ -56,16 +48,12 @@
         type="time"
         id="hora_apertura"
         formControlName="hora_apertura"
-        [ngClass]="{
-            'input input-bordered w-full sm:max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+        class="input input-bordered w-full max-w-36 md:max-w-40 max-sm:input-sm sm:h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm max-sm:w-1/2"
       />
     </div>
-    <div
-      class="flex justify-between flex-col md:flex-row w-full md:w-1/2 gap-1"
-    >
+    <div class="flex justify-between w-full gap-1">
       <label
-        class="label text-sm font-[600] text-base-content mb-1 md:mb-0 md:items-center"
+        class="label text-sm font-[600] text-base-content md:mb-0 md:items-center max-sm:w-1/2 wrap-break-word text-wrap"
         for="tiempo_cancelacion"
       >
         Tiempo para cancelar:
@@ -78,9 +66,7 @@
         min="30"
         max="1440"
         step="30"
-        [ngClass]="{
-            'input input-bordered w-full sm:max-w-60 h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-          }"
+        class="input input-bordered w-full max-w-36 md:max-w-40 max-sm:input-sm sm:h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm max-sm:w-1/2"
       />
     </div>
   </div>
@@ -89,15 +75,64 @@
 <div class="flex w-full items-center">
   <h3 class="flex h-full text-xl">Franjas Horarias</h3>
   @if (permisoFranjas()) {
-  <button class="btn btn-primary h-8 ml-2" (click)="nuevaFranja()">
+  <button
+    class="btn max-sm:btn-xs btn-primary h-8 ml-2"
+    (click)="nuevaFranja()"
+  >
     <app-web-icon
       [nombreIcono]="'add-outline'"
-      [estilos]="'h-5 w-5 mr-1'"
+      estilos="max-sm:w-4 h-5 max-sm:w-4 w-5 mr-1"
     ></app-web-icon>
     <span>Nueva franja</span>
   </button>
   }
 </div>
+
+<ng-template #horaInicioCell let-context>
+  @if(context.row.original.id === -1 ||
+  filaFranjaEditando()[context.row.original.id]) {
+  <select [formControl]="horaInicio" class="select select-sm h-9 w-full">
+    <option value="" disabled>Seleccione hora inicio</option>
+    @for (opcion of opcionesTiempo(); track $index) {
+    <option [value]="opcion">{{ opcion }}</option>
+    }
+  </select>
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #horaFinCell let-context>
+  @if(context.row.original.id === -1 ||
+  filaFranjaEditando()[context.row.original.id]) {
+  <select [formControl]="horaFin" class="select select-sm h-9 w-full">
+    <option value="" disabled>Seleccione hora fin</option>
+    @for (opcion of opcionesTiempoFin(); track $index) {
+    <option [value]="opcion">{{ opcion }}</option>
+    }
+  </select>
+  } @else {
+  <span class="text-sm md:text-base">{{ context.getValue() }}</span>
+  }
+</ng-template>
+
+<ng-template #valorCell let-context>
+  @if(context.row.original.id === -1 ||
+  filaFranjaEditando()[context.row.original.id]) {
+  <input
+    [formControl]="valor"
+    placeholder="Valor"
+    class="input input-sm h-9 placeholder:text-gray-400"
+    type="number"
+    min="0"
+    step="1000"
+  />
+  } @else {
+  <span class="font-semibold text-sm md:text-base"
+    >${{ context.getValue() || 0 | number }}</span
+  >
+  }
+</ng-template>
 
 <table
   responsiveTable
@@ -130,44 +165,7 @@
     }
   </thead>
   <tbody>
-    @if (modoCreacion()) {
-    <tr class="bg-base-100">
-      <td class="p-2">
-        <select [formControl]="horaInicio" class="select select-sm h-9 w-full">
-          <option value="" disabled>Seleccione hora inicio</option>
-          @for (opcion of opcionesTiempo(); track $index) {
-          <option [value]="opcion">{{ opcion }}</option>
-          }
-        </select>
-      </td>
-      <td class="p-2">
-        <select [formControl]="horaFin" class="select select-sm h-9 w-full">
-          <option value="" disabled>Seleccione hora fin</option>
-          @for (opcion of opcionesTiempoFin(); track $index) {
-          <option [value]="opcion">{{ opcion }}</option>
-          }
-        </select>
-      </td>
-      <td class="p-2">
-        <input
-          [formControl]="valor"
-          placeholder="Valor"
-          class="input input-sm h-9 placeholder:text-gray-400"
-          type="number"
-          min="0"
-          step="1000"
-        />
-      </td>
-      <td></td>
-      <td class="p-2">
-        <acciones-tabla
-          [visibles]="true"
-          [acciones]="accionesNuevaFranja()"
-          [ngClass]="'flex justify-between'"
-        ></acciones-tabla>
-      </td>
-    </tr>
-    } @if (!tablaTarifas().getRowModel().rows.length && !modoCreacion()) {
+    @if (!tablaTarifas().getRowModel().rows.length) {
     <tr>
       <td
         [attr.colspan]="tablaTarifas().getAllColumns().length"
@@ -194,8 +192,8 @@
     </tr>
     @if (row.getIsExpanded()) {
     <tr class="bg-base-300 border-none">
-      <td [attr.colspan]="row.getVisibleCells().length + 1">
-        <div class="bg-base-100 rounded-md p-1 px-3 shadow-md w-full">
+      <td [attr.colspan]="row.getVisibleCells().length">
+        <div class="bg-base-100 rounded-md p-2 md:p-4 shadow-md w-full">
           @if (tablaTarifa.hiddenColumnIds().size !== 0) {
           <ul>
             @for (col of tablaTarifas.getAllLeafColumns(); track $index) { @if
@@ -218,7 +216,6 @@
             </li>
             } }
           </ul>
-          <div class="divider my-1"></div>
           }
         </div>
       </td>

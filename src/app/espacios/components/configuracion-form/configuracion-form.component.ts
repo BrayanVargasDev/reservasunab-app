@@ -10,6 +10,8 @@ import {
   Injector,
   viewChild,
   ElementRef,
+  TemplateRef,
+  ChangeDetectorRef,
 } from '@angular/core';
 import {
   FormGroup,
@@ -29,6 +31,7 @@ import {
   type ColumnDef,
   flexRenderComponent,
   FlexRenderDirective,
+  ExpandedState,
 } from '@tanstack/angular-table';
 
 import Pikaday from 'pikaday';
@@ -39,8 +42,18 @@ import { AccionesTablaComponent } from '@shared/components/acciones-tabla/accion
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
+import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
 import { AuthService } from '@auth/services/auth.service';
 import { EspaciosConfigService } from '@espacios/services/espacios-config.service';
+import { AppService } from '@app/app.service';
+import { CellContext } from '@tanstack/angular-table';
+import { UpperFirstPipe } from '@shared/pipes';
+import { ro } from 'date-fns/locale';
+
+interface Util {
+  $implicit: CellContext<any, any>;
+  data: BotonAcciones[];
+}
 
 @Component({
   selector: 'configuracion-form',
@@ -49,7 +62,6 @@ import { EspaciosConfigService } from '@espacios/services/espacios-config.servic
     ReactiveFormsModule,
     FlexRenderDirective,
     WebIconComponent,
-    AccionesTablaComponent,
     ResponsiveTableDirective,
   ],
   templateUrl: './configuracion-form.component.html',
@@ -60,6 +72,8 @@ export class ConfiguracionFormComponent<T> {
   private HORA_APERTURA = '05:00';
   private injector = inject(Injector);
   private espacioConfigService = inject(EspaciosConfigService);
+  private cdr = inject(ChangeDetectorRef);
+
   configuracionForm = input.required<FormGroup>();
   diaNumero = input.required<number>();
   permisoFranjas = input.required<boolean>();
@@ -69,11 +83,24 @@ export class ConfiguracionFormComponent<T> {
   eliminarFranja = output<{ dia: number; index: number }>();
 
   public authService = inject(AuthService);
+  public appService = inject(AppService);
   public horaInicio = new FormControl('', [Validators.required]);
   public horaFin = new FormControl('', [Validators.required]);
   public valor = new FormControl('', [Validators.required, Validators.min(0)]);
 
   public modoCreacion = signal(false);
+
+  public horaInicioCellTemplate =
+    viewChild.required<TemplateRef<Util>>('horaInicioCell');
+  public horaFinCellTemplate =
+    viewChild.required<TemplateRef<Util>>('horaFinCell');
+  public valorCellTemplate = viewChild.required<TemplateRef<Util>>('valorCell');
+
+  public filaFranjaEditando = signal<Record<number, boolean>>({});
+
+  public tableState = signal({
+    expanded: {} as ExpandedState,
+  });
 
   private minutosUsoSignal = computed(() => {
     const form = this.configuracionForm();
@@ -111,7 +138,9 @@ export class ConfiguracionFormComponent<T> {
   public opcionesTiempo = computed(() => {
     const minutosUso = +this.minutosUsoSignal();
     const apertura24 = this.horaAperturaSignal();
-    const franjasExistentes = this.franjasHorariasSignal();
+    const franjasExistentes = this.franjasHorariasSignal().filter(
+      (f: FranjaHoraria) => !this.filaFranjaEditando()[f.id!],
+    );
 
     if (!apertura24 || !minutosUso || minutosUso <= 0) return [];
 
@@ -151,7 +180,9 @@ export class ConfiguracionFormComponent<T> {
     if (!inicio24) return [];
 
     const minutosUso = +this.minutosUsoSignal();
-    const franjasExistentes = this.franjasHorariasSignal();
+    const franjasExistentes = this.franjasHorariasSignal().filter(
+      (f: FranjaHoraria) => !this.filaFranjaEditando()[f.id!],
+    );
 
     try {
       const [h, m] = inicio24.split(':').map(n => parseInt(n, 10));
@@ -192,68 +223,131 @@ export class ConfiguracionFormComponent<T> {
       icono: 'remove-circle-outline',
       color: 'error',
       tooltip: 'Cancelar',
+      disabled: this.appService.guardando(),
       eventoClick: () => this.cancelarCreacion(),
     },
     {
       icono: 'save-outline',
       color: 'success',
       tooltip: 'Guardar',
+      disabled: this.appService.guardando(),
       eventoClick: () => this.onGuardarNueva(),
     },
   ]);
 
   public columnasPorDefecto = signal<ColumnDef<FranjaHoraria>[]>([
     {
+      id: 'expansor',
+      header: '',
+      size: 40,
+      meta: {
+        priority: Infinity,
+      },
+      cell: context =>
+        flexRenderComponent(TableExpansorComponent, {
+          inputs: {
+            isExpanded: context.row.getIsExpanded(),
+            disabled: this.appService.editando(),
+          },
+          outputs: {
+            toggleExpand: () => this.onToggleRow(context.row),
+          },
+        }),
+    },
+    {
       id: 'hora_inicio',
-      header: 'Hora Inicio',
       accessorKey: 'hora_inicio',
-      size: 50,
-      cell: info => {
-        const d = parse(info.getValue() as string, 'HH:mm', new Date());
+      header: 'Hora Inicio',
+      meta: {
+        priority: 2,
+      },
+      size: 150,
+      accessorFn: row => {
+        // Convertir de 24h a 12h para mostrar
+        const d = parse(row.hora_inicio, 'HH:mm', new Date());
         return format(d, 'hh:mm a');
       },
+      cell: this.horaInicioCellTemplate,
     },
     {
       id: 'hora_fin',
       header: 'Hora Fin',
-      accessorKey: 'hora_fin',
-      size: 50,
-      cell: info => {
-        const d = parse(info.getValue() as string, 'HH:mm', new Date());
+      accessorFn: row => {
+        // Convertir de 24h a 12h para mostrar
+        const d = parse(row.hora_fin, 'HH:mm', new Date());
         return format(d, 'hh:mm a');
       },
+      accessorKey: 'hora_fin',
+      size: 150,
+      cell: this.horaFinCellTemplate,
     },
     {
       id: 'valor',
       header: 'Valor',
+      meta: {
+        priority: 1,
+      },
+      size: 150,
       accessorKey: 'valor',
-      cell: info => `$${info.getValue()?.toLocaleString() || 0}`,
-    },
-    {
-      id: 'estado',
-      header: 'Estado',
-      accessorKey: 'activa',
-      cell: info =>
-        `<span class="badge ${
-          info.getValue() ? 'badge-success' : 'badge-error'
-        } badge-sm py-1">${info.getValue() ? 'Activa' : 'Inactiva'}</span>`,
+      cell: this.valorCellTemplate,
     },
     {
       id: 'acciones',
       header: 'Acciones',
       cell: context => {
         const franja = context.row.original;
-        const acciones: BotonAcciones[] = this.permisoEliminarFranja()
-          ? [
-              {
-                tooltip: 'Eliminar',
-                icono: 'remove-circle-outline',
-                color: 'error',
-                eventoClick: (event: Event) =>
-                  this.eliminarFranjaLocal(franja, context.row.index),
-              },
-            ]
-          : [];
+        const id = franja.id!;
+
+        if (id === -1) {
+          return flexRenderComponent(AccionesTablaComponent, {
+            inputs: {
+              acciones: this.accionesNuevaFranja(),
+            },
+          });
+        }
+
+        const enEdicion = this.filaFranjaEditando()[id] && !this.modoCreacion();
+
+        const acciones: BotonAcciones[] = [];
+
+        if (enEdicion) {
+          acciones.push(
+            {
+              tooltip: 'Cancelar',
+              icono: 'remove-circle-outline',
+              color: 'error',
+              disabled: this.appService.guardando(),
+              eventoClick: (event: Event) => this.onCancelarEdicionFranja(id),
+            },
+            {
+              tooltip: 'Guardar',
+              icono: 'save-outline',
+              color: 'success',
+              disabled: this.appService.guardando(),
+              eventoClick: (event: Event) => this.onGuardarEdicionFranja(id),
+            },
+          );
+        } else {
+          acciones.push({
+            tooltip: 'Editar',
+            icono: 'pencil-outline',
+            color: 'accent',
+            disabled: this.appService.editando() || this.appService.guardando(),
+            eventoClick: (event: Event) => this.iniciarEdicionFranja(id),
+          });
+
+          if (this.permisoEliminarFranja()) {
+            acciones.push({
+              tooltip: 'Eliminar',
+              icono: 'remove-circle-outline',
+              color: 'error',
+              disabled:
+                this.appService.editando() || this.appService.guardando(),
+              eventoClick: (event: Event) =>
+                this.eliminarFranjaLocal(franja, context.row.index),
+            });
+          }
+        }
 
         return flexRenderComponent(AccionesTablaComponent, {
           inputs: {
@@ -265,13 +359,28 @@ export class ConfiguracionFormComponent<T> {
   ]);
 
   public tablaTarifas = createAngularTable(() => ({
-    data: this.franjasHorariasSignal(),
+    data: this.franjasQuery(),
     columns: this.columnasPorDefecto(),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     getRowCanExpand: () => true,
+    autoResetExpanded: false,
+    state: {
+      expanded: this.tableState().expanded,
+    },
+    onExpandedChange: estado => {
+      const newExpanded =
+        typeof estado === 'function'
+          ? estado(this.tableState().expanded)
+          : estado;
+
+      this.tableState.update(state => ({
+        ...state,
+        expanded: newExpanded,
+      }));
+    },
   }));
 
   fechaPicker = viewChild.required<ElementRef<HTMLInputElement>>('fechaPicker');
@@ -356,6 +465,43 @@ export class ConfiguracionFormComponent<T> {
     this.formChangesSignal.update(val => val + 1);
   }
 
+  public franjasQuery = computed<FranjaHoraria[]>(() => {
+    const franjas = this.franjasHorariasSignal();
+
+    if (this.modoCreacion()) {
+      const franjaVacia: FranjaHoraria = {
+        id: -1,
+        hora_inicio: '',
+        hora_fin: '',
+        valor: 0,
+        activa: true,
+      };
+      return [franjaVacia, ...franjas];
+    }
+    return franjas;
+  });
+
+  public onToggleRow(row: any, editing = false) {
+    const rowId = row.id;
+    const currentExpanded = this.tableState().expanded as Record<
+      string,
+      boolean
+    >;
+
+    let newExpanded: Record<string, boolean>;
+
+    if (editing) {
+      newExpanded = { [rowId]: true };
+    } else {
+      newExpanded = currentExpanded[rowId] ? {} : { [rowId]: true };
+    }
+
+    this.tableState.update(state => ({
+      ...state,
+      expanded: newExpanded,
+    }));
+  }
+
   public onCancelarFecha() {
     this.pickaFecha.setDate(null);
     this.modoCreacion.set(false);
@@ -364,6 +510,9 @@ export class ConfiguracionFormComponent<T> {
   public nuevaFranja() {
     this.modoCreacion.set(true);
     this.espacioConfigService.setCrandoFranja(true);
+    this.appService.setEditando(false);
+    this.filaFranjaEditando.set({});
+
     const aprobar =
       this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
     if (aprobar) {
@@ -472,6 +621,87 @@ export class ConfiguracionFormComponent<T> {
       this.espacioConfigService.espacioQuery.data()?.aprobar_reserva;
     if (!aprobar && this.valor.disabled)
       this.valor.enable({ emitEvent: false });
+  }
+
+  // Métodos para edición inline de franjas
+  public iniciarEdicionFranja(id: number) {
+    const franjas = this.franjasQuery();
+    const franja = franjas.find((f: FranjaHoraria) => f.id === id);
+
+    if (franja) {
+      this.horaInicio.setValue(this.convertirHoraA12(franja.hora_inicio));
+      this.horaFin.setValue(this.convertirHoraA12(franja.hora_fin));
+      this.valor.setValue(franja.valor?.toString() || '');
+
+      this.filaFranjaEditando.update(state => ({ ...state, [id]: true }));
+      this.appService.setEditando(true);
+      const index = franjas.findIndex((f: FranjaHoraria) => f.id === id);
+      this.onToggleRow({ id: index.toString() }, true);
+    }
+  }
+
+  public onCancelarEdicionFranja(id: number) {
+    this.filaFranjaEditando.update(state => ({ ...state, [id]: false }));
+    this.appService.setEditando(false);
+
+    // Colapsar todas las filas expandidas
+    this.tableState.update(state => ({
+      ...state,
+      expanded: {},
+    }));
+
+    // Limpiar controles de edición
+    this.horaInicio.reset();
+    this.horaFin.reset();
+    this.valor.reset();
+  }
+
+  public onGuardarEdicionFranja(id: number) {
+    if (this.horaInicio.invalid || this.horaFin.invalid || this.valor.invalid) {
+      return;
+    }
+
+    const franjas = this.franjasHorariasSignal();
+    const franjaOriginal = franjas.find((f: FranjaHoraria) => f.id === id);
+    const index = franjas.findIndex((f: FranjaHoraria) => f.id === id);
+
+    if (!franjaOriginal || index === -1) return;
+
+    const franjaActualizada = {
+      ...franjaOriginal,
+      hora_inicio: this.convertirHoraA24(this.horaInicio.value!),
+      hora_fin: this.convertirHoraA24(this.horaFin.value!),
+      valor: +this.valor.value!,
+    };
+
+    // Validar solapamiento con otras franjas
+    const otrasFranjas = franjas.filter(
+      (_: FranjaHoraria, i: number) => i !== index,
+    );
+    const solapamiento = this.validarSolapamientoRango(
+      franjaActualizada.hora_inicio,
+      franjaActualizada.hora_fin,
+      otrasFranjas,
+    );
+
+    if (solapamiento) {
+      console.error(
+        'El horario modificado se solapa con un horario existente.',
+      );
+      return;
+    }
+
+    // Actualizar el FormArray
+    const form = this.configuracionForm();
+    const franjasArray = form.get('franjas_horarias') as FormArray;
+    franjasArray.at(index).patchValue(franjaActualizada);
+
+    this.onCancelarEdicionFranja(id);
+  }
+
+  private convertirHoraA12(hora24: string): string {
+    const d = parse(hora24, 'HH:mm', new Date());
+    return format(d, 'hh:mm a');
   }
 
   ngOnDestroy() {

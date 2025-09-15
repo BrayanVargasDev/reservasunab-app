@@ -57,7 +57,7 @@ export class InfoReservaComponent {
       OK: 'Completado',
       FAILED: 'Fallido',
       EXPIRED: 'Expirado',
-      NON_AUTHORIZED: 'No Autorizado',
+      NOT_AUTHORIZED: 'No Autorizado',
     };
 
     if ('codigo' in pago && 'estado' in pago) {
