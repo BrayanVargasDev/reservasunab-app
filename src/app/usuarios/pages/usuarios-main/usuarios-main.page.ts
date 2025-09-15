@@ -129,7 +129,7 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
       header: 'Documento',
       accessorKey: 'documento',
       cell: info => `<span class="font-bold">${info.getValue()}</span>`,
-      size: 300,
+      size: 200,
       meta: {
         priority: Infinity,
       },

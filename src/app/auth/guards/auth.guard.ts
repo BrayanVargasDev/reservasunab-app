@@ -20,45 +20,81 @@ export class AuthGuard implements CanActivate {
   ): Observable<boolean> | boolean {
     const estadoAuth = this.authService.estadoAutenticacion();
 
-    // Si ya está autenticado por presencia de usuario + refresh válido, permitir
+    // Si ya está autenticado y la sesión es válida, permitir acceso
     if (estadoAuth === 'autenticado' && this.authService.isSessionValid()) {
       return true;
     }
 
-    // Si está chequeando, esperar un tiempo limitado
+    // Si está chequeando, esperar resolución con timeout mejorado
     if (estadoAuth === 'chequeando') {
       return this.waitForAuthResolution(state.url);
     }
 
-    // Estado noAutenticado o sesión inválida
+    // Si no está autenticado o sesión inválida, redirigir
+    if (estadoAuth === 'noAutenticado' || !this.authService.isSessionValid()) {
+      this.redirectToLogin(state.url);
+      return false;
+    }
+
+    // Estado por defecto: denegar acceso
     this.redirectToLogin(state.url);
     return false;
   }
 
   private waitForAuthResolution(returnUrl: string): Observable<boolean> {
-    // Esperar máximo 3 segundos para que se resuelva la autenticación
-    return timer(0, 100).pipe(
+    const maxWaitTime = 5000; // 5 segundos máximo
+    const checkInterval = 200; // Verificar cada 200ms
+    const maxChecks = Math.ceil(maxWaitTime / checkInterval);
+
+    return timer(0, checkInterval).pipe(
       switchMap(() => {
         const estado = this.authService.estadoAutenticacion();
 
-        if (estado === 'autenticado') {
+        // Si está autenticado y sesión válida, permitir
+        if (estado === 'autenticado' && this.authService.isSessionValid()) {
           return of(true);
         }
 
+        // Si no está autenticado, redirigir
         if (estado === 'noAutenticado') {
           this.redirectToLogin(returnUrl);
           return of(false);
         }
 
+        // Si hay refresh en progreso, esperar un poco más
+        if (this.authService.isRefreshInProgress()) {
+          return of(null); // Continuar esperando
+        }
+
+        // Si no hay operaciones en vuelo pero sigue en chequeo, forzar resolución
+        if (estado === 'chequeando') {
+          this.authService.forceResolveAuthState();
+          const newEstado = this.authService.estadoAutenticacion();
+
+          if (newEstado === 'autenticado' && this.authService.isSessionValid()) {
+            return of(true);
+          } else {
+            this.redirectToLogin(returnUrl);
+            return of(false);
+          }
+        }
+
         // Continuar esperando
         return of(null);
       }),
-      take(30), // Máximo 3 segundos (30 * 100ms)
+      take(maxChecks),
       map(result => {
         if (result === null) {
-          // Timeout: asumir no autenticado
-          this.redirectToLogin(returnUrl);
-          return false;
+          // Timeout: forzar resolución y asumir no autenticado
+          console.warn('Auth resolution timeout, forcing resolution');
+          this.authService.forceResolveAuthState();
+
+          if (this.authService.estadoAutenticacion() === 'autenticado' && this.authService.isSessionValid()) {
+            return true;
+          } else {
+            this.redirectToLogin(returnUrl);
+            return false;
+          }
         }
         return result;
       })

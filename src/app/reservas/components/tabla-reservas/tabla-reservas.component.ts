@@ -30,7 +30,7 @@ import { ReservasAdminService } from '@reservas/services/reservas-admin.service'
 import { AppService } from '@app/app.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { AuthService } from '@auth/services/auth.service';
-import { BotonAcciones } from '@shared/interfaces';
+import { BotonAcciones, Persona } from '@shared/interfaces';
 import { PaginadorComponent } from '@shared/components/paginador/paginador.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
@@ -56,7 +56,7 @@ interface Util {
     ResponsiveTableDirective,
     TableExpansorComponent,
     UpperFirstPipe,
-  ModalVerReservaComponent,
+    ModalVerReservaComponent,
   ],
 })
 export class TablaReservasComponent {
@@ -85,13 +85,6 @@ export class TablaReservasComponent {
         `<span class="font-bold max-sm:text-sm text-base">${info.getValue()}</span>`,
     },
     {
-      id: 'codigo',
-      accessorKey: 'codigo',
-      header: 'Código',
-      size: 300,
-      cell: this.codigoCell,
-    },
-    {
       id: 'usuario',
       header: 'Usuario',
       size: 300,
@@ -101,7 +94,9 @@ export class TablaReservasComponent {
       cell: info => {
         const persona = info.row.original.usuario_reserva?.persona;
         if (!persona) return '';
-        return `<span class="font-bold max-sm:text-sm text-base">${persona.primer_nombre} ${persona.primer_apellido}</span>`;
+        return `<span class="font-bold max-sm:text-sm text-base">${this.obtenerNombreCompleto(
+          persona,
+        )}</span>`;
       },
     },
     {
@@ -120,6 +115,28 @@ export class TablaReservasComponent {
       id: 'horas',
       header: 'Horario',
       cell: this.horasCell,
+    },
+    {
+      id: 'aprobado_por',
+      header: 'Aprobado por',
+      size: 300,
+      cell: info => {
+        const persona = info.row.original.aprobado_por?.persona;
+        if (!persona) return '';
+        return `<span class="font-bold max-sm:text-sm text-base">${this.obtenerNombreCompleto(
+          persona,
+        )}</span>`;
+      },
+    },
+    {
+      id: 'aprobado_en',
+      accessorKey: 'aprobado_en',
+      header: 'Fecha aprob.',
+      cell: info => {
+        const val = info.getValue() as string;
+        if (!val) return '';
+        return new Date(val).toLocaleString();
+      },
     },
     {
       id: 'estado',
@@ -193,6 +210,16 @@ export class TablaReservasComponent {
       },
     },
   ]);
+
+  private obtenerNombreCompleto(persona: Persona) {
+    const nombre = `${persona.primer_nombre || ''} ${
+      persona.segundo_nombre || ''
+    }`.trim();
+    const apellido = `${persona.primer_apellido || ''} ${
+      persona.segundo_apellido || ''
+    }`.trim();
+    return `${nombre} ${apellido}`.trim();
+  }
 
   public alertaReserva = viewChild.required('alertaReserva', {
     read: ViewContainerRef,

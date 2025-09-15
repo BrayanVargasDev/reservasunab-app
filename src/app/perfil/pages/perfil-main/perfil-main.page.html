@@ -1,4 +1,46 @@
 <div class="flex flex-col w-full relative max-sm:pt-2 sm:px-2">
+  <!-- Skip Links para navegación rápida -->
+  <a
+    href="#contenido-principal"
+    class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-primary text-primary-content px-4 py-2 rounded z-50"
+  >
+    Saltar al contenido principal
+  </a>
+  <a
+    href="#navegacion-tabs"
+    class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-48 bg-secondary text-secondary-content px-4 py-2 rounded z-50"
+  >
+    Saltar a navegación de pestañas
+  </a>
+  <a
+    href="#formulario-perfil"
+    class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-96 bg-accent text-accent-content px-4 py-2 rounded z-50"
+  >
+    Saltar al formulario
+  </a>
+  <!-- Live regions para anuncios de accesibilidad -->
+  <div
+    id="accesibilidad-live-region"
+    aria-live="polite"
+    aria-atomic="true"
+    class="sr-only"
+  ></div>
+
+  <!-- Live region para estados de carga y operaciones -->
+  <div
+    id="estado-live-region"
+    aria-live="polite"
+    aria-atomic="true"
+    class="sr-only"
+  ></div>
+
+  <!-- Live region para validaciones -->
+  <div
+    id="validacion-live-region"
+    aria-live="assertive"
+    aria-atomic="true"
+    class="sr-only"
+  ></div>
   <div class="w-full sticky top-0 z-20">
     <div class="flex w-full max-w-4xl mx-auto justify-between pb-1 bg-base-300">
       <div class="flex flex-col justify-center">
@@ -24,1209 +66,1273 @@
     </div>
   </div>
   <!-- Contenido Principal -->
-
-  <div
-    class="lg:col-span-2 tabs w-full max-w-4xl overflow-hidden mx-auto max-md:tabs-box tabs-lift"
-  >
-    <!-- Pestañas -->
-    <input
-      [checked]="selectedTab() === 'perfil'"
-      type="radio"
-      name="my_tabs"
-      (change)="cambiarTab('perfil')"
-      class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto"
-      aria-label="Información personal"
-    />
+  <main id="contenido-principal">
     <div
-      class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
+      id="navegacion-tabs"
+      class="lg:col-span-2 tabs w-full max-w-4xl overflow-hidden mx-auto max-md:tabs-box tabs-lift"
     >
-      <form
-        class="overflow-y-auto relative"
-        [formGroup]="perfilForm"
-        (ngSubmit)="guardarCambios()"
+      <!-- Pestañas -->
+      <input
+        [checked]="selectedTab() === 'perfil'"
+        type="radio"
+        name="my_tabs"
+        (change)="cambiarTab('perfil')"
+        class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto"
+        aria-label="Información personal"
+      />
+      <div
+        class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
       >
-        @if (isCompleteProfileMode()) {
-        <div class="w-full max-w-4xl mx-auto mb-2">
-          <div class="alert alert-info rounded-lg">
-            <app-web-icon
-              estilos="h-6 w-6"
-              nombreIcono="information-circle-outline"
-            ></app-web-icon>
-            <div>
-              <h3 class="font-bold">Completa tu perfil</h3>
-              <div class="text-xs">
-                Para continuar usando la aplicación, necesitas completar toda tu
-                información personal.
-              </div>
-            </div>
-          </div>
-        </div>
-        }
-        <div class="mb-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3">
-          <div class="flex flex-col w-full md:w-1/2">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="nombre"
-            >
-              Nombre <span class="text-error">*</span>
-            </label>
-            <input
-              type="text"
-              id="nombre"
-              formControlName="nombre"
-              placeholder="Nombre"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(perfilForm, 'nombre')
-              }"
-            />
-            @if (formUtils.esCampoInvalido(perfilForm, 'nombre')) {
-            <div class="text-sm text-error">
-              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'nombre') }}
-            </div>
-            }
-          </div>
-          <div class="flex flex-col w-full md:w-1/2">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="apellido"
-            >
-              Apellido <span class="text-error">*</span>
-            </label>
-            <input
-              type="text"
-              id="apellido"
-              formControlName="apellido"
-              placeholder="Apellido"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(perfilForm, 'apellido')
-              }"
-            />
-            @if (formUtils.esCampoInvalido(perfilForm, 'apellido')) {
-            <div class="text-sm text-error">
-              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'apellido') }}
-            </div>
-            }
-          </div>
-        </div>
-        <div class="my-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3">
-          <div class="flex flex-col w-full md:w-1/2">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="telefono"
-            >
-              Teléfono <span class="text-error">*</span>
-            </label>
-            <input
-              type="tel"
-              id="telefono"
-              inputSoloNumeros
-              formControlName="telefono"
-              placeholder="1234567890"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(perfilForm, 'telefono')
-              }"
-            />
-            @if (formUtils.esCampoInvalido(perfilForm, 'telefono')) {
-            <div class="text-sm text-error">
-              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'telefono') }}
-            </div>
-            }
-          </div>
-          <div class="flex flex-col w-full md:w-1/2">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="fechaNacimiento"
-            >
-              Fecha de Nacimiento <span class="text-error">*</span>
-            </label>
-            <label class="input input-bordered w-full h-11 rounded-box">
-              <input
-                type="text"
-                #fechaNacimientoPicker
-                id="fechaNacimiento"
-                placeholder="dd/mm/yyyy"
-                formControlName="fechaNacimiento"
-                [ngClass]="{
-                  'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'fechaNacimiento'
-                  )
-                }"
-              />
+        <form
+          id="formulario-perfil"
+          class="overflow-y-auto relative"
+          [formGroup]="perfilForm"
+          (ngSubmit)="guardarCambios()"
+        >
+          @if (isCompleteProfileMode()) {
+          <div class="w-full max-w-4xl mx-auto mb-2">
+            <div class="alert alert-info rounded-lg">
               <app-web-icon
-                [nombreIcono]="'calendar-outline'"
-                [estilos]="'h-5 w-5'"
+                estilos="h-6 w-6"
+                nombreIcono="information-circle-outline"
               ></app-web-icon>
-            </label>
-            <div #contenedorCalendario class="w-full relative"></div>
-            @if (formUtils.esCampoInvalido(perfilForm, 'fechaNacimiento')) {
-            <div class="text-sm text-error">
-              {{
-                formUtils.obtenerErrorDelCampo(perfilForm, 'fechaNacimiento')
-              }}
-            </div>
-            }
-          </div>
-        </div>
-
-        <!-- Sección de Información del Documento -->
-        <div class="my-3 px-1">
-          <h3 class="text-lg font-semibold text-base-content mb-4">
-            Información del Documento
-          </h3>
-
-          <!-- Tipo y Número de Documento -->
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
-            <div class="flex flex-col w-full md:w-2/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="tipoDocumento"
-              >
-                Tipo Doc. <span class="text-error">*</span>
-              </label>
-              <select
-                type="text"
-                id="tipoDocumento"
-                formControlName="tipoDocumento"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'tipoDocumento'
-                  )
-                }"
-              >
-                <option value="" disabled selected>Seleccione</option>
-                @for (tipoDoc of appService.tipoDocQuery.data(); track
-                tipoDoc.id) {
-                <option [value]="tipoDoc.id">
-                  {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
-                </option>
-                }
-              </select>
-              @if (formUtils.esCampoInvalido(perfilForm, 'tipoDocumento')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(perfilForm, 'tipoDocumento')
-                }}
+              <div>
+                <h3 class="font-bold">Completa tu perfil</h3>
+                <div class="text-xs">
+                  Para continuar usando la aplicación, necesitas completar toda
+                  tu información personal.
+                </div>
               </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-3/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="documento"
-              >
-                Documento <span class="text-error">*</span>
-              </label>
-              <input
-                type="text"
-                id="documento"
-                inputSoloNumeros
-                inputmode="numeric"
-                formControlName="documento"
-                placeholder="123456789"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'documento'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(perfilForm, 'documento')) {
-              <div class="text-sm text-error">
-                {{ formUtils.obtenerErrorDelCampo(perfilForm, 'documento') }}
-              </div>
-              }
             </div>
           </div>
-
-          <!-- Ciudad de Expedición del Documento -->
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="ciudadExpedicion"
-              >
-                Ciudad de Expedición <span class="text-error">*</span>
-              </label>
-              <div class="relative">
+          }
+          <!-- Información Personal -->
+          <fieldset class="mb-2 px-1">
+            <legend class="text-lg font-semibold text-base-content mb-4 px-1">
+              Información Personal
+            </legend>
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="nombre"
+                >
+                  Nombre <span class="text-error">*</span>
+                </label>
                 <input
                   type="text"
-                  id="ciudadExpedicion"
-                  [value]="ciudadTerminoBusqueda()"
-                  (input)="onCiudadInputChange($event)"
-                  (keydown)="onCiudadKeyDown($event)"
-                  (focus)="mostrarOpcionesCiudades.set(true)"
-                  (blur)="ocultarOpcionesCiudades()"
-                  placeholder="Escriba para buscar una ciudad..."
-                  autocomplete="off"
-                  role="combobox"
-                  [attr.aria-expanded]="mostrarOpcionesCiudades()"
-                  [attr.aria-activedescendant]="
-                    indiceOpcionSeleccionada() >= 0
-                      ? 'ciudad-option-' + indiceOpcionSeleccionada()
-                      : null
-                  "
+                  id="nombre"
+                  formControlName="nombre"
+                  placeholder="Nombre"
                   [ngClass]="{
                     'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
                     'input-error': formUtils.esCampoInvalido(
                       perfilForm,
-                      'ciudadExpedicion'
+                      'nombre'
                     )
                   }"
                 />
-                @if (mostrarOpcionesCiudades() && ciudadesFiltradas().length >
-                0) {
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
-                  role="listbox"
+                @if (formUtils.esCampoInvalido(perfilForm, 'nombre')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'nombre') }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="apellido"
                 >
-                  @for (ciudad of ciudadesFiltradas(); track ciudad.id; let i =
-                  $index) {
+                  Apellido <span class="text-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="apellido"
+                  formControlName="apellido"
+                  placeholder="Apellido"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'apellido'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'apellido')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'apellido') }}
+                </div>
+                }
+              </div>
+            </div>
+          </fieldset>
+          <!-- Información de Contacto -->
+          <fieldset class="my-2 px-1">
+            <legend class="text-lg font-semibold text-base-content mb-4 px-1">
+              Información de Contacto
+            </legend>
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="telefono"
+                >
+                  Teléfono <span class="text-error">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  inputSoloNumeros
+                  formControlName="telefono"
+                  placeholder="1234567890"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'telefono'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'telefono')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'telefono') }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fechaNacimiento"
+                >
+                  Fecha de Nacimiento <span class="text-error">*</span>
+                </label>
+                <label class="input input-bordered w-full h-11 rounded-box">
+                  <input
+                    type="text"
+                    #fechaNacimientoPicker
+                    id="fechaNacimiento"
+                    placeholder="dd/mm/yyyy"
+                    formControlName="fechaNacimiento"
+                    [ngClass]="{
+                      'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'fechaNacimiento'
+                      )
+                    }"
+                  />
+                  <app-web-icon
+                    [nombreIcono]="'calendar-outline'"
+                    [estilos]="'h-5 w-5'"
+                  ></app-web-icon>
+                </label>
+                <div #contenedorCalendario class="w-full relative"></div>
+                @if (formUtils.esCampoInvalido(perfilForm, 'fechaNacimiento')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      perfilForm,
+                      'fechaNacimiento'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Sección de Información del Documento -->
+          <fieldset class="my-3 px-1">
+            <legend class="text-lg font-semibold text-base-content mb-4">
+              Información del Documento
+            </legend>
+
+            <!-- Tipo y Número de Documento -->
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+              <div class="flex flex-col w-full md:w-2/6">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="tipoDocumento"
+                >
+                  Tipo Doc. <span class="text-error">*</span>
+                </label>
+                <select
+                  type="text"
+                  id="tipoDocumento"
+                  formControlName="tipoDocumento"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'tipoDocumento'
+                    )
+                  }"
+                >
+                  <option value="" disabled selected>Seleccione</option>
+                  @for (tipoDoc of appService.tipoDocQuery.data(); track
+                  tipoDoc.id) {
+                  <option [value]="tipoDoc.id">
+                    {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
+                  </option>
+                  }
+                </select>
+                @if (formUtils.esCampoInvalido(perfilForm, 'tipoDocumento')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(perfilForm, 'tipoDocumento')
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-3/6">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="documento"
+                >
+                  Documento <span class="text-error">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="documento"
+                  inputSoloNumeros
+                  inputmode="numeric"
+                  formControlName="documento"
+                  placeholder="123456789"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'documento'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'documento')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'documento') }}
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- Ciudad de Expedición del Documento -->
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="ciudadExpedicion"
+                >
+                  Ciudad de Expedición <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="ciudadExpedicion"
+                    [value]="ciudadTerminoBusqueda()"
+                    (input)="onCiudadInputChange($event)"
+                    (keydown)="onCiudadKeyDown($event)"
+                    (focus)="mostrarOpcionesCiudades.set(true)"
+                    (blur)="ocultarOpcionesCiudades()"
+                    placeholder="Escriba para buscar una ciudad..."
+                    autocomplete="off"
+                    role="combobox"
+                    [attr.aria-expanded]="mostrarOpcionesCiudades()"
+                    [attr.aria-activedescendant]="
+                      indiceOpcionSeleccionada() >= 0
+                        ? 'ciudad-option-' + indiceOpcionSeleccionada()
+                        : null
+                    "
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'ciudadExpedicion'
+                      )
+                    }"
+                  />
+                  @if (mostrarOpcionesCiudades() && ciudadesFiltradas().length >
+                  0) {
                   <div
-                    [id]="'ciudad-option-' + i"
-                    class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
-                    [class.highlighted]="i === indiceOpcionSeleccionada()"
-                    role="option"
-                    [attr.aria-selected]="i === indiceOpcionSeleccionada()"
-                    (click)="seleccionarCiudad(ciudad)"
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                    role="listbox"
                   >
-                    {{ ciudad.nombre }}
+                    @for (ciudad of ciudadesFiltradas(); track ciudad.id; let i
+                    = $index) {
+                    <div
+                      [id]="'ciudad-option-' + i"
+                      class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                      [class.highlighted]="i === indiceOpcionSeleccionada()"
+                      role="option"
+                      [attr.aria-selected]="i === indiceOpcionSeleccionada()"
+                      (click)="seleccionarCiudad(ciudad)"
+                    >
+                      {{ ciudad.nombre }}
+                    </div>
+                    }
+                  </div>
+                  } @if (mostrarOpcionesCiudades() && ciudadesFiltradas().length
+                  === 0 && ciudadTerminoBusqueda()) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                  >
+                    <div class="py-3 px-4 text-gray-500 italic">
+                      No se encontraron ciudades
+                    </div>
                   </div>
                   }
                 </div>
-                } @if (mostrarOpcionesCiudades() && ciudadesFiltradas().length
-                === 0 && ciudadTerminoBusqueda()) {
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                @if (formUtils.esCampoInvalido(perfilForm, 'ciudadExpedicion'))
+                {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      perfilForm,
+                      'ciudadExpedicion'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Información de Ubicación -->
+          <fieldset class="my-2 px-1">
+            <legend class="text-lg font-semibold text-base-content mb-4 px-1">
+              Información de Ubicación
+            </legend>
+            <div class="flex flex-col w-full mb-4">
+              <label class="label text-sm font-[600] text-base-content mb-1"
+                >Email <span class="text-error">*</span></label
+              >
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                placeholder="micorreo&#64;unab.edu.co"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(perfilForm, 'email')
+                }"
+              />
+              @if (formUtils.esCampoInvalido(perfilForm, 'email')) {
+              <div class="text-sm text-error">
+                {{ formUtils.obtenerErrorDelCampo(perfilForm, 'email') }}
+              </div>
+              }
+            </div>
+
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label class="label text-sm font-[600] text-base-content mb-1"
+                  >Dirección <span class="text-error">*</span></label
                 >
-                  <div class="py-3 px-4 text-gray-500 italic">
-                    No se encontraron ciudades
-                  </div>
-                </div>
-                }
-              </div>
-              @if (formUtils.esCampoInvalido(perfilForm, 'ciudadExpedicion')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(perfilForm, 'ciudadExpedicion')
-                }}
-              </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <div class="my-2 px-1 flex flex-col w-full">
-          <label class="label text-sm font-[600] text-base-content mb-1"
-            >Email <span class="text-error">*</span></label
-          >
-          <input
-            type="email"
-            id="email"
-            formControlName="email"
-            placeholder="micorreo&#64;unab.edu.co"
-            [ngClass]="{
-              'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-              'input-error': formUtils.esCampoInvalido(perfilForm, 'email')
-            }"
-          />
-          @if (formUtils.esCampoInvalido(perfilForm, 'email')) {
-          <div class="text-sm text-error">
-            {{ formUtils.obtenerErrorDelCampo(perfilForm, 'email') }}
-          </div>
-          }
-        </div>
-
-        <div class="flex flex-col md:flex-row w-full px-1 gap-2 md:gap-3">
-          <div class="flex flex-col w-full md:w-1/2">
-            <label class="label text-sm font-[600] text-base-content mb-1"
-              >Dirección <span class="text-error">*</span></label
-            >
-            <input
-              type="text"
-              id="direccion"
-              formControlName="direccion"
-              placeholder="Calle X # 123A-45"
-              (keydown)="bloquearPuntoYComa($event)"
-              (input)="sanearDireccionInput('direccion')"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(
-                  perfilForm,
-                  'direccion'
-                )
-              }"
-            />
-            @if (formUtils.esCampoInvalido(perfilForm, 'direccion')) {
-            <div class="text-sm text-error">
-              {{ formUtils.obtenerErrorDelCampo(perfilForm, 'direccion') }}
-            </div>
-            }
-          </div>
-          <!-- Ciudad de Residencia -->
-          <div class="flex flex-col w-full md:w-1/2">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="ciudadResidencia"
-            >
-              Ciudad de Residencia <span class="text-error">*</span>
-            </label>
-            <div class="relative">
-              <input
-                type="text"
-                id="ciudadResidencia"
-                [value]="ciudadResidenciaTerminoBusqueda()"
-                (input)="onCiudadResidenciaInputChange($event)"
-                (keydown)="onCiudadResidenciaKeyDown($event)"
-                (focus)="mostrarOpcionesCiudadesResidencia.set(true)"
-                (blur)="ocultarOpcionesCiudadesResidencia()"
-                placeholder="Escriba para buscar una ciudad..."
-                autocomplete="off"
-                role="combobox"
-                [attr.aria-expanded]="mostrarOpcionesCiudadesResidencia()"
-                [attr.aria-activedescendant]="
-                  indiceOpcionSeleccionadaResidencia() >= 0
-                    ? 'ciudad-residencia-option-' +
-                      indiceOpcionSeleccionadaResidencia()
-                    : null
-                "
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'ciudadResidencia'
-                  )
-                }"
-              />
-              @if (mostrarOpcionesCiudadesResidencia() &&
-              ciudadesResidenciaFiltradas().length > 0) {
-              <div
-                class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
-                role="listbox"
-              >
-                @for (ciudad of ciudadesResidenciaFiltradas(); track ciudad.id;
-                let i = $index) {
-                <div
-                  [id]="'ciudad-residencia-option-' + i"
-                  class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
-                  [class.highlighted]="
-                    i === indiceOpcionSeleccionadaResidencia()
-                  "
-                  role="option"
-                  [attr.aria-selected]="
-                    i === indiceOpcionSeleccionadaResidencia()
-                  "
-                  (click)="seleccionarCiudadResidencia(ciudad)"
-                >
-                  {{ ciudad.nombre }}
-                </div>
-                }
-              </div>
-              } @if (mostrarOpcionesCiudadesResidencia() &&
-              ciudadesResidenciaFiltradas().length === 0 &&
-              ciudadResidenciaTerminoBusqueda()) {
-              <div
-                class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
-              >
-                <div class="py-3 px-4 text-gray-500 italic">
-                  No se encontraron ciudades
-                </div>
-              </div>
-              }
-            </div>
-            @if (formUtils.esCampoInvalido(perfilForm, 'ciudadResidencia')) {
-            <div class="text-sm text-error">
-              {{
-                formUtils.obtenerErrorDelCampo(perfilForm, 'ciudadResidencia')
-              }}
-            </div>
-            }
-          </div>
-        </div>
-
-        <!-- Sección de Información Tributaria -->
-        <div class="my-3 px-1">
-          <h3 class="text-lg font-semibold text-base-content mb-4">
-            Información Tributaria
-          </h3>
-
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="tipoPersona"
-              >
-                Tipo de Persona <span class="text-error">*</span>
-              </label>
-              <select
-                id="tipoPersona"
-                formControlName="tipoPersona"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'tipoPersona'
-                  )
-                }"
-              >
-                <option value="" disabled selected>Seleccione</option>
-                <option value="natural">Persona Natural</option>
-                <option value="juridica">Persona Jurídica</option>
-              </select>
-              @if (formUtils.esCampoInvalido(perfilForm, 'tipoPersona')) {
-              <div class="text-sm text-error">
-                {{ formUtils.obtenerErrorDelCampo(perfilForm, 'tipoPersona') }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="regimenTributario"
-              >
-                Régimen Tributario <span class="text-error">*</span>
-              </label>
-              <select
-                id="regimenTributario"
-                formControlName="regimenTributario"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    perfilForm,
-                    'regimenTributario'
-                  )
-                }"
-              >
-                <option value="" disabled selected>
-                  @if (perfilService.regimenesTributariosCargando()) {
-                  Cargando... } @else { Seleccione }
-                </option>
-                @for (regimen of perfilService.regimenesTributarios(); track
-                regimen.codigo) {
-                <option [value]="regimen.codigo">
-                  {{ regimen.nombre }}
-                </option>
-                }
-              </select>
-              @if (formUtils.esCampoInvalido(perfilForm, 'regimenTributario')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    perfilForm,
-                    'regimenTributario'
-                  )
-                }}
-              </div>
-              } @if (perfilService.regimenesTributariosError()) {
-              <div class="text-sm text-warning">
-                Error al cargar regímenes tributarios. Por favor, recarga la
-                página.
-              </div>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Checkbox: Facturación diferente -->
-        <div class="my-4 px-1">
-          <label class="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              class="checkbox checkbox-primary"
-              formControlName="usaFacturacionDiferente"
-            />
-            <span class="text-sm font-[600] text-base-content">
-              La información de facturación es diferente a la del usuario
-            </span>
-          </label>
-        </div>
-
-        <!-- Sección de Facturación (condicional) -->
-        @if (perfilForm.get('usaFacturacionDiferente')?.value) {
-        <div
-          class="my-4 p-3 rounded-box border border-base-300 bg-base-200/30"
-          formGroupName="facturacion"
-        >
-          <h3 class="text-lg font-semibold text-base-content mb-4">
-            Información de Facturación
-          </h3>
-
-          <!-- Documento facturación -->
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
-            <div class="flex flex-col w-full md:w-2/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="ftipoDocumento"
-              >
-                Tipo Doc. <span class="text-error">*</span>
-              </label>
-              <select
-                id="ftipoDocumento"
-                formControlName="tipoDocumento"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'tipoDocumento'
-                  )
-                }"
-              >
-                <option value="" disabled selected>Seleccione</option>
-                @for (tipoDoc of appService.tipoDocQuery.data(); track
-                tipoDoc.id) {
-                <option [value]="tipoDoc.id">
-                  {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
-                </option>
-                }
-              </select>
-              @if (formUtils.esCampoInvalido(facturacionForm, 'tipoDocumento'))
-              {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    facturacionForm,
-                    'tipoDocumento'
-                  )
-                }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-3/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fdocumento"
-              >
-                Documento <span class="text-error">*</span>
-              </label>
-              <input
-                id="fdocumento"
-                type="text"
-                inputSoloNumeros
-                inputmode="numeric"
-                formControlName="documento"
-                placeholder="123456789"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'documento'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'documento')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(facturacionForm, 'documento')
-                }}
-              </div>
-              }
-            </div>
-            @if (esNitFacturacion()) {
-            <div class="flex flex-col w-full md:w-1/6">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fdigitoVerificacion"
-              >
-                DV <span class="text-error">*</span>
-              </label>
-              <input
-                id="fdigitoVerificacion"
-                type="text"
-                formControlName="digitoVerificacion"
-                placeholder="0"
-                maxlength="1"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'digitoVerificacion'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm,
-              'digitoVerificacion')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    facturacionForm,
-                    'digitoVerificacion'
-                  )
-                }}
-              </div>
-              }
-            </div>
-            }
-          </div>
-
-          <!-- Ciudades facturación: expedición -->
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fciudadExpedicion"
-              >
-                Ciudad de Expedición <span class="text-error">*</span>
-              </label>
-              <div class="relative">
                 <input
-                  id="fciudadExpedicion"
                   type="text"
-                  [value]="ciudadFactTerminoBusquedaExpedicion()"
-                  (input)="onCiudadFactExpedicionInputChange($event)"
-                  (keydown)="onCiudadFactExpedicionKeyDown($event)"
-                  (focus)="mostrarOpcionesCiudadesFactExpedicion.set(true)"
-                  (blur)="ocultarOpcionesCiudadesFactExpedicion()"
-                  [disabled]="facturacionForm.disabled"
-                  placeholder="Escriba para buscar una ciudad..."
-                  autocomplete="off"
-                  role="combobox"
-                  [attr.aria-expanded]="mostrarOpcionesCiudadesFactExpedicion()"
-                  [attr.aria-activedescendant]="
-                    indiceOpcionSeleccionadaFactExpedicion() >= 0
-                      ? 'ciudad-fact-exp-option-' +
-                        indiceOpcionSeleccionadaFactExpedicion()
-                      : null
-                  "
+                  id="direccion"
+                  formControlName="direccion"
+                  placeholder="Calle X # 123A-45"
+                  (keydown)="bloquearPuntoYComa($event)"
+                  (input)="sanearDireccionInput('direccion')"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'direccion'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(perfilForm, 'direccion')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(perfilForm, 'direccion') }}
+                </div>
+                }
+              </div>
+              <!-- Ciudad de Residencia -->
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="ciudadResidencia"
+                >
+                  Ciudad <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="ciudadResidencia"
+                    [value]="ciudadResidenciaTerminoBusqueda()"
+                    (input)="onCiudadResidenciaInputChange($event)"
+                    (keydown)="onCiudadResidenciaKeyDown($event)"
+                    (focus)="mostrarOpcionesCiudadesResidencia.set(true)"
+                    (blur)="ocultarOpcionesCiudadesResidencia()"
+                    placeholder="Escriba para buscar una ciudad..."
+                    autocomplete="off"
+                    role="combobox"
+                    [attr.aria-expanded]="mostrarOpcionesCiudadesResidencia()"
+                    [attr.aria-activedescendant]="
+                      indiceOpcionSeleccionadaResidencia() >= 0
+                        ? 'ciudad-residencia-option-' +
+                          indiceOpcionSeleccionadaResidencia()
+                        : null
+                    "
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        perfilForm,
+                        'ciudadResidencia'
+                      )
+                    }"
+                  />
+                  @if (mostrarOpcionesCiudadesResidencia() &&
+                  ciudadesResidenciaFiltradas().length > 0) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                    role="listbox"
+                  >
+                    @for (ciudad of ciudadesResidenciaFiltradas(); track
+                    ciudad.id; let i = $index) {
+                    <div
+                      [id]="'ciudad-residencia-option-' + i"
+                      class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                      [class.highlighted]="
+                        i === indiceOpcionSeleccionadaResidencia()
+                      "
+                      role="option"
+                      [attr.aria-selected]="
+                        i === indiceOpcionSeleccionadaResidencia()
+                      "
+                      (click)="seleccionarCiudadResidencia(ciudad)"
+                    >
+                      {{ ciudad.nombre }}
+                    </div>
+                    }
+                  </div>
+                  } @if (mostrarOpcionesCiudadesResidencia() &&
+                  ciudadesResidenciaFiltradas().length === 0 &&
+                  ciudadResidenciaTerminoBusqueda()) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                  >
+                    <div class="py-3 px-4 text-gray-500 italic">
+                      No se encontraron ciudades
+                    </div>
+                  </div>
+                  }
+                </div>
+                @if (formUtils.esCampoInvalido(perfilForm, 'ciudadResidencia'))
+                {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      perfilForm,
+                      'ciudadResidencia'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Sección de Información Tributaria -->
+          <fieldset class="my-3 px-1">
+            <legend class="text-lg font-semibold text-base-content mb-4">
+              Información Tributaria
+            </legend>
+
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="tipoPersona"
+                >
+                  Tipo de Persona <span class="text-error">*</span>
+                </label>
+                <select
+                  id="tipoPersona"
+                  formControlName="tipoPersona"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'tipoPersona'
+                    )
+                  }"
+                >
+                  <option value="" disabled selected>Seleccione</option>
+                  <option value="natural">Persona Natural</option>
+                  <option value="juridica">Persona Jurídica</option>
+                </select>
+                @if (formUtils.esCampoInvalido(perfilForm, 'tipoPersona')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(perfilForm, 'tipoPersona')
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="regimenTributario"
+                >
+                  Régimen Tributario <span class="text-error">*</span>
+                </label>
+                <select
+                  id="regimenTributario"
+                  formControlName="regimenTributario"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      perfilForm,
+                      'regimenTributario'
+                    )
+                  }"
+                >
+                  <option value="" disabled selected>
+                    @if (perfilService.regimenesTributariosCargando()) {
+                    Cargando... } @else { Seleccione }
+                  </option>
+                  @for (regimen of perfilService.regimenesTributarios(); track
+                  regimen.codigo) {
+                  <option [value]="regimen.codigo">
+                    {{ regimen.nombre }}
+                  </option>
+                  }
+                </select>
+                @if (formUtils.esCampoInvalido(perfilForm, 'regimenTributario'))
+                {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      perfilForm,
+                      'regimenTributario'
+                    )
+                  }}
+                </div>
+                } @if (perfilService.regimenesTributariosError()) {
+                <div class="text-sm text-warning">
+                  Error al cargar regímenes tributarios. Por favor, recarga la
+                  página.
+                </div>
+                }
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Checkbox: Facturación diferente -->
+          <div class="my-4 px-1">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                class="checkbox checkbox-primary"
+                formControlName="usaFacturacionDiferente"
+              />
+              <span class="text-sm font-[600] text-base-content">
+                La información de facturación es diferente a la del usuario
+              </span>
+            </label>
+          </div>
+
+          <!-- Sección de Facturación (condicional) -->
+          @if (perfilForm.get('usaFacturacionDiferente')?.value) {
+          <fieldset
+            class="my-4 p-3 rounded-box border border-base-300 bg-base-200/30"
+            formGroupName="facturacion"
+          >
+            <legend class="text-lg font-semibold text-base-content mb-4">
+              Información de Facturación
+            </legend>
+
+            <!-- Documento facturación -->
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+              <div class="flex flex-col w-full md:w-2/6">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="ftipoDocumento"
+                >
+                  Tipo Doc. <span class="text-error">*</span>
+                </label>
+                <select
+                  id="ftipoDocumento"
+                  formControlName="tipoDocumento"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'tipoDocumento'
+                    )
+                  }"
+                >
+                  <option value="" disabled selected>Seleccione</option>
+                  @for (tipoDoc of appService.tipoDocQuery.data(); track
+                  tipoDoc.id) {
+                  <option [value]="tipoDoc.id">
+                    {{ `${tipoDoc.codigo} - ${tipoDoc.nombre}` }}
+                  </option>
+                  }
+                </select>
+                @if (formUtils.esCampoInvalido(facturacionForm,
+                'tipoDocumento')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      facturacionForm,
+                      'tipoDocumento'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-3/6">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fdocumento"
+                >
+                  Documento <span class="text-error">*</span>
+                </label>
+                <input
+                  id="fdocumento"
+                  type="text"
+                  inputSoloNumeros
+                  inputmode="numeric"
+                  formControlName="documento"
+                  placeholder="123456789"
                   [ngClass]="{
                     'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
                     'input-error': formUtils.esCampoInvalido(
                       facturacionForm,
-                      'ciudadExpedicion'
+                      'documento'
                     )
                   }"
                 />
-                @if (mostrarOpcionesCiudadesFactExpedicion() &&
-                ciudadesFactFiltradasExpedicion().length > 0 &&
-                !facturacionForm.disabled) {
-
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
-                  role="listbox"
-                >
-                  @for (ciudad of ciudadesFactFiltradasExpedicion(); track
-                  ciudad.id; let i = $index) {
-                  <div
-                    [id]="'ciudad-fact-exp-option-' + i"
-                    class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
-                    [class.highlighted]="
-                      i === indiceOpcionSeleccionadaFactExpedicion()
-                    "
-                    role="option"
-                    [attr.aria-selected]="
-                      i === indiceOpcionSeleccionadaFactExpedicion()
-                    "
-                    (click)="seleccionarCiudadFactExpedicion(ciudad)"
-                  >
-                    {{ ciudad.nombre }}
-                  </div>
-                  }
-                </div>
-                } @if (mostrarOpcionesCiudadesFactExpedicion() &&
-                ciudadesFactFiltradasExpedicion().length === 0 &&
-                ciudadFactTerminoBusquedaExpedicion() &&
-                !facturacionForm.disabled) {
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
-                >
-                  <div class="py-3 px-4 text-gray-500 italic">
-                    No se encontraron ciudades
-                  </div>
+                @if (formUtils.esCampoInvalido(facturacionForm, 'documento')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(facturacionForm, 'documento')
+                  }}
                 </div>
                 }
               </div>
-              @if (formUtils.esCampoInvalido(facturacionForm,
-              'ciudadExpedicion')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    facturacionForm,
-                    'ciudadExpedicion'
-                  )
-                }}
-              </div>
-              }
-            </div>
-          </div>
-
-          <div
-            class="mb-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
-          >
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fnombre"
-              >
-                Nombre <span class="text-error">*</span>
-              </label>
-              <input
-                id="fnombre"
-                type="text"
-                formControlName="nombre"
-                placeholder="Nombre (facturación)"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'nombre'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'nombre')) {
-              <div class="text-sm text-error">
-                {{ formUtils.obtenerErrorDelCampo(facturacionForm, 'nombre') }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fapellido"
-              >
-                Apellido <span class="text-error">*</span>
-              </label>
-              <input
-                id="fapellido"
-                type="text"
-                formControlName="apellido"
-                placeholder="Apellido (facturación)"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'apellido'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'apellido')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(facturacionForm, 'apellido')
-                }}
-              </div>
-              }
-            </div>
-          </div>
-
-          <div
-            class="my-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
-          >
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="ftelefono"
-              >
-                Teléfono <span class="text-error">*</span>
-              </label>
-              <input
-                id="ftelefono"
-                type="tel"
-                inputSoloNumeros
-                formControlName="telefono"
-                placeholder="1234567890"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'telefono'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'telefono')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(facturacionForm, 'telefono')
-                }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="femail"
-              >
-                Email <span class="text-error">*</span>
-              </label>
-              <input
-                id="femail"
-                type="email"
-                formControlName="email"
-                placeholder="facturacion@correo.com"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'email'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'email')) {
-              <div class="text-sm text-error">
-                {{ formUtils.obtenerErrorDelCampo(facturacionForm, 'email') }}
-              </div>
-              }
-            </div>
-          </div>
-
-          <!-- Dirección y Ciudad de Residencia (facturación) -->
-          <div
-            class="flex flex-col md:flex-row w-full px-1 gap-2 md:gap-3 mb-4"
-          >
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fdireccion"
-              >
-                Dirección <span class="text-error">*</span>
-              </label>
-              <input
-                (keydown)="bloquearPuntoYComa($event)"
-                (input)="sanearDireccionInput('facturacion.direccion')"
-                type="text"
-                id="fdireccion"
-                formControlName="direccion"
-                placeholder="Calle X # 123A-45"
-                [ngClass]="{
-                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'direccion'
-                  )
-                }"
-              />
-              @if (formUtils.esCampoInvalido(facturacionForm, 'direccion')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(facturacionForm, 'direccion')
-                }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fciudadResidencia"
-              >
-                Ciudad de Residencia <span class="text-error">*</span>
-              </label>
-              <div class="relative">
+              @if (esNitFacturacion()) {
+              <div class="flex flex-col w-full md:w-1/6">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fdigitoVerificacion"
+                >
+                  DV <span class="text-error">*</span>
+                </label>
                 <input
+                  id="fdigitoVerificacion"
                   type="text"
-                  id="fciudadResidencia"
-                  [value]="ciudadFactTerminoBusquedaResidencia()"
-                  (input)="onCiudadFactResidenciaInputChange($event)"
-                  (keydown)="onCiudadFactResidenciaKeyDown($event)"
-                  (focus)="mostrarOpcionesCiudadesFactResidencia.set(true)"
-                  (blur)="ocultarOpcionesCiudadesFactResidencia()"
-                  [disabled]="facturacionForm.disabled"
-                  placeholder="Escriba para buscar una ciudad..."
-                  autocomplete="off"
-                  role="combobox"
-                  [attr.aria-expanded]="mostrarOpcionesCiudadesFactResidencia()"
-                  [attr.aria-activedescendant]="
-                    indiceOpcionSeleccionadaFactResidencia() >= 0
-                      ? 'ciudad-fact-res-option-' +
-                        indiceOpcionSeleccionadaFactResidencia()
-                      : null
-                  "
+                  formControlName="digitoVerificacion"
+                  placeholder="0"
+                  maxlength="1"
                   [ngClass]="{
                     'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
                     'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'digitoVerificacion'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm,
+                'digitoVerificacion')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      facturacionForm,
+                      'digitoVerificacion'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+              }
+            </div>
+
+            <!-- Ciudades facturación: expedición -->
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fciudadExpedicion"
+                >
+                  Ciudad de Expedición <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    id="fciudadExpedicion"
+                    type="text"
+                    [value]="ciudadFactTerminoBusquedaExpedicion()"
+                    (input)="onCiudadFactExpedicionInputChange($event)"
+                    (keydown)="onCiudadFactExpedicionKeyDown($event)"
+                    (focus)="mostrarOpcionesCiudadesFactExpedicion.set(true)"
+                    (blur)="ocultarOpcionesCiudadesFactExpedicion()"
+                    [disabled]="facturacionForm.disabled"
+                    placeholder="Escriba para buscar una ciudad..."
+                    autocomplete="off"
+                    role="combobox"
+                    [attr.aria-expanded]="
+                      mostrarOpcionesCiudadesFactExpedicion()
+                    "
+                    [attr.aria-activedescendant]="
+                      indiceOpcionSeleccionadaFactExpedicion() >= 0
+                        ? 'ciudad-fact-exp-option-' +
+                          indiceOpcionSeleccionadaFactExpedicion()
+                        : null
+                    "
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        facturacionForm,
+                        'ciudadExpedicion'
+                      )
+                    }"
+                  />
+                  @if (mostrarOpcionesCiudadesFactExpedicion() &&
+                  ciudadesFactFiltradasExpedicion().length > 0 &&
+                  !facturacionForm.disabled) {
+
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                    role="listbox"
+                  >
+                    @for (ciudad of ciudadesFactFiltradasExpedicion(); track
+                    ciudad.id; let i = $index) {
+                    <div
+                      [id]="'ciudad-fact-exp-option-' + i"
+                      class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                      [class.highlighted]="
+                        i === indiceOpcionSeleccionadaFactExpedicion()
+                      "
+                      role="option"
+                      [attr.aria-selected]="
+                        i === indiceOpcionSeleccionadaFactExpedicion()
+                      "
+                      (click)="seleccionarCiudadFactExpedicion(ciudad)"
+                    >
+                      {{ ciudad.nombre }}
+                    </div>
+                    }
+                  </div>
+                  } @if (mostrarOpcionesCiudadesFactExpedicion() &&
+                  ciudadesFactFiltradasExpedicion().length === 0 &&
+                  ciudadFactTerminoBusquedaExpedicion() &&
+                  !facturacionForm.disabled) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                  >
+                    <div class="py-3 px-4 text-gray-500 italic">
+                      No se encontraron ciudades
+                    </div>
+                  </div>
+                  }
+                </div>
+                @if (formUtils.esCampoInvalido(facturacionForm,
+                'ciudadExpedicion')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      facturacionForm,
+                      'ciudadExpedicion'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+
+            <div
+              class="mb-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
+            >
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fnombre"
+                >
+                  Nombre <span class="text-error">*</span>
+                </label>
+                <input
+                  id="fnombre"
+                  type="text"
+                  formControlName="nombre"
+                  placeholder="Nombre (facturación)"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'nombre'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm, 'nombre')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(facturacionForm, 'nombre')
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fapellido"
+                >
+                  Apellido <span class="text-error">*</span>
+                </label>
+                <input
+                  id="fapellido"
+                  type="text"
+                  formControlName="apellido"
+                  placeholder="Apellido (facturación)"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'apellido'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm, 'apellido')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(facturacionForm, 'apellido')
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+
+            <div
+              class="my-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
+            >
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="ftelefono"
+                >
+                  Teléfono <span class="text-error">*</span>
+                </label>
+                <input
+                  id="ftelefono"
+                  type="tel"
+                  inputSoloNumeros
+                  formControlName="telefono"
+                  placeholder="1234567890"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'telefono'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm, 'telefono')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(facturacionForm, 'telefono')
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="femail"
+                >
+                  Email <span class="text-error">*</span>
+                </label>
+                <input
+                  id="femail"
+                  type="email"
+                  formControlName="email"
+                  placeholder="facturacion@correo.com"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'email'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm, 'email')) {
+                <div class="text-sm text-error">
+                  {{ formUtils.obtenerErrorDelCampo(facturacionForm, 'email') }}
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- Dirección y Ciudad de Residencia (facturación) -->
+            <div
+              class="flex flex-col md:flex-row w-full px-1 gap-2 md:gap-3 mb-4"
+            >
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fdireccion"
+                >
+                  Dirección <span class="text-error">*</span>
+                </label>
+                <input
+                  (keydown)="bloquearPuntoYComa($event)"
+                  (input)="sanearDireccionInput('facturacion.direccion')"
+                  type="text"
+                  id="fdireccion"
+                  formControlName="direccion"
+                  placeholder="Calle X # 123A-45"
+                  [ngClass]="{
+                    'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'direccion'
+                    )
+                  }"
+                />
+                @if (formUtils.esCampoInvalido(facturacionForm, 'direccion')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(facturacionForm, 'direccion')
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fciudadResidencia"
+                >
+                  Ciudad <span class="text-error">*</span>
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="fciudadResidencia"
+                    [value]="ciudadFactTerminoBusquedaResidencia()"
+                    (input)="onCiudadFactResidenciaInputChange($event)"
+                    (keydown)="onCiudadFactResidenciaKeyDown($event)"
+                    (focus)="mostrarOpcionesCiudadesFactResidencia.set(true)"
+                    (blur)="ocultarOpcionesCiudadesFactResidencia()"
+                    [disabled]="facturacionForm.disabled"
+                    placeholder="Escriba para buscar una ciudad..."
+                    autocomplete="off"
+                    role="combobox"
+                    [attr.aria-expanded]="
+                      mostrarOpcionesCiudadesFactResidencia()
+                    "
+                    [attr.aria-activedescendant]="
+                      indiceOpcionSeleccionadaFactResidencia() >= 0
+                        ? 'ciudad-fact-res-option-' +
+                          indiceOpcionSeleccionadaFactResidencia()
+                        : null
+                    "
+                    [ngClass]="{
+                      'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                      'input-error': formUtils.esCampoInvalido(
+                        facturacionForm,
+                        'ciudadResidencia'
+                      )
+                    }"
+                  />
+                  @if (mostrarOpcionesCiudadesFactResidencia() &&
+                  ciudadesFactFiltradasResidencia().length > 0 &&
+                  !facturacionForm.disabled) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+                    role="listbox"
+                  >
+                    @for (ciudad of ciudadesFactFiltradasResidencia(); track
+                    ciudad.id; let i = $index) {
+                    <div
+                      [id]="'ciudad-fact-res-option-' + i"
+                      class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+                      [class.highlighted]="
+                        i === indiceOpcionSeleccionadaFactResidencia()
+                      "
+                      role="option"
+                      [attr.aria-selected]="
+                        i === indiceOpcionSeleccionadaFactResidencia()
+                      "
+                      (click)="seleccionarCiudadFactResidencia(ciudad)"
+                    >
+                      {{ ciudad.nombre }}
+                    </div>
+                    }
+                  </div>
+                  } @if (mostrarOpcionesCiudadesFactResidencia() &&
+                  ciudadesFactFiltradasResidencia().length === 0 &&
+                  ciudadFactTerminoBusquedaResidencia() &&
+                  !facturacionForm.disabled) {
+                  <div
+                    class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+                  >
+                    <div class="py-3 px-4 text-gray-500 italic">
+                      No se encontraron ciudades
+                    </div>
+                  </div>
+                  }
+                </div>
+                @if (formUtils.esCampoInvalido(facturacionForm,
+                'ciudadResidencia')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
                       facturacionForm,
                       'ciudadResidencia'
                     )
+                  }}
+                </div>
+                }
+              </div>
+            </div>
+
+            <!-- Info tributaria facturación -->
+            <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="ftipoPersona"
+                >
+                  Tipo de Persona <span class="text-error">*</span>
+                </label>
+                <select
+                  id="ftipoPersona"
+                  formControlName="tipoPersona"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'tipoPersona'
+                    )
                   }"
-                />
-                @if (mostrarOpcionesCiudadesFactResidencia() &&
-                ciudadesFactFiltradasResidencia().length > 0 &&
-                !facturacionForm.disabled) {
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
-                  role="listbox"
                 >
-                  @for (ciudad of ciudadesFactFiltradasResidencia(); track
-                  ciudad.id; let i = $index) {
-                  <div
-                    [id]="'ciudad-fact-res-option-' + i"
-                    class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
-                    [class.highlighted]="
-                      i === indiceOpcionSeleccionadaFactResidencia()
-                    "
-                    role="option"
-                    [attr.aria-selected]="
-                      i === indiceOpcionSeleccionadaFactResidencia()
-                    "
-                    (click)="seleccionarCiudadFactResidencia(ciudad)"
-                  >
-                    {{ ciudad.nombre }}
-                  </div>
+                  <option value="" disabled selected>Seleccione</option>
+                  <option value="natural">Persona Natural</option>
+                  <option value="juridica">Persona Jurídica</option>
+                </select>
+                @if (formUtils.esCampoInvalido(facturacionForm, 'tipoPersona'))
+                {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      facturacionForm,
+                      'tipoPersona'
+                    )
+                  }}
+                </div>
+                }
+              </div>
+              <div class="flex flex-col w-full md:w-1/2">
+                <label
+                  class="label text-sm font-[600] text-base-content mb-1"
+                  for="fregimenTributario"
+                >
+                  Régimen Tributario <span class="text-error">*</span>
+                </label>
+                <select
+                  id="fregimenTributario"
+                  formControlName="regimenTributario"
+                  [ngClass]="{
+                    'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
+                    'input-error': formUtils.esCampoInvalido(
+                      facturacionForm,
+                      'regimenTributario'
+                    )
+                  }"
+                >
+                  <option value="" disabled selected>
+                    @if (perfilService.regimenesTributariosCargando()) {
+                    Cargando... } @else { Seleccione }
+                  </option>
+                  @for (regimen of perfilService.regimenesTributarios(); track
+                  regimen.codigo) {
+                  <option [value]="regimen.codigo">{{ regimen.nombre }}</option>
                   }
+                </select>
+                @if (formUtils.esCampoInvalido(facturacionForm,
+                'regimenTributario')) {
+                <div class="text-sm text-error">
+                  {{
+                    formUtils.obtenerErrorDelCampo(
+                      facturacionForm,
+                      'regimenTributario'
+                    )
+                  }}
                 </div>
-                } @if (mostrarOpcionesCiudadesFactResidencia() &&
-                ciudadesFactFiltradasResidencia().length === 0 &&
-                ciudadFactTerminoBusquedaResidencia() &&
-                !facturacionForm.disabled) {
-                <div
-                  class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
-                >
-                  <div class="py-3 px-4 text-gray-500 italic">
-                    No se encontraron ciudades
-                  </div>
+                } @if (perfilService.regimenesTributariosError()) {
+                <div class="text-sm text-warning">
+                  Error al cargar regímenes tributarios. Por favor, recarga la
+                  página.
                 </div>
                 }
               </div>
-              @if (formUtils.esCampoInvalido(facturacionForm,
-              'ciudadResidencia')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    facturacionForm,
-                    'ciudadResidencia'
-                  )
-                }}
-              </div>
-              }
             </div>
+          </fieldset>
+          }
+
+          <div class="card-actions justify-end">
+            <button
+              id="boton-guardar"
+              type="submit"
+              [disabled]="perfilForm.invalid || perfilService.cargando()"
+              class="btn btn-primary max-sm:btn-sm sm:h-11"
+              aria-label="Guardar cambios del perfil"
+            >
+              @if (perfilService.cargando()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              Guardando... } @else { @if (isCompleteProfileMode()) { Completar
+              Perfil y Continuar } @else { Guardar Cambios } }
+            </button>
           </div>
+        </form>
+      </div>
 
-          <!-- Info tributaria facturación -->
-          <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="ftipoPersona"
-              >
-                Tipo de Persona <span class="text-error">*</span>
-              </label>
-              <select
-                id="ftipoPersona"
-                formControlName="tipoPersona"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'tipoPersona'
-                  )
-                }"
-              >
-                <option value="" disabled selected>Seleccione</option>
-                <option value="natural">Persona Natural</option>
-                <option value="juridica">Persona Jurídica</option>
-              </select>
-              @if (formUtils.esCampoInvalido(facturacionForm, 'tipoPersona')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(facturacionForm, 'tipoPersona')
-                }}
-              </div>
-              }
-            </div>
-            <div class="flex flex-col w-full md:w-1/2">
-              <label
-                class="label text-sm font-[600] text-base-content mb-1"
-                for="fregimenTributario"
-              >
-                Régimen Tributario <span class="text-error">*</span>
-              </label>
-              <select
-                id="fregimenTributario"
-                formControlName="regimenTributario"
-                [ngClass]="{
-                  'select input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm': true,
-                  'input-error': formUtils.esCampoInvalido(
-                    facturacionForm,
-                    'regimenTributario'
-                  )
-                }"
-              >
-                <option value="" disabled selected>
-                  @if (perfilService.regimenesTributariosCargando()) {
-                  Cargando... } @else { Seleccione }
-                </option>
-                @for (regimen of perfilService.regimenesTributarios(); track
-                regimen.codigo) {
-                <option [value]="regimen.codigo">{{ regimen.nombre }}</option>
-                }
-              </select>
-              @if (formUtils.esCampoInvalido(facturacionForm,
-              'regimenTributario')) {
-              <div class="text-sm text-error">
-                {{
-                  formUtils.obtenerErrorDelCampo(
-                    facturacionForm,
-                    'regimenTributario'
-                  )
-                }}
-              </div>
-              } @if (perfilService.regimenesTributariosError()) {
-              <div class="text-sm text-warning">
-                Error al cargar regímenes tributarios. Por favor, recarga la
-                página.
-              </div>
-              }
-            </div>
-          </div>
-        </div>
-        }
-
-        <div class="card-actions justify-end">
-          <button
-            type="submit"
-            [disabled]="perfilForm.invalid || perfilService.cargando()"
-            class="btn btn-primary max-sm:btn-sm sm:h-11"
-          >
-            @if (perfilService.cargando()) {
-            <span class="loading loading-spinner loading-sm"></span>
-            Guardando... } @else { @if (isCompleteProfileMode()) { Completar
-            Perfil y Continuar } @else { Guardar Cambios } }
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <input
-      [checked]="selectedTab() === 'password'"
-      type="radio"
-      name="my_tabs"
-      (change)="cambiarTab('password')"
-      class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto before:bg-none"
-      aria-label="Cambiar Contraseña"
-    />
-    <div
-      class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
-    >
-      <form
-        class="h-full"
-        [formGroup]="passwordForm"
-        (ngSubmit)="cambiarPassword()"
+      <input
+        [checked]="selectedTab() === 'password'"
+        type="radio"
+        name="my_tabs"
+        (change)="cambiarTab('password')"
+        class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto before:bg-none"
+        aria-label="Cambiar Contraseña"
+      />
+      <div
+        class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
       >
-        <div class="space-y-4">
-          <div class="flex flex-col w-full">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="currentPassword"
-            >
-              Contraseña Actual <span class="text-error">*</span>
-            </label>
-            <input
-              type="password"
-              id="currentPassword"
-              formControlName="currentPassword"
-              autocomplete="current-password"
-              placeholder="Ingresa tu contraseña actual"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(
-                  passwordForm,
-                  'currentPassword'
-                )
-              }"
-            />
-            @if (formUtils.esCampoInvalido(passwordForm, 'currentPassword')) {
-            <div class="text-sm text-error">
-              {{
-                formUtils.obtenerErrorDelCampo(passwordForm, 'currentPassword')
-              }}
+        <form
+          class="h-full"
+          [formGroup]="passwordForm"
+          (ngSubmit)="cambiarPassword()"
+        >
+          <div class="space-y-4">
+            <div class="flex flex-col w-full">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="currentPassword"
+              >
+                Contraseña Actual <span class="text-error">*</span>
+              </label>
+              <input
+                type="password"
+                id="currentPassword"
+                formControlName="currentPassword"
+                autocomplete="current-password"
+                placeholder="Ingresa tu contraseña actual"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    passwordForm,
+                    'currentPassword'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(passwordForm, 'currentPassword')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    passwordForm,
+                    'currentPassword'
+                  )
+                }}
+              </div>
+              }
             </div>
-            }
+
+            <div class="flex flex-col w-full">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="newPassword"
+              >
+                Nueva Contraseña <span class="text-error">*</span>
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                formControlName="newPassword"
+                autocomplete="new-password"
+                placeholder="Ingresa tu nueva contraseña"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    passwordForm,
+                    'newPassword'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(passwordForm, 'newPassword')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(passwordForm, 'newPassword')
+                }}
+              </div>
+              }
+            </div>
+
+            <div class="flex flex-col w-full">
+              <label
+                class="label text-sm font-[600] text-base-content mb-1"
+                for="confirmPassword"
+              >
+                Confirmar Nueva Contraseña
+                <span class="text-error">*</span>
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                formControlName="confirmPassword"
+                autocomplete="new-password"
+                placeholder="Confirma tu nueva contraseña"
+                [ngClass]="{
+                  'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
+                  'input-error': formUtils.esCampoInvalido(
+                    passwordForm,
+                    'confirmPassword'
+                  )
+                }"
+              />
+              @if (formUtils.esCampoInvalido(passwordForm, 'confirmPassword')) {
+              <div class="text-sm text-error">
+                {{
+                  formUtils.obtenerErrorDelCampo(
+                    passwordForm,
+                    'confirmPassword'
+                  )
+                }}
+              </div>
+              }
+            </div>
           </div>
 
-          <div class="flex flex-col w-full">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="newPassword"
+          <div class="card-actions justify-end mt-2 md:mt-6">
+            <button
+              type="submit"
+              [disabled]="passwordForm.invalid || perfilService.cargando()"
+              class="btn btn-primary"
             >
-              Nueva Contraseña <span class="text-error">*</span>
-            </label>
-            <input
-              type="password"
-              id="newPassword"
-              formControlName="newPassword"
-              autocomplete="new-password"
-              placeholder="Ingresa tu nueva contraseña"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(
-                  passwordForm,
-                  'newPassword'
-                )
-              }"
-            />
-            @if (formUtils.esCampoInvalido(passwordForm, 'newPassword')) {
-            <div class="text-sm text-error">
-              {{ formUtils.obtenerErrorDelCampo(passwordForm, 'newPassword') }}
-            </div>
-            }
+              @if (perfilService.cargando()) {
+              <span class="loading loading-spinner loading-sm"></span>
+              Cambiando... } @else { Cambiar Contraseña }
+            </button>
           </div>
+        </form>
+      </div>
 
-          <div class="flex flex-col w-full">
-            <label
-              class="label text-sm font-[600] text-base-content mb-1"
-              for="confirmPassword"
-            >
-              Confirmar Nueva Contraseña
-              <span class="text-error">*</span>
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              formControlName="confirmPassword"
-              autocomplete="new-password"
-              placeholder="Confirma tu nueva contraseña"
-              [ngClass]="{
-                'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:text-sm': true,
-                'input-error': formUtils.esCampoInvalido(
-                  passwordForm,
-                  'confirmPassword'
-                )
-              }"
-            />
-            @if (formUtils.esCampoInvalido(passwordForm, 'confirmPassword')) {
-            <div class="text-sm text-error">
-              {{
-                formUtils.obtenerErrorDelCampo(passwordForm, 'confirmPassword')
-              }}
-            </div>
-            }
-          </div>
-        </div>
-
-        <div class="card-actions justify-end mt-2 md:mt-6">
-          <button
-            type="submit"
-            [disabled]="passwordForm.invalid || perfilService.cargando()"
-            class="btn btn-primary"
-          >
-            @if (perfilService.cargando()) {
-            <span class="loading loading-spinner loading-sm"></span>
-            Cambiando... } @else { Cambiar Contraseña }
-          </button>
-        </div>
-      </form>
+      @if (esEgresado()){
+      <input
+        [checked]="selectedTab() === 'beneficiarios'"
+        type="radio"
+        name="my_tabs"
+        (change)="cambiarTab('beneficiarios')"
+        class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto before:bg-none"
+        aria-label="Beneficiarios"
+      />
+      <div
+        class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
+      >
+        <app-beneficiarios />
+      </div>
+      }
     </div>
-
-    @if (esEgresado()){
-    <input
-      [checked]="selectedTab() === 'beneficiarios'"
-      type="radio"
-      name="my_tabs"
-      (change)="cambiarTab('beneficiarios')"
-      class="tab h-9 md:h-[var(--tab-height)] font-bold text-base lg:text-lg w-full md:w-auto before:bg-none"
-      aria-label="Beneficiarios"
-    />
-    <div
-      class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
-    >
-      <app-beneficiarios />
-    </div>
-    }
-  </div>
+  </main>
 </div>
 
 <ng-template #alertaPerfil></ng-template>

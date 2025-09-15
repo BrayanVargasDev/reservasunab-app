@@ -1,4 +1,9 @@
-<dialog #dreservasModal class="modal p-0 z-50" style="scrollbar-gutter: unset">
+<dialog
+  #dreservasModal
+  class="modal p-0 z-50"
+  style="scrollbar-gutter: unset"
+  (cancel)="onDialogCancel($event)"
+>
   <div
     class="modal-box p-0 max-w-[95dvw] lg:max-w-[80dvw] xl:max-w-[50rem] w-full max-h-[95dvh] lg:!max-h-[98dvh] overflow-hidden relative flex flex-col"
   >

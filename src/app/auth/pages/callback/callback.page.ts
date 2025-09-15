@@ -33,32 +33,76 @@ export class AuthCallbackPage implements OnInit {
     const qp = this.route.snapshot.queryParamMap;
     const code = qp.get('code') ?? '';
     const returnUrl = qp.get('returnUrl') ?? '';
+    const error = qp.get('error');
+    const errorDescription = qp.get('error_description');
 
     try {
-      // Intercambiar code por tokens (access en memoria, refresh persistente)
-      const response = await this.authService.intercambiarToken(code);
-
-      if (!response) {
-        await this.router.navigate(['/auth/login']);
+      // Verificar si hay errores en la respuesta de OAuth
+      if (error) {
+        console.error('OAuth error:', error, errorDescription);
+        await this.handleOAuthError(error, errorDescription || 'Error en autenticación SSO');
         return;
       }
+
+      // Validar que tenemos un código de autorización
+      if (!code || code.trim() === '') {
+        console.error('No authorization code received');
+        await this.handleOAuthError('no_code', 'No se recibió código de autorización');
+        return;
+      }
+
+      console.debug('Processing OAuth callback with code:', code.substring(0, 10) + '...');
+
+      // Intercambiar code por tokens con timeout
+      const tokenPromise = this.authService.intercambiarToken(code);
+      const timeoutPromise = new Promise<boolean>((_, reject) => {
+        setTimeout(() => reject(new Error('Token exchange timeout')), 15000); // 15 segundos
+      });
+
+      const response = await Promise.race([tokenPromise, timeoutPromise]);
+
+      if (!response) {
+        console.error('Token exchange failed');
+        await this.handleOAuthError('token_exchange_failed', 'Error al intercambiar tokens');
+        return;
+      }
+
+      console.debug('Token exchange successful, determining redirect destination');
+
       // Decidir ruta de destino respetando lógica de términos/perfil
       const dest = await this.authService.postLoginRedirect();
 
-      if (dest !== '/' && dest) {
+      if (dest && dest !== '/') {
+        console.debug('Redirecting to post-login destination:', dest);
         await this.router.navigate([dest]);
         return;
       }
 
       if (returnUrl && returnUrl !== '/') {
+        console.debug('Redirecting to return URL:', returnUrl);
         await this.router.navigate([returnUrl]);
         return;
       }
 
+      console.debug('Redirecting to first available page');
       await this.navigationService.navegarAPrimeraPaginaDisponible();
-    } catch (e) {
+
+    } catch (e: any) {
       console.error('Error en callback OAuth:', e);
-      await this.router.navigate(['/auth/login']);
+      await this.handleOAuthError('unexpected_error', e.message || 'Error inesperado en autenticación SSO');
     }
+  }
+
+  private async handleOAuthError(error: string, description: string) {
+    // Limpiar cualquier estado de autenticación parcial
+    this.authService.clearSession();
+
+    // Redirigir al login con parámetros de error
+    await this.router.navigate(['/auth/login'], {
+      queryParams: {
+        sso_error: error,
+        sso_error_description: description
+      }
+    });
   }
 }

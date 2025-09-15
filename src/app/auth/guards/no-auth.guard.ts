@@ -30,8 +30,8 @@ export class NoAuthGuard implements CanActivate {
       return true;
     }
 
-    // Si ya está autenticado, redirigir inmediatamente
-    if (estadoAuth === 'autenticado') {
+    // Si ya está autenticado y sesión válida, redirigir
+    if (estadoAuth === 'autenticado' && this.authService.isSessionValid()) {
       this.navigationService.navegarAPrimeraPaginaDisponible();
       return false;
     }
@@ -41,11 +41,16 @@ export class NoAuthGuard implements CanActivate {
       return this.waitForAuthResolution();
     }
 
+    // Por defecto, permitir acceso (rutas públicas)
     return true;
   }
 
   private waitForAuthResolution(): Observable<boolean> {
-    return timer(0, 100).pipe(
+    const maxWaitTime = 3000; // 3 segundos máximo
+    const checkInterval = 200; // Verificar cada 200ms
+    const maxChecks = Math.ceil(maxWaitTime / checkInterval);
+
+    return timer(0, checkInterval).pipe(
       switchMap(() => {
         const estado = this.authService.estadoAutenticacion();
 
@@ -53,18 +58,38 @@ export class NoAuthGuard implements CanActivate {
           return of(true);
         }
 
-        if (estado === 'autenticado') {
+        if (estado === 'autenticado' && this.authService.isSessionValid()) {
           this.navigationService.navegarAPrimeraPaginaDisponible();
           return of(false);
+        }
+
+        // Si hay refresh en progreso, esperar un poco más
+        if (this.authService.isRefreshInProgress()) {
+          return of(null); // Continuar esperando
+        }
+
+        // Si no hay operaciones en vuelo pero sigue en chequeo, forzar resolución
+        if (estado === 'chequeando') {
+          this.authService.forceResolveAuthState();
+          const newEstado = this.authService.estadoAutenticacion();
+
+          if (newEstado === 'autenticado' && this.authService.isSessionValid()) {
+            this.navigationService.navegarAPrimeraPaginaDisponible();
+            return of(false);
+          } else {
+            return of(true); // Permitir acceso a rutas públicas
+          }
         }
 
         // Continuar esperando
         return of(null);
       }),
-      take(30), // Máximo 3 segundos
+      take(maxChecks),
       map(result => {
         if (result === null) {
-          // Timeout: asumir no autenticado y permitir acceso
+          // Timeout: forzar resolución y asumir no autenticado (permitir acceso público)
+          console.warn('Auth resolution timeout in NoAuthGuard, allowing access');
+          this.authService.forceResolveAuthState();
           return true;
         }
         return result;

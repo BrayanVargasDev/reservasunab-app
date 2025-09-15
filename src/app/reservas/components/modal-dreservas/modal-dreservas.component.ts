@@ -386,17 +386,9 @@ export class ModalDreservasComponent {
   }
 
   public readonly confirmarReservaDisabled = computed(() => {
-    const estado =
-      this.dreservasService.estadoResumen() ||
-      this.dreservasService.miReserva();
+    const estado = this.getEstadoActual();
+    if (!estado) return true;
 
-    if (
-      !estado ||
-      (typeof estado === 'object' && Object.keys(estado).length === 0)
-    )
-      return true;
-
-    // Si estado.estado es pendienteap y estado.id === null entonces false
     if (estado.estado === 'pendienteap' && estado.id === null) return false;
 
     const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
@@ -445,6 +437,11 @@ export class ModalDreservasComponent {
       },
       { injector: this.injector },
     );
+  }
+
+  public onDialogCancel(event: Event): void {
+    event.preventDefault();
+    this.manejarCierreModal();
   }
 
   private abrirModal(modal: HTMLDialogElement) {

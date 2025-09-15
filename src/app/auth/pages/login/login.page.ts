@@ -49,6 +49,45 @@ export class LoginPage {
   public appService = inject(AppService);
   public authService = inject(AuthService);
 
+  ngOnInit() {
+    // Verificar si hay errores de SSO en los query params
+    const ssoError = this.route.snapshot.queryParams['sso_error'];
+    if (ssoError) {
+      const errorDescription = this.route.snapshot.queryParams['sso_error_description'] || 'Error en autenticación SSO';
+      let userFriendlyMessage = 'Error en la autenticación con Google. ';
+
+      switch (ssoError) {
+        case 'access_denied':
+          userFriendlyMessage += 'Acceso denegado por el usuario.';
+          break;
+        case 'no_code':
+          userFriendlyMessage += 'No se recibió la autorización necesaria.';
+          break;
+        case 'token_exchange_failed':
+          userFriendlyMessage += 'Error al procesar la autenticación.';
+          break;
+        case 'unexpected_error':
+          userFriendlyMessage += 'Error inesperado. Inténtelo de nuevo.';
+          break;
+        default:
+          userFriendlyMessage += errorDescription;
+      }
+
+      this.alertaService.error(
+        userFriendlyMessage,
+        8000,
+        this.alertaLogin(),
+        'w-full block my-2',
+      );
+
+      // Limpiar los parámetros de error de la URL
+      this.router.navigate([], {
+        queryParams: { sso_error: null, sso_error_description: null },
+        queryParamsHandling: 'merge'
+      });
+    }
+  }
+
   public formUtils = FormUtils;
   public loginForm: FormGroup = this.formBuilder.group({
     email: new FormControl('', [Validators.required, Validators.email]),
@@ -75,12 +114,46 @@ export class LoginPage {
   }
 
   loginSaml() {
-    this.disableForm();
-    this.authService.setLoading(true);
-    const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
-    // console.log('🚀 ✅ ~ LoginPage ~ loginSaml ~ samlUrl:', samlUrl);
-    // const samlUrl = `${this.appService.samlUrl}/api/custom-saml/start?tenant=google`;
-    window.location.href = samlUrl;
+    try {
+      this.disableForm();
+      this.authService.setLoading(true);
+
+      const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
+
+      if (!samlUrl || !this.appService.samlUrl || !this.appService.tenantId) {
+        console.error('SSO configuration incomplete');
+        this.alertaService.error(
+          'Configuración de SSO incompleta. Contacte al administrador.',
+          5000,
+          this.alertaLogin(),
+          'w-full block my-2',
+        );
+        this.authService.setLoading(false);
+        this.loginForm.enable();
+        return;
+      }
+
+      console.debug('Redirecting to SAML SSO:', samlUrl);
+
+      // Limpiar cualquier estado anterior antes de redirigir
+      this.authService.clearSession();
+
+      // Pequeño delay para asegurar que el loading se muestre
+      setTimeout(() => {
+        window.location.href = samlUrl;
+      }, 100);
+
+    } catch (error) {
+      console.error('Error initiating SAML login:', error);
+      this.alertaService.error(
+        'Error al iniciar sesión con SSO. Inténtelo de nuevo.',
+        5000,
+        this.alertaLogin(),
+        'w-full block my-2',
+      );
+      this.authService.setLoading(false);
+      this.loginForm.enable();
+    }
   }
 
   disableForm() {

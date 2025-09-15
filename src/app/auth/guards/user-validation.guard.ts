@@ -29,6 +29,11 @@ export class UserValidationGuard implements CanActivate {
       return false;
     }
 
+    // Si estamos en páginas de términos o perfil, permitir acceso directo
+    if (state.url.includes('/auth/terms-conditions') || state.url.includes('/perfil')) {
+      return true;
+    }
+
     return from(this.validateUser(route, state));
   }
 
@@ -37,23 +42,31 @@ export class UserValidationGuard implements CanActivate {
     state: RouterStateSnapshot,
   ): Promise<boolean> {
     try {
+      console.debug('UserValidationGuard: Starting validation for', state.url);
+
+      // Verificar términos primero
       const termsValid = this.termsGuard.canActivate(route, state);
-      const termsResult =
-        termsValid instanceof Promise ? await termsValid : termsValid;
+      const termsResult = termsValid instanceof Promise ? await termsValid : termsValid;
+
       if (!termsResult) {
+        console.debug('UserValidationGuard: Terms validation failed');
         return false;
       }
 
+      // Verificar perfil
       const profileValid = this.profileGuard.canActivate(route, state);
-      const profileResult =
-        profileValid instanceof Promise ? await profileValid : profileValid;
+      const profileResult = profileValid instanceof Promise ? await profileValid : profileValid;
+
       if (!profileResult) {
+        console.debug('UserValidationGuard: Profile validation failed');
         return false;
       }
 
+      console.debug('UserValidationGuard: All validations passed');
       return true;
     } catch (error) {
       console.error('Error en validación de usuario:', error);
+      // En caso de error, permitir acceso para evitar bloqueos
       return true;
     }
   }

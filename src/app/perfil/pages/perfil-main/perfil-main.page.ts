@@ -340,10 +340,30 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
           });
 
           if (!confirmado) {
-            this.facturacionForm.reset({}, { emitEvent: false });
-            this.facturacionForm
-              .get('documento')
-              ?.setValue('', { emitEvent: false });
+            // Limpiar solo los campos autocompletados, manteniendo el documento
+            const documentoActual = this.facturacionForm.get('documento')?.value;
+            const tipoDocumentoActual = this.facturacionForm.get('tipoDocumento')?.value;
+
+            this.facturacionForm.patchValue({
+              nombre: '',
+              apellido: '',
+              email: '',
+              telefono: '',
+              // documento: mantener el valor actual
+              // tipoDocumento: mantener el valor actual
+              digitoVerificacion: '',
+              ciudadExpedicion: '',
+              direccion: '',
+              ciudadResidencia: '',
+              tipoPersona: '',
+              regimenTributario: '',
+            }, { emitEvent: false });
+
+            // Restaurar los valores que queremos mantener
+            this.facturacionForm.get('documento')?.setValue(documentoActual, { emitEvent: false });
+            this.facturacionForm.get('tipoDocumento')?.setValue(tipoDocumentoActual, { emitEvent: false });
+
+            // Limpiar estados de ciudades seleccionadas
             this.ciudadFactSeleccionadaExpedicion.set(null);
             this.ciudadFactTerminoBusquedaExpedicion.set('');
             this.ciudadFactSeleccionadaResidencia.set(null);
@@ -495,6 +515,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       this.perfilForm.get('ciudadExpedicion')?.setValue('');
       this.ciudadSeleccionada.set(null);
     }
+
+    // Anunciar cambios a lectores de pantalla
+    this.anunciarCambioAutocompletado('ciudad', valor);
   }
 
   public onCiudadKeyDown(event: KeyboardEvent) {
@@ -507,6 +530,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         const siguienteIndice =
           indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
         this.indiceOpcionSeleccionada.set(siguienteIndice);
+        this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
 
       case 'ArrowUp':
@@ -514,18 +538,38 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         const anteriorIndice =
           indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
         this.indiceOpcionSeleccionada.set(anteriorIndice);
+        this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
 
       case 'Enter':
         event.preventDefault();
         if (indiceActual >= 0 && ciudades[indiceActual]) {
           this.seleccionarCiudad(ciudades[indiceActual]);
+          this.anunciarSeleccionCiudad(ciudades[indiceActual], true);
         }
         break;
 
       case 'Escape':
+        event.preventDefault();
         this.mostrarOpcionesCiudades.set(false);
         this.indiceOpcionSeleccionada.set(-1);
+        this.anunciarCambioAutocompletado('ciudad', 'Lista cerrada');
+        break;
+
+      case 'Home':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionada.set(0);
+          this.anunciarSeleccionCiudad(ciudades[0]);
+        }
+        break;
+
+      case 'End':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionada.set(ciudades.length - 1);
+          this.anunciarSeleccionCiudad(ciudades[ciudades.length - 1]);
+        }
         break;
     }
   }
@@ -544,6 +588,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       this.perfilForm.get('ciudadResidencia')?.setValue('');
       this.ciudadResidenciaSeleccionada.set(null);
     }
+
+    // Anunciar cambios a lectores de pantalla
+    this.anunciarCambioAutocompletado('ciudad-residencia', valor);
   }
 
   public onCiudadResidenciaKeyDown(event: KeyboardEvent) {
@@ -556,6 +603,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         const siguienteIndice =
           indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
         this.indiceOpcionSeleccionadaResidencia.set(siguienteIndice);
+        this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
 
       case 'ArrowUp':
@@ -563,18 +611,38 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         const anteriorIndice =
           indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
         this.indiceOpcionSeleccionadaResidencia.set(anteriorIndice);
+        this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
 
       case 'Enter':
         event.preventDefault();
         if (indiceActual >= 0 && ciudades[indiceActual]) {
           this.seleccionarCiudadResidencia(ciudades[indiceActual]);
+          this.anunciarSeleccionCiudad(ciudades[indiceActual], true);
         }
         break;
 
       case 'Escape':
+        event.preventDefault();
         this.mostrarOpcionesCiudadesResidencia.set(false);
         this.indiceOpcionSeleccionadaResidencia.set(-1);
+        this.anunciarCambioAutocompletado('ciudad-residencia', 'Lista cerrada');
+        break;
+
+      case 'Home':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaResidencia.set(0);
+          this.anunciarSeleccionCiudad(ciudades[0]);
+        }
+        break;
+
+      case 'End':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaResidencia.set(ciudades.length - 1);
+          this.anunciarSeleccionCiudad(ciudades[ciudades.length - 1]);
+        }
         break;
     }
   }
@@ -593,6 +661,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       this.perfilForm.get('facturacion.ciudadExpedicion')?.setValue('');
       this.ciudadFactSeleccionadaExpedicion.set(null);
     }
+
+    // Anunciar cambios a lectores de pantalla
+    this.anunciarCambioAutocompletado('ciudad-fact-expedicion', valor);
   }
 
   public onCiudadFactExpedicionKeyDown(event: KeyboardEvent) {
@@ -601,25 +672,42 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        this.indiceOpcionSeleccionadaFactExpedicion.set(
-          indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0,
-        );
+        const siguienteIndice = indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
+        this.indiceOpcionSeleccionadaFactExpedicion.set(siguienteIndice);
+        this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
       case 'ArrowUp':
         event.preventDefault();
-        this.indiceOpcionSeleccionadaFactExpedicion.set(
-          indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1,
-        );
+        const anteriorIndice = indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
+        this.indiceOpcionSeleccionadaFactExpedicion.set(anteriorIndice);
+        this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
       case 'Enter':
         event.preventDefault();
         if (indiceActual >= 0 && ciudades[indiceActual]) {
           this.seleccionarCiudadFactExpedicion(ciudades[indiceActual]);
+          this.anunciarSeleccionCiudad(ciudades[indiceActual], true);
         }
         break;
       case 'Escape':
+        event.preventDefault();
         this.mostrarOpcionesCiudadesFactExpedicion.set(false);
         this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
+        this.anunciarCambioAutocompletado('ciudad-fact-expedicion', 'Lista cerrada');
+        break;
+      case 'Home':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaFactExpedicion.set(0);
+          this.anunciarSeleccionCiudad(ciudades[0]);
+        }
+        break;
+      case 'End':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaFactExpedicion.set(ciudades.length - 1);
+          this.anunciarSeleccionCiudad(ciudades[ciudades.length - 1]);
+        }
         break;
     }
   }
@@ -653,6 +741,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       this.perfilForm.get('facturacion.ciudadResidencia')?.setValue('');
       this.ciudadFactSeleccionadaResidencia.set(null);
     }
+
+    // Anunciar cambios a lectores de pantalla
+    this.anunciarCambioAutocompletado('ciudad-fact-residencia', valor);
   }
 
   public onCiudadFactResidenciaKeyDown(event: KeyboardEvent) {
@@ -661,25 +752,42 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        this.indiceOpcionSeleccionadaFactResidencia.set(
-          indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0,
-        );
+        const siguienteIndice = indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
+        this.indiceOpcionSeleccionadaFactResidencia.set(siguienteIndice);
+        this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
       case 'ArrowUp':
         event.preventDefault();
-        this.indiceOpcionSeleccionadaFactResidencia.set(
-          indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1,
-        );
+        const anteriorIndice = indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
+        this.indiceOpcionSeleccionadaFactResidencia.set(anteriorIndice);
+        this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
       case 'Enter':
         event.preventDefault();
         if (indiceActual >= 0 && ciudades[indiceActual]) {
           this.seleccionarCiudadFactResidencia(ciudades[indiceActual]);
+          this.anunciarSeleccionCiudad(ciudades[indiceActual], true);
         }
         break;
       case 'Escape':
+        event.preventDefault();
         this.mostrarOpcionesCiudadesFactResidencia.set(false);
         this.indiceOpcionSeleccionadaFactResidencia.set(-1);
+        this.anunciarCambioAutocompletado('ciudad-fact-residencia', 'Lista cerrada');
+        break;
+      case 'Home':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaFactResidencia.set(0);
+          this.anunciarSeleccionCiudad(ciudades[0]);
+        }
+        break;
+      case 'End':
+        event.preventDefault();
+        if (ciudades.length > 0) {
+          this.indiceOpcionSeleccionadaFactResidencia.set(ciudades.length - 1);
+          this.anunciarSeleccionCiudad(ciudades[ciudades.length - 1]);
+        }
         break;
     }
   }
@@ -949,8 +1057,17 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   async guardarCambios() {
     if (this.perfilForm.invalid) {
       this.perfilForm.markAllAsTouched();
+      this.anunciarValidacion('Formulario', false, 'contiene campos requeridos sin completar');
+
+      // Mover foco al primer campo con error
+      const primerCampoError = this.encontrarPrimerCampoConError();
+      if (primerCampoError) {
+        this.manejarFocoEnError(primerCampoError);
+      }
       return;
     }
+
+    this.anunciarEstadoCarga('Guardando cambios del perfil...', 'loading');
 
     const fechaNacimiento = this.perfilForm.value.fechaNacimiento
       ? format(
@@ -989,12 +1106,17 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         datosActualizados,
       );
 
+      this.anunciarEstadoCarga('Perfil actualizado exitosamente', 'success');
+
       this.alertaService.success(
         'Perfil actualizado exitosamente.',
         5000,
         this.alertaPerfil(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+
+      // Mover foco al botón de guardar para confirmar la acción
+      this.manejarFocoPostAccion('boton-guardar', 500);
 
       if (!this.isCompleteProfileMode()) {
         return;
@@ -1015,6 +1137,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         const navegandoFallback = await this.router.navigate(['/reservas']);
       }
     } catch (error) {
+      this.anunciarEstadoCarga('Error al guardar los cambios', 'error');
       this.alertaService.error(
         'Error al actualizar el perfil. Por favor, inténtalo de nuevo.',
         5000,
@@ -1031,8 +1154,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   async cambiarPassword() {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
+      this.anunciarValidacion('Formulario de contraseña', false, 'contiene campos requeridos sin completar');
       return;
     }
+
+    this.anunciarEstadoCarga('Cambiando contraseña...', 'loading');
 
     const datosPassword = {
       currentPassword: this.passwordForm.value.currentPassword,
@@ -1043,6 +1169,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       const success = await this.perfilService.cambiarPassword(datosPassword);
 
       if (success) {
+        this.anunciarEstadoCarga('Contraseña actualizada exitosamente', 'success');
         this.alertaService.success(
           'Contraseña actualizada exitosamente.',
           5000,
@@ -1059,12 +1186,99 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         error?.message ||
         'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.';
 
+      this.anunciarEstadoCarga('Error al cambiar la contraseña', 'error');
       this.alertaService.error(
         mensajeError,
         5000,
         this.alertaPerfil(),
         'fixed flex p-4 transition-all ease-in-out bottom-4 right-4',
       );
+    }
+  }
+
+  // Métodos de accesibilidad
+  private anunciarCambioAutocompletado(tipo: string, mensaje: string) {
+    const liveRegion = document.getElementById('accesibilidad-live-region');
+    if (liveRegion) {
+      liveRegion.textContent = mensaje;
+    }
+  }
+
+  private anunciarSeleccionCiudad(ciudad: Ciudad, seleccionada: boolean = false) {
+    const mensaje = seleccionada
+      ? `${ciudad.nombre} seleccionada`
+      : `${ciudad.nombre}`;
+    this.anunciarCambioAutocompletado('ciudad', mensaje);
+  }
+
+  private anunciarEstadoCarga(mensaje: string, tipo: 'loading' | 'success' | 'error' = 'loading') {
+    const liveRegion = document.getElementById('estado-live-region');
+    if (liveRegion) {
+      liveRegion.setAttribute('aria-live', tipo === 'error' ? 'assertive' : 'polite');
+      liveRegion.textContent = mensaje;
+    }
+  }
+
+  private manejarFocoPostAccion(elementoId: string, retraso: number = 100) {
+    setTimeout(() => {
+      const elemento = document.getElementById(elementoId);
+      if (elemento) {
+        elemento.focus();
+        // Anunciar el cambio de foco para lectores de pantalla
+        this.anunciarCambioAutocompletado('navegacion', `Enfocado en ${elemento.getAttribute('aria-label') || elementoId}`);
+      }
+    }, retraso);
+  }
+
+  private manejarFocoEnError(campoId: string) {
+    const campo = document.getElementById(campoId);
+    if (campo) {
+      campo.focus();
+      campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.anunciarValidacion(campoId, false, 'Campo con error, requiere atención');
+    }
+  }
+
+  private encontrarPrimerCampoConError(): string | null {
+    const camposIds = [
+      'nombre', 'apellido', 'telefono', 'fechaNacimiento',
+      'tipoDocumento', 'documento', 'ciudadExpedicion',
+      'email', 'direccion', 'ciudadResidencia',
+      'tipoPersona', 'regimenTributario'
+    ];
+
+    for (const campoId of camposIds) {
+      const control = this.perfilForm.get(campoId);
+      if (control && control.invalid && control.touched) {
+        return campoId;
+      }
+    }
+
+    // Verificar campos de facturación si están habilitados
+    if (this.perfilForm.get('usaFacturacionDiferente')?.value) {
+      const camposFacturacionIds = [
+        'facturacion.nombre', 'facturacion.apellido', 'facturacion.telefono',
+        'facturacion.email', 'facturacion.documento', 'facturacion.direccion'
+      ];
+
+      for (const campoId of camposFacturacionIds) {
+        const control = this.perfilForm.get(campoId);
+        if (control && control.invalid && control.touched) {
+          return campoId.replace('facturacion.', 'f');
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private anunciarValidacion(campo: string, esValido: boolean, mensaje?: string) {
+    const liveRegion = document.getElementById('validacion-live-region');
+    if (liveRegion) {
+      const texto = esValido
+        ? `${campo} válido`
+        : `${campo}: ${mensaje || 'contiene errores'}`;
+      liveRegion.textContent = texto;
     }
   }
 
