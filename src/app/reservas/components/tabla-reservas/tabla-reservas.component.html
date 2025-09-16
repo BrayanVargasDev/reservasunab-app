@@ -26,6 +26,21 @@
   </span>
 </ng-template>
 
+<ng-template #idCell let-context>
+  <div class="flex items-center gap-2">
+    <span class="font-bold max-sm:text-sm text-base">
+      {{ context.getValue() }}
+    </span>
+    <div
+      class="inline-grid *:[grid-area:1/1] tooltip tooltip-right"
+      [attr.data-tip]="obtenerTextoReporte(context.row.original)"
+    >
+      <div class="animate-ping" [ngClass]="obtenerClaseReporte(context.row.original)"></div>
+      <div [ngClass]="obtenerClaseReporte(context.row.original)"></div>
+    </div>
+  </div>
+</ng-template>
+
 <table
   responsiveTable
   #tabla="responsiveTable"

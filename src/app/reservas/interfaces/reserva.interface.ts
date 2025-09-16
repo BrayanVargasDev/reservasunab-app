@@ -19,6 +19,8 @@ export interface Reserva {
   puede_cancelar: boolean;
   pago: Pago | null;
   espacio: Espacio;
+  reportado: boolean;
+  ultimo_error_reporte: string | null;
 }
 
 export interface Espacio {

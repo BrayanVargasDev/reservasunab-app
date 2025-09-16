@@ -70,6 +70,7 @@ export class TablaReservasComponent {
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public codigoCell = viewChild.required<TemplateRef<Util>>('codigoCell');
   public horasCell = viewChild.required<TemplateRef<Util>>('horasCell');
+  public idCell = viewChild.required<TemplateRef<Util>>('idCell');
   public modalVerReservaRef = viewChild<ModalVerReservaComponent>('modalVer');
 
   private columnasPorDefecto = signal<ColumnDef<Reserva>[]>([
@@ -81,8 +82,7 @@ export class TablaReservasComponent {
       meta: {
         priority: Infinity,
       },
-      cell: info =>
-        `<span class="font-bold max-sm:text-sm text-base">${info.getValue()}</span>`,
+      cell: this.idCell,
     },
     {
       id: 'usuario',
@@ -405,5 +405,19 @@ export class TablaReservasComponent {
 
   onPageChange(estado: PaginationState): void {
     this.reservasService.setPaginacion(estado);
+  }
+
+  obtenerClaseReporte(reserva: Reserva): string {
+    if (reserva.reportado) return 'status status-success';
+    if (!reserva.reportado && reserva.ultimo_error_reporte)
+      return 'status status-error';
+    return 'status status-neutral';
+  }
+
+  obtenerTextoReporte(reserva: Reserva): string {
+    if (reserva.reportado) return '';
+    if (!reserva.reportado && reserva.ultimo_error_reporte)
+      return reserva.ultimo_error_reporte || 'Error desconocido';
+    return 'No reportado';
   }
 }
