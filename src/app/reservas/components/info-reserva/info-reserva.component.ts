@@ -36,12 +36,13 @@ export class InfoReservaComponent {
 
   private authService = inject(AuthService);
 
-  public precioElemento = (el: Elemento) => {
+  public precioElemento = (el: Elemento): number => {
     const tipo = this.authService.usuario()?.tipo_usuario?.[0] as
       | TipoUsuario
       | undefined;
 
-    return el.valor ?? 0;
+    const tipoTmp = `valor_${tipo?.toLowerCase()}` as keyof Elemento;
+    return (el[tipoTmp] as number) ?? 0;
   };
 
   public obtenerInfoPago(): InfoPago | null {

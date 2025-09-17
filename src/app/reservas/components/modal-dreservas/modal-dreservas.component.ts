@@ -306,7 +306,6 @@ export class ModalDreservasComponent {
     return estado.puede_agregar_elementos;
   });
 
-
   public yaConfirmadaSinPago = computed(() => {
     const estado = this.getEstadoActual();
     if (!estado) return false;
@@ -329,10 +328,6 @@ export class ModalDreservasComponent {
 
   public confirmadaConCambiosPendientes = computed(() => {
     this.dreservasService.requiereReconfirmacion();
-    console.log({
-      yaConfirmada: this.yaConfirmadaSinPago(),
-      requiereReconfirmacion: this.dreservasService.requiereReconfirmacion(),
-    });
     return (
       this.yaConfirmadaSinPago() &&
       this.dreservasService.requiereReconfirmacion()
@@ -635,6 +630,7 @@ export class ModalDreservasComponent {
   ): Promise<void> {
     if (tipo === 'normal') {
       this.dreservasService.setProcesandoPago();
+
       if (!estadoResumen || !estadoResumen.id) {
         this.showError(
           'No se pudo procesar el pago. Por favor, inténtelo de nuevo.',
@@ -643,6 +639,7 @@ export class ModalDreservasComponent {
         return;
       }
       await new Promise(resolve => setTimeout(resolve, 1000));
+
       try {
         const response: any = await this.dreservasService.pagarReserva(
           estadoResumen.id,
@@ -676,6 +673,8 @@ export class ModalDreservasComponent {
     await new Promise(resolve => setTimeout(resolve, 1000));
     try {
       await this.dreservasService.pagarReservaConSaldo(estadoResumen.id);
+      this.dreservasService.setIdMiReserva(estadoResumen.id);
+      await new Promise(resolve => setTimeout(resolve, 100));
       try {
         const result = await this.dreservasService.miReservaQuery.refetch();
         const reservaActualizada =
@@ -695,6 +694,7 @@ export class ModalDreservasComponent {
         }
       }
       this.showSuccess('Pago realizado con saldo exitosamente.', 4 * 1000);
+      this.appService.creditosQuery.refetch();
     } catch (error: any) {
       const mensajeError =
         error?.error?.error || 'Error al procesar el pago con saldo.';

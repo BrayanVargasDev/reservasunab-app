@@ -699,7 +699,8 @@
         >
           Cerrar
         </button>
-        @if(pudeCancelar() && dreservasService.mostrandoResumenExistente()) {
+        @if(pudeCancelar() && noCancelada() && !esReservaPasada() &&
+        dreservasService.mostrandoResumenExistente()) {
         <button
           type="button"
           class="btn max-sm:btn-sm btn-error md:h-11 rounded-lg"

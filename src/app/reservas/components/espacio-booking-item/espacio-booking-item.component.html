@@ -1,11 +1,21 @@
 <div
-  class="relative rounded-xl overflow-hidden shadow-md bg-cover bg-center h-60 w-full cursor-pointer"
-  [ngStyle]="{ 'background-image': 'url(' + imagenUrl() + ')' }"
+  class="relative rounded-xl overflow-hidden shadow-md bg-cover bg-center h-60 w-full cursor-pointer bg-gray-200 dark:bg-gray-800"
+  [style.background-image]="imagenUrl() ? 'url(' + imagenUrl() + ')' : null"
   (click)="abrirEspacio()"
 >
   <div
     class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"
   ></div>
+
+  <!-- Placeholder cuando no hay imagen -->
+  @if (!imagenUrl()) {
+  <div class="absolute inset-0 flex items-center justify-center">
+    <app-web-icon
+      [nombreIcono]="'image-outline'"
+      [estilos]="'w-16 h-16 text-white/80'"
+    ></app-web-icon>
+  </div>
+  }
 
   <!-- <div
     class="absolute top-2 left-2 bg-black/60 text-white text-sm px-2 py-1 rounded-full flex items-center gap-1 z-10"

@@ -65,8 +65,7 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
   public authService = inject(AuthService);
 
   public readonly environment = environment;
-  private readonly DEFAULT_IMAGE =
-    'https://img.daisyui.com/images/profile/demo/yellingcat@192.webp';
+  private readonly DEFAULT_IMAGE = '';
 
   public readonly filtrosForm = new FormGroup({
     fecha: new FormControl<string>(''),

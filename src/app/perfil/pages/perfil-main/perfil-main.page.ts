@@ -302,7 +302,6 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       )
       .subscribe(async (doc: string) => {
         if (this.inicializandoFormulario) return;
-        console.log('Valor documento facturación cambiado:', doc);
         const usa = this.perfilForm.get('usaFacturacionDiferente')?.value;
         const tipoDoc = this.facturacionForm.get('tipoDocumento')?.value;
 
