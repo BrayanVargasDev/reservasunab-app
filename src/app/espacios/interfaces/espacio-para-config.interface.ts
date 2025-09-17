@@ -1,4 +1,4 @@
-import { Sede, Categoria, CreadoPor } from '@shared/interfaces';
+import { Sede, Categoria, CreadoPor,Elemento } from '@shared/interfaces';
 import { Novedad } from './novedad.interface';
 import { Configuracion } from './configuracion.interface';
 import { TipoUsuarioConfig } from './tipo-usuario-config.interface';
@@ -34,4 +34,5 @@ export interface EspacioParaConfig {
   despues_hora: boolean;
   id_edificio: string;
   codigo: string;
+  elementos: Elemento[];
 }

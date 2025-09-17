@@ -107,7 +107,7 @@ export class TablaPagosComponent implements OnInit {
       id: 'fecha',
       accessorKey: 'creado_en',
       header: 'Fecha',
-      size:100,
+      size: 100,
       cell: this.fechaCell,
     },
     {
@@ -125,19 +125,35 @@ export class TablaPagosComponent implements OnInit {
     },
     {
       id: 'usuario',
-      accessorFn: row =>
-        `${row.reserva?.usuario_reserva?.persona?.primer_nombre || ''} ${
-          row.reserva?.usuario_reserva?.persona?.segundo_nombre || ''
-        } ${row.reserva?.usuario_reserva?.persona?.primer_apellido || ''} ${
-          row.reserva?.usuario_reserva?.persona?.segundo_apellido || ''
-        }` || 'N/A',
+      accessorFn: row => {
+        let usuario = row.reserva?.usuario_reserva;
+        if (!usuario && row.mensualidad) {
+          usuario = row.mensualidad.usuario;
+        }
+
+        if (!usuario) return 'N/A';
+
+        return (
+          `${usuario.persona?.primer_nombre || ''} ${
+            usuario.persona?.segundo_nombre || ''
+          } ${usuario.persona?.primer_apellido || ''} ${
+            usuario.persona?.segundo_apellido || ''
+          }` || 'N/A'
+        );
+      },
       header: 'Usuario',
       cell: info =>
         `<span class="max-sm:text-sm text-base">${info.getValue()}</span>`,
     },
     {
       id: 'espacio',
-      accessorFn: row => row.reserva?.espacio?.nombre || 'N/A',
+      accessorFn: row => {
+        let espacio = row.reserva?.espacio;
+        if (!espacio && row.mensualidad) {
+          espacio = row.mensualidad.espacio;
+        }
+        return espacio?.nombre || 'N/A';
+      },
       header: 'Espacio',
       cell: info =>
         `<span class="max-sm:text-sm text-base">${info.getValue()}</span>`,

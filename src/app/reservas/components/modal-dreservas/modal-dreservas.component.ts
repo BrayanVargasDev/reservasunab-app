@@ -293,6 +293,20 @@ export class ModalDreservasComponent {
     return !estado?.estado?.toLowerCase().includes('cancelada');
   });
 
+  public puedeAgregarElementos = computed(() => {
+    const estado = this.getEstadoActual();
+    if (!estado) return false;
+    if (this.dreservasService.mostrandoDisponibilidad()) return false;
+    if (this.dreservasService.mostrandoDetalles()) return false;
+    if (this.dreservasService.mostrandoJugadores()) return false;
+    if (!this.permiteElementoDespuesReservado()) return false;
+    if (!this.noCancelada()) return false;
+    if (this.esReservaPasada()) return false;
+
+    return estado.puede_agregar_elementos;
+  });
+
+
   public yaConfirmadaSinPago = computed(() => {
     const estado = this.getEstadoActual();
     if (!estado) return false;

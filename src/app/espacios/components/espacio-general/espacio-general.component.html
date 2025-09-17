@@ -388,9 +388,14 @@
       }
     </div>
     <div class="flex flex-col w-full md:w-1/3">
-      <label class="label text-sm font-[600] text-base-content h-5 mb-1 md:mb-2">
+      <label
+        class="label text-sm font-[600] text-base-content h-5 mb-1 md:mb-2"
+      >
       </label>
-      <label class="label text-sm  h-11 text-base-content" for="permitirExternos">
+      <label
+        class="label text-sm h-11 text-base-content"
+        for="permitirExternos"
+      >
         <input
           id="permitirExternos"
           formControlName="permitirExternos"
@@ -402,6 +407,91 @@
     </div>
   </div>
   }
+
+  <!-- Sección de Elementos Enlazados -->
+  <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
+    <div class="flex flex-col w-full">
+      <label
+        class="label text-sm font-[600] text-base-content mb-1"
+        for="elementos"
+      >
+        Buscar elementos a asociar:
+      </label>
+      <div class="relative">
+        <input
+          type="text"
+          id="elementos"
+          [value]="terminoBusquedaElementos()"
+          (input)="onElementoInputChange($event)"
+          (keydown)="onElementoKeyDown($event)"
+          (focus)="mostrarOpcionesElementos.set(true)"
+          (blur)="ocultarOpcionesElementos()"
+          placeholder="Buscar elementos..."
+          autocomplete="off"
+          role="combobox"
+          [disabled]="!appService.editando()"
+          [attr.aria-expanded]="mostrarOpcionesElementos()"
+          class="input max-sm:input-sm sm:h-11 input-bordered w-full h-11 rounded-md placeholder:text-gray-400 placeholder:text-xs md:placeholder:text-sm"
+        />
+        @if (mostrarOpcionesElementos() && elementosFiltrados().length > 0) {
+        <div
+          class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto"
+          role="listbox"
+        >
+          @for (elemento of elementosFiltrados(); track elemento.id; let i =
+          $index) {
+          <div
+            [id]="'elemento-option-' + i"
+            class="py-3 px-4 cursor-pointer border-b border-base-100/10 transition-colors duration-200 hover:bg-base-100 last:border-b-0 animate-fade-in text-sm"
+            [class.highlighted]="i === indiceOpcionSeleccionadaElementos()"
+            role="option"
+            [attr.aria-selected]="i === indiceOpcionSeleccionadaElementos()"
+            (click)="seleccionarElemento(elemento)"
+          >
+            {{ elemento.nombre }}
+          </div>
+          }
+        </div>
+        } @if (mostrarOpcionesElementos() && elementosFiltrados().length === 0
+        && terminoBusquedaElementos()) {
+        <div
+          class="absolute z-10 w-full mt-1 bg-base-100 shadow-lg border-base-300 border rounded-lg max-h-60 overflow-y-auto animate-fade-in text-sm"
+        >
+          <div class="py-3 px-4 text-gray-500 italic">
+            No se encontraron elementos
+          </div>
+        </div>
+        }
+      </div>
+      <!-- Lista de elementos asociados -->
+      @if (elementosSeleccionados().length > 0) {
+      <div class="mt-2">
+        <label class="label text-sm font-[600] text-base-content"
+          >Elementos asociados:</label
+        >
+        <div class="flex flex-wrap gap-2">
+          @for (elemento of elementosSeleccionados(); track elemento.id) {
+          <div class="badge badge-accent gap-2">
+            {{ elemento.nombre }}
+            @if (appService.editando()) {
+            <button
+              type="button"
+              (click)="eliminarElemento(elemento)"
+              class="btn btn-xs btn-square btn-accent p-0 h-5 w-5"
+            >
+              <app-web-icon
+                nombreIcono="remove-circle-outline"
+                estilos="h-full w-full"
+              ></app-web-icon>
+            </button>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
 
   <ng-template #alertaFormEspacio></ng-template>
 

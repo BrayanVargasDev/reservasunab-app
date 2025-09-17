@@ -22,6 +22,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import {
   ContentChange,
@@ -35,13 +37,15 @@ import { EspaciosConfigService } from '@espacios/services/espacios-config.servic
 import { FormEspacio, Espacio, EspacioParaConfig } from '@espacios/interfaces';
 import { AlertasService } from '@shared/services/alertas.service';
 import { FormUtils } from '@shared/utils/form.utils';
-import { GeneralResponse } from '@shared/interfaces';
+import { GeneralResponse, Elemento } from '@shared/interfaces';
 import { AppService } from '@app/app.service';
 import { ImagenDropComponent } from '../imagen-drop/imagen-drop.component';
 import { environment } from '@environments/environment';
 import { AuthService } from '@auth/services/auth.service';
 import { ConfigBaseService } from '@espacios/services/config-base.service';
+import { buscarElementos } from '@reservas/actions/buscar-elementos.action';
 import { tr } from 'date-fns/locale';
+import { WebIconComponent } from '@app/shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'espacio-general',
@@ -52,6 +56,7 @@ import { tr } from 'date-fns/locale';
     ImagenDropComponent,
     QuillEditorComponent,
     QuillViewHTMLComponent,
+    WebIconComponent,
   ],
   templateUrl: './espacio-general.component.html',
   styleUrl: './espacio-general.component.scss',
@@ -68,6 +73,8 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
   private file = signal<File | null>(null);
   private enviroment = environment;
   private configBaseService = inject(ConfigBaseService);
+  private http = inject(HttpClient);
+  private destroy$ = new Subject<void>();
 
   public authService = inject(AuthService);
   public espaciosService = inject(EspaciosService);
@@ -94,9 +101,18 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     reservasSimultaneas: [1, [Validators.min(1)]],
     pagoMensualidad: [false],
     valorMensualidad: [{ value: null, disabled: true }, [Validators.min(0)]],
+    elementosEnlazados: [[]],
   });
   public tiltuloImagen = signal<{ nombre: string; peso: string } | null>(null);
   public edificios = computed(() => this.espaciosService.edificiosQuery.data());
+
+  // Signals para elementos
+  public terminoBusquedaElementos = signal<string>('');
+  public elementosFiltrados = signal<Elemento[]>([]);
+  public elementosSeleccionados = signal<Elemento[]>([]);
+  public mostrarOpcionesElementos = signal<boolean>(false);
+  public indiceOpcionSeleccionadaElementos = signal<number>(-1);
+  private elementoSearchSubject = new Subject<string>();
   // Configuración del editor Quill sin imágenes ni elementos binarios
   public quillConfig = {
     toolbar: [
@@ -157,6 +173,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     );
 
     this.configurarEditorQuill();
+    this.configurarAutocompleteElementos();
   }
 
   private configurarEditorQuill() {
@@ -203,6 +220,97 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     }, 100);
   }
 
+  private configurarAutocompleteElementos() {
+    this.elementoSearchSubject
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe(async termino => {
+        if (termino.trim().length > 0) {
+          try {
+            const response = await buscarElementos(this.http, termino, null);
+            this.elementosFiltrados.set((response.data as any) || []);
+          } catch (error) {
+            console.error('Error al buscar elementos:', error);
+            this.elementosFiltrados.set([]);
+          }
+        } else {
+          this.elementosFiltrados.set([]);
+        }
+      });
+  }
+
+  public onElementoInputChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const valor = input.value;
+
+    this.terminoBusquedaElementos.set(valor);
+    this.mostrarOpcionesElementos.set(true);
+    this.indiceOpcionSeleccionadaElementos.set(-1);
+    this.elementoSearchSubject.next(valor);
+  }
+
+  public onElementoKeyDown(event: KeyboardEvent) {
+    const elementos = this.elementosFiltrados();
+    const indiceActual = this.indiceOpcionSeleccionadaElementos();
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        const siguienteIndice =
+          indiceActual < elementos.length - 1 ? indiceActual + 1 : 0;
+        this.indiceOpcionSeleccionadaElementos.set(siguienteIndice);
+        break;
+
+      case 'ArrowUp':
+        event.preventDefault();
+        const anteriorIndice =
+          indiceActual > 0 ? indiceActual - 1 : elementos.length - 1;
+        this.indiceOpcionSeleccionadaElementos.set(anteriorIndice);
+        break;
+
+      case 'Enter':
+        event.preventDefault();
+        if (indiceActual >= 0 && elementos[indiceActual]) {
+          this.seleccionarElemento(elementos[indiceActual]);
+        }
+        break;
+
+      case 'Escape':
+        event.preventDefault();
+        this.mostrarOpcionesElementos.set(false);
+        this.indiceOpcionSeleccionadaElementos.set(-1);
+        break;
+    }
+  }
+
+  public seleccionarElemento(elemento: Elemento) {
+    const seleccionados = this.elementosSeleccionados();
+    if (!seleccionados.find(e => e.id === elemento.id)) {
+      this.elementosSeleccionados.set([...seleccionados, elemento]);
+      this.espacioForm
+        .get('elementosEnlazados')
+        ?.setValue([...seleccionados.map(e => e.id), elemento.id]);
+    }
+    this.terminoBusquedaElementos.set('');
+    this.mostrarOpcionesElementos.set(false);
+    this.indiceOpcionSeleccionadaElementos.set(-1);
+  }
+
+  public eliminarElemento(elemento: Elemento) {
+    const seleccionados = this.elementosSeleccionados();
+    const nuevosSeleccionados = seleccionados.filter(e => e.id !== elemento.id);
+    this.elementosSeleccionados.set(nuevosSeleccionados);
+    this.espacioForm
+      .get('elementosEnlazados')
+      ?.setValue(nuevosSeleccionados.map(e => e.id));
+  }
+
+  public ocultarOpcionesElementos() {
+    setTimeout(() => {
+      this.mostrarOpcionesElementos.set(false);
+      this.indiceOpcionSeleccionadaElementos.set(-1);
+    }, 150);
+  }
+
   get imagen() {
     return this.espacioConfigService.imagen();
   }
@@ -236,6 +344,10 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
           nombre: espacio.imagen.titulo,
           peso: '',
         });
+      }
+
+      if (espacio.elementos) {
+        this.elementosSeleccionados.set(espacio.elementos);
       }
 
       if (espacio?.agregar_jugadores) {
@@ -344,6 +456,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     const espacio = {
       ...this.espacioForm.value,
       imagen: this.file(),
+      elementosEnlazados: this.espacioForm.value.elementosEnlazados,
     };
 
     this.espacioConfigService
@@ -514,5 +627,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.espacioConfigService.setAlertaEspacioConfigRef(null);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
