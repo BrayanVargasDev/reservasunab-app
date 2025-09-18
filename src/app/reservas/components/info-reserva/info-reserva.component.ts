@@ -42,7 +42,7 @@ export class InfoReservaComponent {
       | undefined;
 
     const tipoTmp = `valor_${tipo?.toLowerCase()}` as keyof Elemento;
-    return (el[tipoTmp] as number) ?? 0;
+    return (el[tipoTmp] as number) ?? el.valor ?? 0;
   };
 
   public obtenerInfoPago(): InfoPago | null {
