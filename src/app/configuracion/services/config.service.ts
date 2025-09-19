@@ -126,6 +126,7 @@ export class ConfigService {
     queryFn: () =>
       getElementos(this.http, {
         ...this.paginacionElementos(),
+        fromCrud: true,
       }),
     select: (response: PaginatedResponse<Elemento>) => response.data,
   }));
