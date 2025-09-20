@@ -1,70 +1,180 @@
-<!-- <ion-content
-  [fullscreen]="true"
-  class="ion-padding">
-  <div class="dashboard-container">
-    <ion-card class="welcome-card">
-      <ion-card-header>
-        <ion-card-title>Bienvenido al Dashboard</ion-card-title>
-        <ion-card-subtitle>Panel de control principal</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <p>Aquí podrás gestionar todas las funcionalidades de la aplicación.</p>
-      </ion-card-content>
-    </ion-card>
+<h1
+  class="max-md:text-xl text-3xl text-left text-base-content mb-2 max-sm:mb-1"
+>
+  Hola <strong>{{ usuario()!.nombre!.split(' ')[0] }}</strong
+  >, bienvenido.
+</h1>
 
-    <ion-grid>
-      <ion-row>
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="4">
-          <ion-card class="dashboard-card">
-            <ion-card-header>
-              <ion-icon
-                name="people-outline"
-                color="primary"></ion-icon>
-              <ion-card-title>Usuarios</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p>Total de usuarios: 125</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="4">
-          <ion-card class="dashboard-card">
-            <ion-card-header>
-              <ion-icon
-                name="card-outline"
-                color="success"></ion-icon>
-              <ion-card-title>Pagos</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p>Pagos pendientes: 12</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <ion-col
-          size="12"
-          size-md="6"
-          size-lg="4">
-          <ion-card class="dashboard-card">
-            <ion-card-header>
-              <ion-icon
-                name="key-outline"
-                color="warning"></ion-icon>
-              <ion-card-title>Permisos</ion-card-title>
-            </ion-card-header>
-            <ion-card-content>
-              <p>Solicitudes: 5</p>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+<div
+  class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] max-sm:grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-2"
+>
+  <div
+    class="max-sm:max-h-24 max-h-32 bg-success/85 shadow-lg rounded-box flex justify-between max-sm:p-2 p-4 gap-1 items-center border-0 text-success-content"
+  >
+    <div class="flex h-full items-center justify-start w-1/2">
+      <app-web-icon
+        nombreIcono="calendar-number"
+        estilos="max-sm:h-8 h-12 max-sm:w-8 w-12 fill-success-content"
+      ></app-web-icon>
+    </div>
+    <div class="flex flex-col items-end w-1/2">
+      <span class="max-sm:text-2xl text-3xl font-bold">
+        {{ indicadores()?.reservas_hoy || 0 }}
+      </span>
+      <span class="max-sm:text-xs text-sm text-right">Reservas hoy</span>
+    </div>
   </div>
-</ion-content> -->
+  <div
+    class="max-sm:max-h-24 max-h-32 bg-accent/85 shadow-lg rounded-box flex justify-between max-sm:p-2 p-4 gap-1 items-center border-0 text-accent-content"
+  >
+    <div class="flex h-full items-center justify-start w-1/2">
+      <app-web-icon
+        nombreIcono="thermometer-outline"
+        estilos="max-sm:h-8 h-12 max-sm:w-8 w-12 fill-accent-content"
+      ></app-web-icon>
+    </div>
+    <div class="flex flex-col items-end w-1/2">
+      <span class="max-sm:text-2xl text-3xl font-bold">
+        {{ indicadores()?.ocupacion_hoy || 0 }}%
+      </span>
+      <span class="max-sm:text-xs text-sm text-right">Ocupación hoy</span>
+    </div>
+  </div>
+  <div
+    class="max-sm:max-h-24 max-h-32 bg-warning/85 shadow-lg rounded-box flex justify-between max-sm:p-2 p-4 gap-1 items-center border-0 text-warbg-warning-content"
+  >
+    <div class="flex h-full items-center justify-start w-1/2">
+      <app-web-icon
+        nombreIcono="accessibility"
+        estilos="max-sm:h-8 h-12 max-sm:w-8 w-12 fill-warning-content"
+      ></app-web-icon>
+    </div>
+    <div class="flex flex-col items-end w-1/2">
+      <span class="max-sm:text-2xl text-3xl font-bold">
+        {{ indicadores()?.usuarios_hoy }}
+      </span>
+      <span class="max-sm:text-xs text-sm text-right">Usuarios hoy</span>
+    </div>
+  </div>
+  <div
+    class="max-sm:max-h-24 max-h-32 bg-info/85 shadow-lg rounded-box flex justify-between max-sm:p-2 p-4 gap-1 items-center border-0 text-info-content"
+  >
+    <div class="flex h-full items-center justify-start w-1/2">
+      <app-web-icon
+        nombreIcono="wallet"
+        estilos="max-sm:h-8 h-12 max-sm:w-8 w-12 fill-info-content"
+      ></app-web-icon>
+    </div>
+    <div class="flex flex-col items-end w-1/2">
+      <span class="max-sm:text-2xl text-3xl font-bold">
+        ${{ indicadores()?.recaudado_hoy | number : '1.0-0' }}
+      </span>
+      <span class="max-sm:text-xs text-sm text-right">Recaudado hoy</span>
+    </div>
+  </div>
+</div>
+
+<!-- Gráficas -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mt-2">
+  <div class="bg-base-100 shadow-lg rounded-box p-4">
+    <div class="flex w-full items-center justify-between gap-2 mb-2">
+      <h2 class="max-sm:text-lg text-xl max-sm:w-min font-bold flex-grow">
+        Reservas por Mes
+      </h2>
+      <div class="flex gap-2 items-center">
+        <label
+          class="label text-sm font-semibold text-base-content md:mb-0"
+          for="anioReservasMes"
+        >
+          Año:
+        </label>
+        <select
+          id="anioReservasMes"
+          [formControl]="anioSeleccionadoControl"
+          [disabled]="selectsDisabled()"
+          class="select select-bordered select-sm h-8 rounded-md pl-1"
+        >
+          @for (anio of aniosConReservas(); track $index) {
+          <option [value]="anio">
+            {{ anio }}
+          </option>
+          }
+        </select>
+      </div>
+      <button
+        class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
+        [disabled]="descargandoReservas() || selectsDisabled()"
+        (click)="descargarReservas()"
+      >
+        @if (descargandoReservas()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        } @else {
+          <app-web-icon
+            nombreIcono="document-text-outline"
+            estilos="h-5 w-5 fill-current"
+          ></app-web-icon>
+        }
+        Descargar
+      </button>
+    </div>
+    <app-chart-reservas-mes [data]="reservasPorMesQuery.data() || []" />
+  </div>
+  <div class="bg-base-100 shadow-lg rounded-box p-4">
+    <h2 class="max-sm:text-lg text-xl font-bold mb-2">Promedio por Horas</h2>
+    <app-chart-promedio-horas [data]="promedioPorHorasQuery.data() || []" />
+  </div>
+  <div class="bg-base-100 shadow-lg rounded-box p-4">
+    <h2 class="max-sm:text-lg text-xl font-bold mb-2">
+      Reservas por Categoría
+    </h2>
+    <app-chart-reservas-categoria
+      [data]="reservasPorCategoriaQuery.data() || []"
+    />
+  </div>
+  <div class="bg-base-100 shadow-lg rounded-box p-4">
+    <div class="flex w-full items-center justify-between gap-2 mb-2">
+      <h2 class="max-sm:text-lg text-xl max-sm:w-min font-bold flex-grow">
+        Recaudo Mensual
+      </h2>
+      <div class="flex gap-2 items-center">
+        <label
+          class="label text-sm font-semibold text-base-content md:mb-0"
+          for="anioRecaudoMensual"
+        >
+          Año:
+        </label>
+        <select
+          id="anioRecaudoMensual"
+          [formControl]="anioSeleccionadoControl"
+          [disabled]="selectsDisabled()"
+          class="select select-bordered select-sm h-8 rounded-md pl-1"
+        >
+          @for (anio of aniosConReservas(); track $index) {
+          <option [value]="anio">
+            {{ anio }}
+          </option>
+          }
+        </select>
+      </div>
+      <button
+        class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
+        [disabled]="descargandoPagos() || selectsDisabled()"
+        (click)="descargarPagos()"
+      >
+        @if (descargandoPagos()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        } @else {
+          <app-web-icon
+            nombreIcono="document-text-outline"
+            estilos="h-5 w-5 fill-current"
+          ></app-web-icon>
+        }
+        Descargar
+      </button>
+    </div>
+    <app-chart-recaudo-mensual [data]="recaudoMensualQuery.data() || []" />
+  </div>
+</div>
+
+<!-- Referencia para alertas -->
+<div #alertaDashboard></div>

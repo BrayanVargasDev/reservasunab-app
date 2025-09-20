@@ -429,14 +429,14 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
     if (event) {
       this.alertaService.success(
         'Usuario guardado exitosamente.',
-        50000,
+        5000,
         this.alertaUsuarios(),
         estilosAlerta,
       );
     } else {
       this.alertaService.error(
         'Error al guardar el usuario. Por favor, inténtalo de nuevo.',
-        50000,
+        5000,
         this.alertaUsuarios(),
         estilosAlerta,
       );

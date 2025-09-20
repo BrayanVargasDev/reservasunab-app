@@ -11,6 +11,7 @@ import {
   TipoAlertaConfirmacion,
   PosicionAlerta,
 } from '@shared/components/alerta-confirmacion/alerta-confirmacion.component';
+import { AlertaConfirmacionMesComponent } from '@shared/components/alerta-confirmacion-mes/alerta-confirmacion-mes.component';
 
 export interface Alerta {
   tipo: 'success' | 'error' | 'info' | 'warning';
@@ -190,6 +191,55 @@ export class AlertasService {
       titulo,
       mensaje,
       referencia,
+    });
+  }
+
+  /**
+   * Muestra una alerta de confirmación con selección de mes
+   * @param config Configuración de la alerta de confirmación con mes
+   * @returns Promise que se resuelve con el resultado de la confirmación y el mes seleccionado
+   */
+  async confirmacionConMes(
+    config: ConfiguracionAlertaConfirmacion,
+  ): Promise<{ confirmado: boolean; mes: number }> {
+    return new Promise<{ confirmado: boolean; mes: number }>(resolve => {
+      config.referencia.clear();
+
+      const alertRef = config.referencia.createComponent(
+        AlertaConfirmacionMesComponent,
+      );
+
+      // Configurar inputs
+      alertRef.setInput('tipo', config.tipo || 'question');
+      alertRef.setInput('titulo', config.titulo || 'Confirmación');
+      alertRef.setInput('mensaje', config.mensaje);
+      alertRef.setInput('posicion', config.posicion || 'centro');
+      alertRef.setInput(
+        'botones',
+        config.botones ||
+          this.establecerBotonesPredeterminados(config.tipo || 'question'),
+      );
+      alertRef.setInput(
+        'estilosPersonalizados',
+        config.estilosPersonalizados || '',
+      );
+      alertRef.setInput('mostrarIcono', config.mostrarIcono !== false);
+      alertRef.setInput('anchuraMaxima', config.anchuraMaxima || '28rem');
+
+      // Suscribirse a los outputs
+      const confirmadoSubscription = alertRef.instance.confirmado.subscribe(
+        (resultado: { confirmado: boolean; mes: number }) => {
+          resolve(resultado);
+        },
+      );
+
+      const cerradoSubscription = alertRef.instance.cerrado.subscribe(() => {
+        setTimeout(() => {
+          confirmadoSubscription.unsubscribe();
+          cerradoSubscription.unsubscribe();
+          alertRef.destroy();
+        }, 300); // Delay para permitir animación de salida
+      });
     });
   }
 

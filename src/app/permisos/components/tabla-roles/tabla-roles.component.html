@@ -161,9 +161,12 @@
               }
             </div>
             <lista-permisos-pantalla
-              [ngClass]="'w-full lg:max-h-[20rem] lg:overflow-hidden'"
+              [ngClass]="'w-full lg:max-h-[23.375rem] lg:overflow-hidden'"
               [permisos]="obtenerPermisos(row.original)"
-              [disabled]="!permisosService.filaRolEditando()[row.original.id] && row.original.id !== -1"
+              [disabled]="
+                !permisosService.filaRolEditando()[row.original.id] &&
+                row.original.id !== -1
+              "
               (permisoToggle)="onPermisoToggle($event, row.original.id)"
             ></lista-permisos-pantalla>
           </div>

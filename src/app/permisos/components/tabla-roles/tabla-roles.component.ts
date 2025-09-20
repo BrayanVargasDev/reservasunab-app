@@ -588,54 +588,42 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
     if (!pantallaSeleccionada) return [];
 
     const rolId = row.id;
+    const idPantalla = pantallaSeleccionada.id_pantalla;
 
-    // Caso especial para la fila de creación
+    const permisosDisponibles =
+      this.pantallas.find(p => p.id_pantalla === idPantalla)?.permisos || [];
+
     if (rolId === -1) {
-      const permisosDisponibles =
-        this.pantallas.find(
-          pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
-        )?.permisos || [];
-
       const permisosSeleccionados = this.permisosService.permisosNuevoRol();
 
-      return permisosDisponibles
-        .filter(
-          permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
-        )
-        .map(permiso => ({
-          ...permiso,
-          concedido: permisosSeleccionados.some(
-            p => p.id_permiso === permiso.id_permiso && p.concedido,
-          ),
-        }));
+      return permisosDisponibles.map(permiso => ({
+        ...permiso,
+        concedido: permisosSeleccionados.some(
+          p => p.id_permiso === permiso.id_permiso && p.concedido,
+        ),
+      }));
     }
 
     const enEdicion = this.permisosService.filaRolEditando()[rolId];
-
     if (enEdicion) {
-      const permisosDisponibles =
-        this.pantallas.find(
-          pant => pant.id_pantalla === pantallaSeleccionada.id_pantalla,
-        )?.permisos || [];
-
       const permisosSeleccionados =
         this.permisosService.getPermisosSeleccionados(rolId);
 
-      return permisosDisponibles
-        .filter(
-          permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
-        )
-        .map(permiso => ({
-          ...permiso,
-          concedido: permisosSeleccionados.some(
-            p => p.id_permiso === permiso.id_permiso && p.concedido,
-          ),
-        }));
-    } else {
-      return row.permisos.filter(
-        permiso => permiso.id_pantalla === pantallaSeleccionada.id_pantalla,
-      );
+      return permisosDisponibles.map(permiso => ({
+        ...permiso,
+        concedido: permisosSeleccionados.some(
+          p => p.id_permiso === permiso.id_permiso && p.concedido,
+        ),
+      }));
     }
+
+    // Mostrar el cruce de permisos de la pantalla que estan concedidos para el rol
+    return permisosDisponibles.map(permiso => ({
+      ...permiso,
+      concedido: row.permisos.some(
+        p => p.id_permiso === permiso.id_permiso && p.concedido,
+      ),
+    }));
   }
 
   public onPermisoToggle(

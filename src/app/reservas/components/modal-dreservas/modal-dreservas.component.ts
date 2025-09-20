@@ -400,9 +400,14 @@ export class ModalDreservasComponent {
 
     if (estado.estado === 'pendienteap' && estado.id === null) return false;
 
-    const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
-    const totalOtros = estado.jugadores?.length || 0;
-    return totalOtros < minOtros || this.cargando();
+    if (estado.puede_agregar_jugadores) {
+      const minOtros = Math.max(0, (estado.minimo_jugadores || 0) - 1);
+      const totalOtros = estado.jugadores?.length || 0;
+
+      return totalOtros < minOtros || this.cargando();
+    }
+
+    return this.cargando();
   });
 
   public readonly limitesJugadores = computed(() =>
@@ -1043,6 +1048,7 @@ export class ModalDreservasComponent {
       }
 
       this.showSuccess('Reserva cancelada exitosamente.', 4 * 1000);
+      this.appService.creditosQuery.refetch();
       this.dreservasService.setMostrarDisponibilidad();
     } catch (error: any) {
       const mensajeError =

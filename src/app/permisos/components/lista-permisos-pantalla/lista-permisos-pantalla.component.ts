@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { Permiso } from '@permisos/interfaces/permiso.interface';
 import { PermisosService } from '@permisos/services/permisos.service';
-import { AppService } from '../../../app.service';
+import { AppService } from '@app/app.service';
 
 @Component({
   selector: 'lista-permisos-pantalla',
@@ -18,7 +18,9 @@ import { AppService } from '../../../app.service';
   template: `
     @if (permisos().length > 0) {
     <!-- Lista de permisos disponibles para la pantalla seleccionada -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto max-h-full">
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 gap-2 overflow-y-auto max-h-full"
+    >
       @for (permiso of permisos(); track permiso.id_permiso) {
       <div
         class="flex items-center justify-between gap-2 p-3 bg-base-200 rounded-lg hover:bg-base-300 transition-colors"
@@ -36,7 +38,7 @@ import { AppService } from '../../../app.service';
             [disabled]="disabled()"
             [checked]="permisoActivo(permiso)"
             (change)="onPermisoToggle(permiso, $event)"
-            class="checkbox checkbox-primary checkbox-sm "
+            class="checkbox checkbox-primary checkbox-sm"
           />
         </label>
       </div>
