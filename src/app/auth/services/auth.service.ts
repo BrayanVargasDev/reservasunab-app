@@ -208,11 +208,17 @@ export class AuthService implements OnDestroy {
     return logoutAction(this.http);
   }
 
-  clearSession(): void {
+  clearSession(fromLogout: boolean = false): void {
     // Limpiar tokens persistidos
     this.storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     this.storage.removeItem(STORAGE_KEYS.USER);
     this.storage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+
+    if (fromLogout) {
+      this.storage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
+      this.storage.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
+    }
+
     // Mantener validaciones en IndexedDB ya que son datos de cache
     void this.idb.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
     void this.idb.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
