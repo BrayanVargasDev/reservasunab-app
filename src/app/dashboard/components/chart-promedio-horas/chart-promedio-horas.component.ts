@@ -46,7 +46,12 @@ export class ChartPromedioHorasComponent {
         text: 'Hora del día',
       },
       labels: {
-        formatter: (val: string) => `${val?.replace(':00', '')}`,
+        formatter: (val: string) => {
+          if (val && typeof val === 'string') {
+            return val.length === 1 ? `0${val}:00` : `${val}:00`;
+          }
+          return val ? val : '';
+        },
       },
     },
     colors: ['#ffa200'],
