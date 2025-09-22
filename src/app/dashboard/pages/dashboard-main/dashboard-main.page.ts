@@ -15,6 +15,7 @@ import { IonicModule } from '@ionic/angular';
 import { AuthService } from '@app/auth/services/auth.service';
 import { WebIconComponent } from '@app/shared/components/web-icon/web-icon.component';
 import { AlertasService } from '@shared/services/alertas.service';
+import { FileDownloadService } from '@shared/services/file-download.service';
 import { ChartReservasMesComponent } from '@dashboard/components/chart-reservas-mes/chart-reservas-mes.component';
 import { ChartPromedioHorasComponent } from '@dashboard/components/chart-promedio-horas/chart-promedio-horas.component';
 import { ChartReservasCategoriaComponent } from '@dashboard/components/chart-reservas-categoria/chart-reservas-categoria.component';
@@ -49,6 +50,7 @@ export class DashboardMainPage implements OnInit {
   private authService = inject(AuthService);
   private dashboardService = inject(DashboardService);
   private alertasService = inject(AlertasService);
+  private fileDownloadService = inject(FileDownloadService);
 
   // FormControl compartido para ambos selects de años
   public anioSeleccionadoControl = new FormControl<number>(0);
@@ -144,15 +146,13 @@ export class DashboardMainPage implements OnInit {
         anio,
       );
 
-      // Crear URL para descarga
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reservas-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Usar el servicio de descarga multiplataforma
+      const filename = `reservas-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
+      await this.fileDownloadService.downloadFile({
+        filename,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        data: blob,
+      });
 
       if (this.alertaDashboard) {
         this.alertasService.success(
@@ -191,15 +191,13 @@ export class DashboardMainPage implements OnInit {
         anio,
       );
 
-      // Crear URL para descarga
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pagos-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Usar el servicio de descarga multiplataforma
+      const filename = `pagos-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
+      await this.fileDownloadService.downloadFile({
+        filename,
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        data: blob,
+      });
 
       if (this.alertaDashboard) {
         this.alertasService.success(
