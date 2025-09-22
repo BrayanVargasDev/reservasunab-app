@@ -2,13 +2,16 @@ import {
   Component,
   inject,
   OnInit,
+  OnDestroy,
   signal,
   effect,
   computed,
 } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { setDefaultOptions } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -34,8 +37,9 @@ import { IndexedDbService } from '@shared/services/indexed-db.service';
     GlobalLoaderComponent,
   ],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private routerSubscription?: Subscription;
 
   appService = inject(AppService);
   authService = inject(AuthService);
@@ -45,7 +49,7 @@ export class AppComponent implements OnInit {
   showMenu = signal(false);
 
   isInitializing = computed(() => {
-    return this.authService.estadoAutenticacion() === 'chequeando';
+    return this.authService.estadoAutenticacion() === 'loading';
   });
 
   constructor() {
@@ -53,15 +57,21 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.router.events.subscribe(() => {
-      const url = this.router.url;
-      const rutasSinMenu = [
-        '/auth',
-        '/pagos/reservas',
-        '/acceso-denegado',
-        '/404',
-      ];
-      this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
-    });
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        const url = this.router.url;
+        const rutasSinMenu = [
+          '/auth',
+          '/pagos/reservas',
+          '/acceso-denegado',
+          '/404',
+        ];
+        this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
+      });
+  }
+
+  ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
   }
 }

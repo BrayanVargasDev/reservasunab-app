@@ -22,9 +22,8 @@ export class PermissionsGuard implements CanActivate {
   ): boolean {
     const rutaActual = state.url;
 
-    const estadoAuth = this.authService.estadoAutenticacion();
-
-    if (estadoAuth === 'chequeando' || estadoAuth === 'noAutenticado') {
+    // Si no está autenticado, permitir acceso (manejo por AuthGuard)
+    if (!this.authService.isAuthenticated()) {
       return true;
     }
 

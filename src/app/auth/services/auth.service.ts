@@ -1,4 +1,5 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { from } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
@@ -25,6 +26,7 @@ import { GeneralResponse } from '@shared/interfaces';
 import { Rol } from '@permisos/interfaces';
 import { STORAGE_KEYS, AUTH_CONFIG } from '../constants/storage.constants';
 import { ValidationCacheService } from './validation-cache.service';
+import { StorageService } from '@shared/services/storage.service';
 import { IndexedDbService } from '@shared/services/indexed-db.service';
 
 // Servicio de logging para autenticación
@@ -66,25 +68,26 @@ class AuthLogger {
   }
 }
 
-type EstadoAutenticacion = 'autenticado' | 'noAutenticado' | 'chequeando';
+type EstadoAutenticacion = 'authenticated' | 'unauthenticated' | 'loading';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
+export class AuthService implements OnDestroy {
+  private routerSubscription?: Subscription;
   private http = inject(HttpClient);
   private qc = inject(QueryClient);
   private router = inject(Router);
   private validationCache = inject(ValidationCacheService);
+  private storage = inject(StorageService);
   private idb = inject(IndexedDbService);
   private logger = AuthLogger.getInstance();
-  private _estadoAutenticacion = signal<EstadoAutenticacion>('chequeando');
+  private _estadoAutenticacion = signal<EstadoAutenticacion>('loading');
   private _usuario = signal<UsuarioLogueado | null>(null);
   // Access token sólo en memoria: nunca persistido en navegador
   private _accessToken = signal<string | null>(null);
   private _isLoading = signal<boolean>(false);
   private _lastActivityMs: number | null = null;
-  private _refreshInFlight: Promise<boolean> | null = null;
   private _hasRefreshToken = false;
   // URL actual como signal para reaccionar a cambios de ruta
   private _currentUrl = signal<string>('');
@@ -92,13 +95,11 @@ export class AuthService {
   constructor() {
     this.logger.log('info', 'AuthService initialized');
 
-    // Carga inicial basada en refresh token + usuario en IndexedDB
-    void this.loadFromIndexedDb();
-    // Sincronización entre pestañas usando BroadcastChannel del servicio IndexedDB
-    this.setupCrossTabSync();
+    // Carga inicial basada en datos en localStorage
+    void this.loadFromStorage();
     // Inicializar y escuchar cambios de navegación para reactividad de ruta
     this._currentUrl.set(this.router.url);
-    this.router.events.subscribe(ev => {
+    this.routerSubscription = this.router.events.subscribe(ev => {
       if (ev instanceof NavigationEnd) {
         this._currentUrl.set(ev.urlAfterRedirects || ev.url);
       }
@@ -106,21 +107,14 @@ export class AuthService {
   }
 
   estadoAutenticacion = computed<EstadoAutenticacion>(() => {
-    this._usuario();
-    if (this._estadoAutenticacion() === 'chequeando') return 'chequeando';
-
-    if (this._usuario()) {
-      return 'autenticado';
-    }
-
-    return 'noAutenticado';
+    return this._usuario() ? 'authenticated' : 'unauthenticated';
   });
 
   usuario = computed<UsuarioLogueado | null>(() => this._usuario());
   token = computed(() => this._accessToken());
 
   public estaAutenticado = computed(() => {
-    return this.estadoAutenticacion() === 'autenticado';
+    return this.estadoAutenticacion() === 'authenticated';
   });
 
   private esRutaPublica = computed(() => {
@@ -152,13 +146,12 @@ export class AuthService {
         this.updateLastActivity();
         this._usuario.set(user);
         // No persistimos access token. Mantenemos el de memoria si ya existe.
-        this._estadoAutenticacion.set('autenticado');
+        this._estadoAutenticacion.set('authenticated');
       }
       return user || null;
     },
     onError: (error: any) => {
-      console.error('Error en userQuery:', error);
-      // No limpiar sesión automáticamente: el flujo de 401/refresh lo maneja el interceptor.
+      // Silent error handling - interceptor manages 401 responses
     },
   }));
 
@@ -175,7 +168,7 @@ export class AuthService {
     this.setToken(user.access_token);
     this.updateLastActivity();
     this._accessToken.set(user.access_token);
-    this._estadoAutenticacion.set('autenticado');
+    this._estadoAutenticacion.set('authenticated');
     // this.qc.setQueryData(['user'], user);
   }
 
@@ -193,12 +186,12 @@ export class AuthService {
     this._accessToken.set(token);
   }
 
-  private async setRefreshToken(refresh: string | null): Promise<void> {
+  private setRefreshToken(refresh: string | null): void {
     if (refresh) {
-      await this.idb.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh);
+      this.storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refresh);
       this._hasRefreshToken = true;
     } else {
-      await this.idb.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      this.storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       this._hasRefreshToken = false;
     }
   }
@@ -216,25 +209,25 @@ export class AuthService {
   }
 
   clearSession(): void {
-    // Limpiar tokens persistidos (compatibilidad: TOKEN antiguo y REFRESH_TOKEN actual)
-    void this.idb.removeItem(STORAGE_KEYS.TOKEN);
-    void this.idb.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    void this.idb.removeItem(STORAGE_KEYS.USER);
-    void this.idb.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+    // Limpiar tokens persistidos
+    this.storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    this.storage.removeItem(STORAGE_KEYS.USER);
+    this.storage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
+    // Mantener validaciones en IndexedDB ya que son datos de cache
     void this.idb.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
     void this.idb.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
 
     void this.validationCache.limpiarEstadosValidacion();
 
     this._accessToken.set(null);
-    this._estadoAutenticacion.set('noAutenticado');
+    this._estadoAutenticacion.set('unauthenticated');
 
     this.qc.setQueryData(['user'], null);
     this.qc.removeQueries({ queryKey: ['user'] });
   }
 
   isAuthenticated(): boolean {
-    return this.estadoAutenticacion() === 'autenticado';
+    return this.estadoAutenticacion() === 'authenticated';
   }
 
   getToken(): string | null {
@@ -249,13 +242,11 @@ export class AuthService {
     return registroAction(this.http, params);
   }
 
-  private async loadFromIndexedDb(): Promise<void> {
+  private async loadFromStorage(): Promise<void> {
     try {
-      const [refreshToken, user, lastActivity] = await Promise.all([
-        this.idb.getItem(STORAGE_KEYS.REFRESH_TOKEN),
-        this.idb.getJSON<UsuarioLogueado>(STORAGE_KEYS.USER),
-        this.idb.getItem(STORAGE_KEYS.LAST_ACTIVITY),
-      ]);
+      const refreshToken = this.storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const user = this.storage.getJSON<UsuarioLogueado>(STORAGE_KEYS.USER);
+      const lastActivity = this.storage.getItem(STORAGE_KEYS.LAST_ACTIVITY);
 
       if (lastActivity) this._lastActivityMs = parseInt(lastActivity);
 
@@ -263,89 +254,25 @@ export class AuthService {
         this._hasRefreshToken = true;
         // Establecer usuario en memoria; la validez se basa en refresh+usuario
         this._usuario.set(user);
-        this._estadoAutenticacion.set('autenticado');
-
-        // Intentar obtener un nuevo access token en segundo plano (no bloqueante)
-        void this.refreshAccessToken().catch(error => {
-          console.warn('Background token refresh failed:', error);
-        });
-      } else if (refreshToken) {
-        this._hasRefreshToken = true;
-        // Tenemos refresh sin usuario: intentamos obtener el usuario con timeout
-        const refreshPromise = this.refreshAccessToken();
-        const timeoutPromise = new Promise<boolean>((resolve) => {
-          setTimeout(() => resolve(false), 5000); // 5 segundos timeout
-        });
-
-        const refreshed = await Promise.race([refreshPromise, timeoutPromise]);
-
-        if (refreshed) {
-          try {
-            await this.userQuery.refetch();
-            this._estadoAutenticacion.set('autenticado');
-          } catch (error) {
-            console.warn('Failed to fetch user after token refresh:', error);
-            this._estadoAutenticacion.set('noAutenticado');
-          }
-        } else {
-          console.warn('Token refresh timed out or failed');
-          this._estadoAutenticacion.set('noAutenticado');
-        }
+        this._estadoAutenticacion.set('authenticated');
       } else {
-        this._hasRefreshToken = false;
-        this._estadoAutenticacion.set('noAutenticado');
+        this._hasRefreshToken = !!refreshToken;
+        this._estadoAutenticacion.set('unauthenticated');
       }
     } catch (error) {
-      console.error('Error loading from IndexedDB:', error);
+      // Silent fail for localStorage errors - not critical
       this._hasRefreshToken = false;
-      this._estadoAutenticacion.set('noAutenticado');
+      this._estadoAutenticacion.set('unauthenticated');
     }
   }
 
-  private setupCrossTabSync(): void {
-    this.idb.listen(({ key, newValue }) => {
-      if (key === STORAGE_KEYS.REFRESH_TOKEN) {
-        // Si se elimina el refresh token en otra pestaña, invalidar sesión local
-        if (!newValue) {
-          console.debug('Refresh token removed in another tab, clearing local session');
-          this._hasRefreshToken = false;
-          this._accessToken.set(null);
-          this._usuario.set(null);
-          this._estadoAutenticacion.set('noAutenticado');
-        } else {
-          console.debug('Refresh token added in another tab');
-          this._hasRefreshToken = true;
-          // Si aparece un refresh token, intentar refrescar access token (con debounce)
-          setTimeout(() => {
-            if (this._hasRefreshToken && !this._accessToken()) {
-              void this.refreshAccessToken().catch(error => {
-                console.warn('Cross-tab token refresh failed:', error);
-              });
-            }
-          }, 100); // Pequeño delay para evitar race conditions
-        }
-      } else if (key === STORAGE_KEYS.USER) {
-        try {
-          const parsedUser = newValue ? (JSON.parse(newValue) as UsuarioLogueado) : null;
-          this._usuario.set(parsedUser);
-          console.debug('User updated from another tab');
-        } catch (error) {
-          console.error('Error parsing user from cross-tab sync:', error);
-          this._usuario.set(null);
-        }
-      } else if (key === STORAGE_KEYS.LAST_ACTIVITY) {
-        this._lastActivityMs = newValue ? parseInt(newValue) : null;
-      }
-    });
-  }
-
-  private async saveUserToStorage(user: UsuarioLogueado): Promise<void> {
+  private saveUserToStorage(user: UsuarioLogueado): void {
     // Persiste sólo información del usuario necesaria. Se excluyen tokens por seguridad.
     const { access_token: _a, refresh_token: _r, ...safeUser } = user as any;
     try {
-      await this.idb.setItem(STORAGE_KEYS.USER, JSON.stringify(safeUser));
+      this.storage.setJSON(STORAGE_KEYS.USER, safeUser);
     } catch (error) {
-      console.error('Error guardando usuario en IndexedDB:', error);
+      console.error('Error guardando usuario en localStorage:', error);
     }
   }
 
@@ -358,7 +285,7 @@ export class AuthService {
     try {
       const now = Date.now();
       this._lastActivityMs = now;
-      void this.idb.setItem(STORAGE_KEYS.LAST_ACTIVITY, now.toString());
+      this.storage.setItem(STORAGE_KEYS.LAST_ACTIVITY, now.toString());
     } catch (error) {
       console.error('Error actualizando última actividad:', error);
     }
@@ -440,45 +367,15 @@ export class AuthService {
     }
   }
 
-  public refreshTokenIfNeeded(): void {
-    if (this.isSessionValid() && !this._accessToken() && !this._refreshInFlight) {
-      void this.refreshAccessToken().catch(error => {
-        console.warn('Background token refresh failed:', error);
-      });
-    }
-  }
-
-  public isRefreshInProgress(): boolean {
-    return this._refreshInFlight !== null;
-  }
-
-  public forceResolveAuthState(): void {
-    const currentState = this.estadoAutenticacion();
-    if (currentState === 'chequeando') {
-      // Forzar resolución del estado si está atascado
-      if (this.isSessionValid()) {
-        this._estadoAutenticacion.set('autenticado');
-      } else {
-        this._estadoAutenticacion.set('noAutenticado');
-      }
-    }
-  }
-
   // Realiza refresh del access token usando el refresh token persistido
   public async refreshAccessToken(): Promise<boolean> {
-    if (this._refreshInFlight) {
-      return this._refreshInFlight;
-    }
-
-    this._refreshInFlight = this.performTokenRefresh();
-    return this._refreshInFlight;
+    return this.performTokenRefresh();
   }
 
   private async performTokenRefresh(): Promise<boolean> {
     try {
-      const refresh = await this.idb.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const refresh = this.storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (!refresh) {
-        console.warn('No refresh token available for refresh');
         return false;
       }
 
@@ -494,18 +391,13 @@ export class AuthService {
       this.updateLastActivity();
       return true;
     } catch (error: any) {
-      console.error('Error al refrescar access token:', error);
-
       // Si el error es 401/403, el refresh token es inválido
       if (error?.status === 401 || error?.status === 403) {
-        console.warn('Refresh token is invalid, clearing session');
         this.clearSession();
       }
 
       this.setToken(null);
       return false;
-    } finally {
-      this._refreshInFlight = null;
     }
   }
 
@@ -518,7 +410,6 @@ export class AuthService {
 
       return termsAccepted;
     } catch (error) {
-      console.error('Error verificando términos aceptados:', error);
       return false;
     }
   }
@@ -532,7 +423,6 @@ export class AuthService {
 
       return profileCompleted;
     } catch (error) {
-      console.error('Error verificando perfil completo:', error);
       return false;
     }
   }
@@ -546,12 +436,11 @@ export class AuthService {
       await this.setRefreshToken(refresh_token);
       this.setToken(access_token);
 
-      // Obtener usuario actualizado y establecer estado autenticado
+      // Obtener usuario actualizado y establecer estado authenticated
       await this.userQuery.refetch();
-      this._estadoAutenticacion.set('autenticado');
+      this._estadoAutenticacion.set('authenticated');
       return true;
     } catch (error) {
-      console.error('Error intercambiando token:', error);
       return false;
     }
   }
@@ -590,6 +479,10 @@ export class AuthService {
     this.logger.clearLogs();
   }
 
+  ngOnDestroy() {
+    this.routerSubscription?.unsubscribe();
+  }
+
   public getAuthStatus(): {
     estado: EstadoAutenticacion;
     hasUser: boolean;
@@ -604,7 +497,7 @@ export class AuthService {
       hasToken: !!this._accessToken(),
       hasRefreshToken: this._hasRefreshToken,
       isSessionValid: this.isSessionValid(),
-      lastActivity: this._lastActivityMs
+      lastActivity: this._lastActivityMs,
     };
   }
 }
