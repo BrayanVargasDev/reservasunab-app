@@ -48,7 +48,7 @@ import {
 })
 export class DashboardMainPage implements OnInit {
   private authService = inject(AuthService);
-  private dashboardService = inject(DashboardService);
+  public dashboardService = inject(DashboardService);
   private alertasService = inject(AlertasService);
   private fileDownloadService = inject(FileDownloadService);
 
@@ -147,10 +147,13 @@ export class DashboardMainPage implements OnInit {
       );
 
       // Usar el servicio de descarga multiplataforma
-      const filename = `reservas-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
+      const filename = `reservas-${anio}-${mes
+        .toString()
+        .padStart(2, '0')}.xlsx`;
       await this.fileDownloadService.downloadFile({
         filename,
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         data: blob,
       });
 
@@ -195,7 +198,8 @@ export class DashboardMainPage implements OnInit {
       const filename = `pagos-${anio}-${mes.toString().padStart(2, '0')}.xlsx`;
       await this.fileDownloadService.downloadFile({
         filename,
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        mimeType:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         data: blob,
       });
 
