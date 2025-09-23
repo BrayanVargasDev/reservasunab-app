@@ -48,7 +48,7 @@ export function errorInterceptor(
       ) {
         globalLoader.show('Sesión expirada', 'Redirigiendo al login...');
         authService.clearSession(true);
-        router.navigate(['/auth/login']);
+        window.location.href = '/auth/login';
         return throwError(() => error);
       }
 
