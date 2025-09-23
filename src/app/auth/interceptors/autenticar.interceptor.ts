@@ -18,24 +18,23 @@ export const autenticarInterceptor: HttpInterceptorFn = (req, next) => {
     : initialToken
     ? of(initialToken)
     : authService.isSessionValid()
-    ? from(authService.refreshAccessToken()).pipe(
-        map(() => authService.getToken()),
-      )
+    ? authService
+        .refreshAccessToken()
+        .pipe(map(refreshed => (refreshed ? authService.getToken() : null)))
     : of<string | null>(null);
 
   return getToken$.pipe(
     switchMap(token => {
       let authReq = req.clone({ withCredentials: true });
-      if (token) {
-        authReq = authReq.clone({
-          setHeaders: { Authorization: `Bearer ${token}` },
-        });
-      }
+      authReq = authReq.clone({
+        setHeaders: { Authorization: `Bearer ${token}` },
+      });
       return next(authReq);
     }),
     catchError(err => {
       // Sólo manejar 401 aquí; otros códigos se delegan al errorInterceptor
-      if (err?.status !== 401) return throwError(() => err);
+      if (err?.status !== 401 && err?.message !== 'No token available')
+        return throwError(() => err);
 
       // Evitar bucles: si la petición era al endpoint de refresh o intercambio, salir
       const isRefreshCall = req.url.includes('/refresh');
@@ -43,7 +42,13 @@ export const autenticarInterceptor: HttpInterceptorFn = (req, next) => {
       if (isRefreshCall || isExchangeCall) {
         authService.clearSession();
         const currentUrl = router.url;
-        const isPublic = ['/auth/login','/auth/registro','/auth/reset-password','/acceso-denegado','/404'].some(r => currentUrl.includes(r));
+        const isPublic = [
+          '/auth/login',
+          '/auth/registro',
+          '/auth/reset-password',
+          '/acceso-denegado',
+          '/404',
+        ].some(r => currentUrl.includes(r));
         router.navigate(['/auth/login'], {
           replaceUrl: true,
           queryParams: isPublic ? undefined : { returnUrl: currentUrl },
@@ -52,12 +57,18 @@ export const autenticarInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       // Intentar refrescar el token y reintentar la petición original
-      return from(authService.refreshAccessToken()).pipe(
+      return authService.refreshAccessToken().pipe(
         switchMap(refreshed => {
           if (!refreshed) {
             authService.clearSession();
             const currentUrl = router.url;
-            const isPublic = ['/auth/login','/auth/registro','/auth/reset-password','/acceso-denegado','/404'].some(r => currentUrl.includes(r));
+            const isPublic = [
+              '/auth/login',
+              '/auth/registro',
+              '/auth/reset-password',
+              '/acceso-denegado',
+              '/404',
+            ].some(r => currentUrl.includes(r));
             router.navigate(['/auth/login'], {
               replaceUrl: true,
               queryParams: isPublic ? undefined : { returnUrl: currentUrl },
@@ -77,7 +88,13 @@ export const autenticarInterceptor: HttpInterceptorFn = (req, next) => {
         catchError(refreshErr => {
           authService.clearSession();
           const currentUrl = router.url;
-          const isPublic = ['/auth/login','/auth/registro','/auth/reset-password','/acceso-denegado','/404'].some(r => currentUrl.includes(r));
+          const isPublic = [
+            '/auth/login',
+            '/auth/registro',
+            '/auth/reset-password',
+            '/acceso-denegado',
+            '/404',
+          ].some(r => currentUrl.includes(r));
           router.navigate(['/auth/login'], {
             replaceUrl: true,
             queryParams: isPublic ? undefined : { returnUrl: currentUrl },

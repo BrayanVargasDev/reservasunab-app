@@ -48,7 +48,7 @@ export class ChartPromedioHorasComponent {
       labels: {
         formatter: (val: string) => {
           if (val && typeof val === 'string') {
-            return val.length === 1 ? `0${val}:00` : `${val}:00`;
+            return val.replace(':00', '');
           }
           return val ? val : '';
         },

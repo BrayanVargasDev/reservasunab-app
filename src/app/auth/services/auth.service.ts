@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { from } from 'rxjs';
+import { from, BehaviorSubject, Observable } from 'rxjs';
 import { Router, NavigationEnd } from '@angular/router';
 
 import {
@@ -91,6 +91,8 @@ export class AuthService implements OnDestroy {
   private _hasRefreshToken = false;
   // URL actual como signal para reaccionar a cambios de ruta
   private _currentUrl = signal<string>('');
+  // Subject para compartir el proceso de refresh entre múltiples peticiones
+  private refreshTokenSubject: BehaviorSubject<boolean> | null = null;
 
   constructor() {
     this.logger.log('info', 'AuthService initialized');
@@ -374,37 +376,68 @@ export class AuthService implements OnDestroy {
   }
 
   // Realiza refresh del access token usando el refresh token persistido
-  public async refreshAccessToken(): Promise<boolean> {
-    return this.performTokenRefresh();
+  public refreshAccessToken(): Observable<boolean> {
+    if (this.refreshTokenSubject) {
+      // Si ya hay un refresh en progreso, devolver el observable existente
+      return this.refreshTokenSubject.asObservable();
+    }
+
+    // Crear nuevo subject para este refresh
+    this.refreshTokenSubject = new BehaviorSubject<boolean>(false);
+
+    // Ejecutar el refresh
+    this.performTokenRefreshObservable().subscribe({
+      next: (success) => {
+        this.refreshTokenSubject!.next(success);
+        this.refreshTokenSubject!.complete();
+        this.refreshTokenSubject = null;
+      },
+      error: (error) => {
+        this.refreshTokenSubject!.error(error);
+        this.refreshTokenSubject = null;
+      }
+    });
+
+    return this.refreshTokenSubject.asObservable();
   }
 
-  private async performTokenRefresh(): Promise<boolean> {
-    try {
+  private performTokenRefreshObservable(): Observable<boolean> {
+    return new Observable<boolean>((observer) => {
       const refresh = this.storage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (!refresh) {
-        return false;
+        observer.next(false);
+        observer.complete();
+        return;
       }
 
-      const resp = await refreshTokenAction(this.http, refresh);
-      const newAccess = resp.data.access_token;
+      from(refreshTokenAction(this.http, refresh)).subscribe({
+        next: (resp) => {
+          const newAccess = resp.data.access_token;
 
-      if (!newAccess) {
-        console.error('Refresh token response did not contain access token');
-        return false;
-      }
+          if (!newAccess) {
+            console.error('Refresh token response did not contain access token');
+            observer.next(false);
+            observer.complete();
+            return;
+          }
 
-      this.setToken(newAccess);
-      this.updateLastActivity();
-      return true;
-    } catch (error: any) {
-      // Si el error es 401/403, el refresh token es inválido
-      if (error?.status === 401 || error?.status === 403) {
-        this.clearSession();
-      }
+          this.setToken(newAccess);
+          this.updateLastActivity();
+          observer.next(true);
+          observer.complete();
+        },
+        error: (error: any) => {
+          // Si el error es 401/403, el refresh token es inválido
+          if (error?.status === 401 || error?.status === 403) {
+            this.clearSession();
+          }
 
-      this.setToken(null);
-      return false;
-    }
+          this.setToken(null);
+          observer.next(false);
+          observer.complete();
+        }
+      });
+    });
   }
 
   public async checkTerminosAceptados(): Promise<boolean> {
