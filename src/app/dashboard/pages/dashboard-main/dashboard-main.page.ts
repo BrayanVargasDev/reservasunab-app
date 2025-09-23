@@ -7,6 +7,8 @@ import {
   OnInit,
   ViewContainerRef,
   ViewChild,
+  effect,
+  Injector,
 } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -50,10 +52,15 @@ export class DashboardMainPage implements OnInit {
   private authService = inject(AuthService);
   public dashboardService = inject(DashboardService);
   private alertasService = inject(AlertasService);
+  private injector = inject(Injector);
   private fileDownloadService = inject(FileDownloadService);
 
-  // FormControl compartido para ambos selects de años
-  public anioSeleccionadoControl = new FormControl<number>(0);
+  // FormControls separados para los años de cada gráfica
+  public anioReservasPorMesControl = new FormControl<number>(0);
+  public anioRecaudoMensualControl = new FormControl<number>(0);
+  // FormControls separados para los meses de cada gráfica
+  public mesPromedioHorasControl = new FormControl<number>(0);
+  public mesReservasCategoriaControl = new FormControl<number>(0);
 
   // Señales para loading
   public descargandoReservas = signal(false);
@@ -78,16 +85,67 @@ export class DashboardMainPage implements OnInit {
   );
 
   ngOnInit() {
-    // Inicializar select con el año actual
-    const anioActual = this.dashboardService.anioSeleccionado();
-    this.anioSeleccionadoControl.setValue(anioActual);
+    // Inicializar selects con los años actuales
+    const anioReservasPorMesActual = this.dashboardService.anioReservasPorMes();
+    this.anioReservasPorMesControl.setValue(anioReservasPorMesActual);
 
-    // Suscribirse a cambios en el select
-    this.anioSeleccionadoControl.valueChanges.subscribe(anio => {
+    const anioRecaudoMensualActual = this.dashboardService.anioRecaudoMensual();
+    this.anioRecaudoMensualControl.setValue(anioRecaudoMensualActual);
+
+    // Inicializar selects con el mes actual
+    const mesPromedioHorasActual = this.dashboardService.mesPromedioHoras();
+    this.mesPromedioHorasControl.setValue(mesPromedioHorasActual);
+
+    const mesReservasCategoriaActual =
+      this.dashboardService.mesReservasCategoria();
+    this.mesReservasCategoriaControl.setValue(mesReservasCategoriaActual);
+
+    // Suscribirse a cambios en los selects de año
+    this.anioReservasPorMesControl.valueChanges.subscribe(anio => {
       if (anio) {
-        this.dashboardService.setAnioSeleccionado(anio);
+        this.dashboardService.setAnioReservasPorMes(anio);
       }
     });
+
+    this.anioRecaudoMensualControl.valueChanges.subscribe(anio => {
+      if (anio) {
+        this.dashboardService.setAnioRecaudoMensual(anio);
+      }
+    });
+
+    // Suscribirse a cambios en los selects de mes
+    this.mesPromedioHorasControl.valueChanges.subscribe(mes => {
+      if (mes) {
+        this.dashboardService.setMesPromedioHoras(mes);
+      }
+    });
+
+    this.mesReservasCategoriaControl.valueChanges.subscribe(mes => {
+      if (mes) {
+        this.dashboardService.setMesReservasCategoria(mes);
+      }
+    });
+
+    // Effect para deshabilitar controles cuando selectsDisabled cambie
+    effect(
+      () => {
+        const disabled = this.selectsDisabled();
+        if (disabled) {
+          this.anioReservasPorMesControl.disable();
+          this.anioRecaudoMensualControl.disable();
+          this.mesPromedioHorasControl.disable();
+          this.mesReservasCategoriaControl.disable();
+        } else {
+          this.anioReservasPorMesControl.enable();
+          this.anioRecaudoMensualControl.enable();
+          this.mesPromedioHorasControl.enable();
+          this.mesReservasCategoriaControl.enable();
+        }
+      },
+      {
+        injector: this.injector,
+      },
+    );
   }
 
   // Método para manejar click en botón de descargar reservas
@@ -138,8 +196,8 @@ export class DashboardMainPage implements OnInit {
       this.selectsDisabled.set(true);
 
       const anio =
-        this.anioSeleccionadoControl.value ||
-        this.dashboardService.anioSeleccionado();
+        this.anioReservasPorMesControl.value ||
+        this.dashboardService.anioReservasPorMes();
       const blob = await descargarReservasExcel(
         this.dashboardService['http'],
         mes,
@@ -186,8 +244,8 @@ export class DashboardMainPage implements OnInit {
       this.selectsDisabled.set(true);
 
       const anio =
-        this.anioSeleccionadoControl.value ||
-        this.dashboardService.anioSeleccionado();
+        this.anioRecaudoMensualControl.value ||
+        this.dashboardService.anioRecaudoMensual();
       const blob = await descargarPagosExcel(
         this.dashboardService['http'],
         mes,
@@ -223,5 +281,23 @@ export class DashboardMainPage implements OnInit {
       this.descargandoPagos.set(false);
       this.selectsDisabled.set(false);
     }
+  }
+
+  getNombreMes(mes: number): string {
+    const nombresMeses = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
+    return nombresMeses[mes - 1] || '';
   }
 }

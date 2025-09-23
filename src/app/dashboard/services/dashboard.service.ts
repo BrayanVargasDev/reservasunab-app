@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 
-import { getYear } from 'date-fns';
+import { getYear, getMonth } from 'date-fns';
 
 import {
   getReservasPorMes,
@@ -27,32 +27,39 @@ import { Indicadores } from '../interfaces';
 export class DashboardService {
   private http = inject(HttpClient);
 
-  private _anioSeleccionado = signal<number>(0);
+  private _anioReservasPorMes = signal<number>(0);
+  private _anioRecaudoMensual = signal<number>(0);
+  private _mesPromedioHoras = signal<number>(0);
+  private _mesReservasCategoria = signal<number>(0);
 
   constructor() {
-    this._anioSeleccionado.set(getYear(new Date()));
+    const anioActual = getYear(new Date());
+    this._anioReservasPorMes.set(anioActual);
+    this._anioRecaudoMensual.set(anioActual);
+    this._mesPromedioHoras.set(getMonth(new Date()) + 1); // getMonth returns 0-11, so add 1
+    this._mesReservasCategoria.set(getMonth(new Date()) + 1); // getMonth returns 0-11, so add 1
   }
 
   // Consulta para reservas por mes con refetch automático cada 1 minuto
   public reservasPorMesQuery = injectQuery(() => ({
-    queryKey: ['dashboard', 'reservas-por-mes', this._anioSeleccionado()],
-    queryFn: () => getReservasPorMes(this.http, this._anioSeleccionado()),
+    queryKey: ['dashboard', 'reservas-por-mes', this._anioReservasPorMes()],
+    queryFn: () => getReservasPorMes(this.http, this._anioReservasPorMes()),
     refetchInterval: 60000, // 1 minuto
     select: (response: GeneralResponse<ReservasPorMes[]>) => response.data,
   }));
 
   // Consulta para promedio por horas con refetch automático cada 1 minuto
   public promedioPorHorasQuery = injectQuery(() => ({
-    queryKey: ['dashboard', 'promedio-por-horas'],
-    queryFn: () => getPromedioPorHoras(this.http),
+    queryKey: ['dashboard', 'promedio-por-horas', this._mesPromedioHoras()],
+    queryFn: () => getPromedioPorHoras(this.http, undefined, this._mesPromedioHoras()),
     refetchInterval: 60000, // 1 minuto
     select: (response: GeneralResponse<PromedioPorHoras[]>) => response.data,
   }));
 
   // Consulta para reservas por categoría con refetch automático cada 1 minuto
   public reservasPorCategoriaQuery = injectQuery(() => ({
-    queryKey: ['dashboard', 'reservas-por-categoria'],
-    queryFn: () => getReservasPorCategoria(this.http),
+    queryKey: ['dashboard', 'reservas-por-categoria', this._mesReservasCategoria()],
+    queryFn: () => getReservasPorCategoria(this.http, undefined, this._mesReservasCategoria()),
     refetchInterval: 60000, // 1 minuto
     select: (response: GeneralResponse<ReservasPorCategoria[]>) =>
       response.data,
@@ -60,8 +67,8 @@ export class DashboardService {
 
   // Consulta para recaudo mensual con refetch automático cada 1 minuto
   public recaudoMensualQuery = injectQuery(() => ({
-    queryKey: ['dashboard', 'recaudo-mensual'],
-    queryFn: () => getRecaudoMensual(this.http),
+    queryKey: ['dashboard', 'recaudo-mensual', this._anioRecaudoMensual()],
+    queryFn: () => getRecaudoMensual(this.http, this._anioRecaudoMensual()),
     refetchInterval: 60000, // 1 minuto
     select: (response: GeneralResponse<RecaudoMensual[]>) => response.data,
   }));
@@ -80,9 +87,24 @@ export class DashboardService {
     select: (response: GeneralResponse<number[]>) => response.data,
   }));
 
-  public anioSeleccionado = computed(() => this._anioSeleccionado());
+  public anioReservasPorMes = computed(() => this._anioReservasPorMes());
+  public anioRecaudoMensual = computed(() => this._anioRecaudoMensual());
+  public mesPromedioHoras = computed(() => this._mesPromedioHoras());
+  public mesReservasCategoria = computed(() => this._mesReservasCategoria());
 
-  public setAnioSeleccionado(anio: number) {
-    this._anioSeleccionado.set(anio);
+  public setAnioReservasPorMes(anio: number) {
+    this._anioReservasPorMes.set(anio);
+  }
+
+  public setAnioRecaudoMensual(anio: number) {
+    this._anioRecaudoMensual.set(anio);
+  }
+
+  public setMesPromedioHoras(mes: number) {
+    this._mesPromedioHoras.set(mes);
+  }
+
+  public setMesReservasCategoria(mes: number) {
+    this._mesReservasCategoria.set(mes);
   }
 }

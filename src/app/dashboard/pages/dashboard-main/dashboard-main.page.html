@@ -112,8 +112,7 @@
         </label>
         <select
           id="anioReservasMes"
-          [formControl]="anioSeleccionadoControl"
-          [disabled]="selectsDisabled()"
+          [formControl]="anioReservasPorMesControl"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (anio of aniosConReservas(); track $index) {
@@ -141,13 +140,57 @@
     <app-chart-reservas-mes [data]="reservasPorMesQuery.data() || []" />
   </div>
   <div class="bg-base-100 shadow-lg rounded-box p-4">
-    <h2 class="max-sm:text-lg text-xl font-bold mb-2">Promedio por Horas</h2>
+    <div class="flex w-full items-center justify-between gap-2 mb-2">
+      <h2 class="max-sm:text-lg text-xl max-sm:w-min font-bold flex-grow">
+        Promedio por Horas
+      </h2>
+      <div class="flex gap-2 items-center">
+        <label
+          class="label text-sm font-semibold text-base-content md:mb-0"
+          for="mesPromedioHoras"
+        >
+          Mes:
+        </label>
+        <select
+          id="mesPromedioHoras"
+          [formControl]="mesPromedioHorasControl"
+          class="select select-bordered select-sm h-8 rounded-md pl-1"
+        >
+          @for (mes of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track $index) {
+          <option [value]="mes">
+            {{ getNombreMes(mes) }}
+          </option>
+          }
+        </select>
+      </div>
+    </div>
     <app-chart-promedio-horas [data]="promedioPorHorasQuery.data() || []" />
   </div>
   <div class="bg-base-100 shadow-lg rounded-box p-4">
-    <h2 class="max-sm:text-lg text-xl font-bold mb-2">
-      Reservas por Categoría
-    </h2>
+    <div class="flex w-full items-center justify-between gap-2 mb-2">
+      <h2 class="max-sm:text-lg text-xl max-sm:w-min font-bold flex-grow">
+        Reservas por Categoría
+      </h2>
+      <div class="flex gap-2 items-center">
+        <label
+          class="label text-sm font-semibold text-base-content md:mb-0"
+          for="mesReservasCategoria"
+        >
+          Mes:
+        </label>
+        <select
+          id="mesReservasCategoria"
+          [formControl]="mesReservasCategoriaControl"
+          class="select select-bordered select-sm h-8 rounded-md pl-1"
+        >
+          @for (mes of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track $index) {
+          <option [value]="mes">
+            {{ getNombreMes(mes) }}
+          </option>
+          }
+        </select>
+      </div>
+    </div>
     <app-chart-reservas-categoria
       [data]="reservasPorCategoriaQuery.data() || []"
     />
@@ -166,8 +209,7 @@
         </label>
         <select
           id="anioRecaudoMensual"
-          [formControl]="anioSeleccionadoControl"
-          [disabled]="selectsDisabled()"
+          [formControl]="anioRecaudoMensualControl"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (anio of aniosConReservas(); track $index) {
