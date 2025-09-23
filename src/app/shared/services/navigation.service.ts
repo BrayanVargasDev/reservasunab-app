@@ -1,6 +1,8 @@
 import { Injectable, inject, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { PermissionService } from '@shared/services/permission.service';
+import { AppService } from '@app/app.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -8,6 +10,8 @@ import { PermissionService } from '@shared/services/permission.service';
 export class NavigationService {
   private router = inject(Router);
   private permissionService = inject(PermissionService);
+  private appService = inject(AppService);
+  private authService = inject(AuthService);
 
   private obtenerPantallasDisponibles = computed(() => {
     try {
@@ -20,18 +24,15 @@ export class NavigationService {
 
   async navegarAPrimeraPaginaDisponible(): Promise<void> {
     try {
-      const usuario = this.permissionService['authService'].usuario();
-      const pantallasData =
-        this.permissionService['appService'].pantallasQuery.data();
+      const usuario = this.authService.usuario();
+      const pantallasData = this.appService.pantallasQuery.data();
 
       if (!usuario) {
-        await this.router.navigate(['/auth/login']);
-        return;
+        this.router.navigate(['/auth/login'], { replaceUrl: true });
       }
 
       if (!pantallasData || pantallasData.length === 0) {
-        await this.router.navigate(['/reservas']);
-        return;
+        this.router.navigate(['/reservas'], { replaceUrl: true });
       }
 
       const pantallasDisponibles = this.obtenerPantallasDisponibles();
@@ -39,36 +40,12 @@ export class NavigationService {
       if (pantallasDisponibles.length > 0) {
         const primeraPantalla = pantallasDisponibles[0];
 
-        const result = await this.router.navigate([primeraPantalla.ruta]);
-
-        if (!result) {
-          for (let i = 1; i < pantallasDisponibles.length; i++) {
-            const rutaAlternativa = pantallasDisponibles[i];
-
-            const resultadoAlternativo = await this.router.navigate([
-              rutaAlternativa.ruta,
-            ]);
-
-            if (resultadoAlternativo) {
-              return;
-            }
-          }
-
-          const fallbackResult = await this.router.navigate(['/reservas']);
-
-          if (!fallbackResult) {
-            await this.router.navigateByUrl('/reservas');
-          }
-        }
+        this.router.navigate([primeraPantalla.ruta]);
       } else {
-        await this.router.navigate(['/reservas']);
+        this.router.navigate(['/reservas'], { replaceUrl: true });
       }
     } catch (error) {
-      try {
-        await this.router.navigate(['/reservas']);
-      } catch (fallbackError) {
-        throw fallbackError;
-      }
+      this.router.navigate(['/reservas'], { replaceUrl: true });
     }
   }
 

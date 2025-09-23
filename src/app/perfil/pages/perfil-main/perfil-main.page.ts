@@ -47,6 +47,7 @@ import { Usuario } from '@usuarios/intefaces';
 import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 import { BeneficiariosComponent } from '@app/perfil/components/beneficiarios/beneficiarios.component';
 import { TipoUsuario } from '@shared/enums';
+import { GlobalLoaderService } from '@shared/services/global-loader.service';
 
 @Component({
   selector: 'app-perfil-main',
@@ -75,6 +76,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private alertaService = inject(AlertasService);
   private navigationService = inject(NavigationService);
   private validationCache = inject(ValidationCacheService);
+  private globalLoader = inject(GlobalLoaderService);
   private pikaday!: Pikaday;
   private http = inject(HttpClient);
   private inicializandoFormulario = false;
@@ -212,6 +214,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
+    this.globalLoader.hide();
     this.configurarAutocompleteCiudades();
 
     this.perfilForm
@@ -340,27 +343,36 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
 
           if (!confirmado) {
             // Limpiar solo los campos autocompletados, manteniendo el documento
-            const documentoActual = this.facturacionForm.get('documento')?.value;
-            const tipoDocumentoActual = this.facturacionForm.get('tipoDocumento')?.value;
+            const documentoActual =
+              this.facturacionForm.get('documento')?.value;
+            const tipoDocumentoActual =
+              this.facturacionForm.get('tipoDocumento')?.value;
 
-            this.facturacionForm.patchValue({
-              nombre: '',
-              apellido: '',
-              email: '',
-              telefono: '',
-              // documento: mantener el valor actual
-              // tipoDocumento: mantener el valor actual
-              digitoVerificacion: '',
-              ciudadExpedicion: '',
-              direccion: '',
-              ciudadResidencia: '',
-              tipoPersona: '',
-              regimenTributario: '',
-            }, { emitEvent: false });
+            this.facturacionForm.patchValue(
+              {
+                nombre: '',
+                apellido: '',
+                email: '',
+                telefono: '',
+                // documento: mantener el valor actual
+                // tipoDocumento: mantener el valor actual
+                digitoVerificacion: '',
+                ciudadExpedicion: '',
+                direccion: '',
+                ciudadResidencia: '',
+                tipoPersona: '',
+                regimenTributario: '',
+              },
+              { emitEvent: false },
+            );
 
             // Restaurar los valores que queremos mantener
-            this.facturacionForm.get('documento')?.setValue(documentoActual, { emitEvent: false });
-            this.facturacionForm.get('tipoDocumento')?.setValue(tipoDocumentoActual, { emitEvent: false });
+            this.facturacionForm
+              .get('documento')
+              ?.setValue(documentoActual, { emitEvent: false });
+            this.facturacionForm
+              .get('tipoDocumento')
+              ?.setValue(tipoDocumentoActual, { emitEvent: false });
 
             // Limpiar estados de ciudades seleccionadas
             this.ciudadFactSeleccionadaExpedicion.set(null);
@@ -671,13 +683,15 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        const siguienteIndice = indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
+        const siguienteIndice =
+          indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
         this.indiceOpcionSeleccionadaFactExpedicion.set(siguienteIndice);
         this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
       case 'ArrowUp':
         event.preventDefault();
-        const anteriorIndice = indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
+        const anteriorIndice =
+          indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
         this.indiceOpcionSeleccionadaFactExpedicion.set(anteriorIndice);
         this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
@@ -692,7 +706,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         event.preventDefault();
         this.mostrarOpcionesCiudadesFactExpedicion.set(false);
         this.indiceOpcionSeleccionadaFactExpedicion.set(-1);
-        this.anunciarCambioAutocompletado('ciudad-fact-expedicion', 'Lista cerrada');
+        this.anunciarCambioAutocompletado(
+          'ciudad-fact-expedicion',
+          'Lista cerrada',
+        );
         break;
       case 'Home':
         event.preventDefault();
@@ -751,13 +768,15 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     switch (event.key) {
       case 'ArrowDown':
         event.preventDefault();
-        const siguienteIndice = indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
+        const siguienteIndice =
+          indiceActual < ciudades.length - 1 ? indiceActual + 1 : 0;
         this.indiceOpcionSeleccionadaFactResidencia.set(siguienteIndice);
         this.anunciarSeleccionCiudad(ciudades[siguienteIndice]);
         break;
       case 'ArrowUp':
         event.preventDefault();
-        const anteriorIndice = indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
+        const anteriorIndice =
+          indiceActual > 0 ? indiceActual - 1 : ciudades.length - 1;
         this.indiceOpcionSeleccionadaFactResidencia.set(anteriorIndice);
         this.anunciarSeleccionCiudad(ciudades[anteriorIndice]);
         break;
@@ -772,7 +791,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         event.preventDefault();
         this.mostrarOpcionesCiudadesFactResidencia.set(false);
         this.indiceOpcionSeleccionadaFactResidencia.set(-1);
-        this.anunciarCambioAutocompletado('ciudad-fact-residencia', 'Lista cerrada');
+        this.anunciarCambioAutocompletado(
+          'ciudad-fact-residencia',
+          'Lista cerrada',
+        );
         break;
       case 'Home':
         event.preventDefault();
@@ -1056,7 +1078,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   async guardarCambios() {
     if (this.perfilForm.invalid) {
       this.perfilForm.markAllAsTouched();
-      this.anunciarValidacion('Formulario', false, 'contiene campos requeridos sin completar');
+      this.anunciarValidacion(
+        'Formulario',
+        false,
+        'contiene campos requeridos sin completar',
+      );
 
       // Mover foco al primer campo con error
       const primerCampoError = this.encontrarPrimerCampoConError();
@@ -1153,7 +1179,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   async cambiarPassword() {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
-      this.anunciarValidacion('Formulario de contraseña', false, 'contiene campos requeridos sin completar');
+      this.anunciarValidacion(
+        'Formulario de contraseña',
+        false,
+        'contiene campos requeridos sin completar',
+      );
       return;
     }
 
@@ -1168,7 +1198,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       const success = await this.perfilService.cambiarPassword(datosPassword);
 
       if (success) {
-        this.anunciarEstadoCarga('Contraseña actualizada exitosamente', 'success');
+        this.anunciarEstadoCarga(
+          'Contraseña actualizada exitosamente',
+          'success',
+        );
         this.alertaService.success(
           'Contraseña actualizada exitosamente.',
           5000,
@@ -1203,17 +1236,26 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private anunciarSeleccionCiudad(ciudad: Ciudad, seleccionada: boolean = false) {
+  private anunciarSeleccionCiudad(
+    ciudad: Ciudad,
+    seleccionada: boolean = false,
+  ) {
     const mensaje = seleccionada
       ? `${ciudad.nombre} seleccionada`
       : `${ciudad.nombre}`;
     this.anunciarCambioAutocompletado('ciudad', mensaje);
   }
 
-  private anunciarEstadoCarga(mensaje: string, tipo: 'loading' | 'success' | 'error' = 'loading') {
+  private anunciarEstadoCarga(
+    mensaje: string,
+    tipo: 'loading' | 'success' | 'error' = 'loading',
+  ) {
     const liveRegion = document.getElementById('estado-live-region');
     if (liveRegion) {
-      liveRegion.setAttribute('aria-live', tipo === 'error' ? 'assertive' : 'polite');
+      liveRegion.setAttribute(
+        'aria-live',
+        tipo === 'error' ? 'assertive' : 'polite',
+      );
       liveRegion.textContent = mensaje;
     }
   }
@@ -1224,7 +1266,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       if (elemento) {
         elemento.focus();
         // Anunciar el cambio de foco para lectores de pantalla
-        this.anunciarCambioAutocompletado('navegacion', `Enfocado en ${elemento.getAttribute('aria-label') || elementoId}`);
+        this.anunciarCambioAutocompletado(
+          'navegacion',
+          `Enfocado en ${elemento.getAttribute('aria-label') || elementoId}`,
+        );
       }
     }, retraso);
   }
@@ -1234,16 +1279,28 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     if (campo) {
       campo.focus();
       campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      this.anunciarValidacion(campoId, false, 'Campo con error, requiere atención');
+      this.anunciarValidacion(
+        campoId,
+        false,
+        'Campo con error, requiere atención',
+      );
     }
   }
 
   private encontrarPrimerCampoConError(): string | null {
     const camposIds = [
-      'nombre', 'apellido', 'telefono', 'fechaNacimiento',
-      'tipoDocumento', 'documento', 'ciudadExpedicion',
-      'email', 'direccion', 'ciudadResidencia',
-      'tipoPersona', 'regimenTributario'
+      'nombre',
+      'apellido',
+      'telefono',
+      'fechaNacimiento',
+      'tipoDocumento',
+      'documento',
+      'ciudadExpedicion',
+      'email',
+      'direccion',
+      'ciudadResidencia',
+      'tipoPersona',
+      'regimenTributario',
     ];
 
     for (const campoId of camposIds) {
@@ -1256,8 +1313,12 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     // Verificar campos de facturación si están habilitados
     if (this.perfilForm.get('usaFacturacionDiferente')?.value) {
       const camposFacturacionIds = [
-        'facturacion.nombre', 'facturacion.apellido', 'facturacion.telefono',
-        'facturacion.email', 'facturacion.documento', 'facturacion.direccion'
+        'facturacion.nombre',
+        'facturacion.apellido',
+        'facturacion.telefono',
+        'facturacion.email',
+        'facturacion.documento',
+        'facturacion.direccion',
       ];
 
       for (const campoId of camposFacturacionIds) {
@@ -1271,7 +1332,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     return null;
   }
 
-  private anunciarValidacion(campo: string, esValido: boolean, mensaje?: string) {
+  private anunciarValidacion(
+    campo: string,
+    esValido: boolean,
+    mensaje?: string,
+  ) {
     const liveRegion = document.getElementById('validacion-live-region');
     if (liveRegion) {
       const texto = esValido

@@ -73,19 +73,7 @@ export class HeaderComponent implements OnInit {
   }
 
   cerrarSesion() {
-    this.authServicio.logout().then(
-      () => {
-        this.authServicio.setToken(null);
-        this.authServicio.setUser(null);
-        this.authServicio.clearSession();
-        this.authServicio.setLoading(false);
-        this.router.navigate(['/auth/login']);
-      },
-      error => {
-        console.error('Error al cerrar sesión:', error);
-        this.authServicio.setLoading(false);
-      },
-    );
+    this.authServicio.logout();
   }
 
   toggleMenu() {

@@ -5,19 +5,22 @@ import {
   viewChild,
   ViewContainerRef,
   computed,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { AuthService } from '@auth/services/auth.service';
-import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { acceptTerms, checkProfileCompleted } from '@auth/actions';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { ModalInfoTerminosComponent } from '@auth/components/modal-info-terminos/modal-info-terminos.component';
 import { TerminosCondicionesComponent } from '@auth/components/terminos-condiciones/terminos-condiciones.component';
 import { TratamientoDatosComponent } from '@auth/components/tratamiento-datos/tratamiento-datos.component';
+import { GlobalLoaderService } from '@shared/services/global-loader.service';
+import { StorageService } from '@shared/services/storage.service';
+import { STORAGE_KEYS } from '@auth/constants/storage.constants';
 
 @Component({
   selector: 'app-terms-conditions',
@@ -26,18 +29,23 @@ import { TratamientoDatosComponent } from '@auth/components/tratamiento-datos/tr
   standalone: true,
   imports: [CommonModule, WebIconComponent, ModalInfoTerminosComponent],
 })
-export class TermsConditionsPage {
+export class TermsConditionsPage implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private authService = inject(AuthService);
-  private validationCache = inject(ValidationCacheService);
   private alertaService = inject(AlertasService);
+  private storage = inject(StorageService);
+  private globalLoader = inject(GlobalLoaderService);
 
   public alertaTerminos = viewChild.required('alertaTerminos', {
     read: ViewContainerRef,
   });
 
   public modalInfoTerminos = viewChild.required(ModalInfoTerminosComponent);
+
+  ngOnInit() {
+    this.globalLoader.hide();
+  }
 
   isLoading = signal(false);
   privacyPolicyAccepted = signal(false);
@@ -64,31 +72,31 @@ export class TermsConditionsPage {
     this.isLoading.set(true);
     try {
       const acceptResponse = await acceptTerms(this.http);
-      const profileResponse = await checkProfileCompleted(this.http);
-      const perfilCompleto = profileResponse.data.perfil_completo;
 
-  await this.validationCache.setTerminosAceptados(true);
-  await this.validationCache.setPerfilCompletado(perfilCompleto);
-
-      this.authService.verificarYSincronizarUsuario();
+      this.storage.setItem(STORAGE_KEYS.TERMS_ACCEPTED, JSON.stringify(true));
 
       await new Promise(resolve => setTimeout(resolve, 300));
+      this.globalLoader.show(
+        'Terminos y condiciones aceptados',
+        'Cargando datos del perfil...',
+      );
+
+      const { data } = await checkProfileCompleted(this.http);
+      const perfilCompleto = data.perfil_completo;
+
+      this.storage.setItem(
+        STORAGE_KEYS.PROFILE_COMPLETED,
+        JSON.stringify(perfilCompleto),
+      );
 
       if (!perfilCompleto) {
-        const navegacionExitosa = await this.router.navigate(['/perfil'], {
+        return this.router.navigate(['/perfil'], {
+          replaceUrl: true,
           queryParams: { completeProfile: true },
         });
-
-        if (!navegacionExitosa) {
-          window.location.href = '/perfil?completeProfile=true';
-        }
-        return;
       }
 
-      const navegacionExitosa = await this.router.navigate(['/reservas']);
-      if (!navegacionExitosa) {
-        window.location.href = '/reservas';
-      }
+      return this.router.navigate(['/'], { replaceUrl: true });
     } catch (error) {
       this.alertaService.error(
         'Error al procesar la solicitud. Por favor, inténtalo de nuevo.',
@@ -96,8 +104,9 @@ export class TermsConditionsPage {
         this.alertaTerminos(),
         'w-full block my-2',
       );
-    } finally {
+      this.globalLoader.hide();
       this.isLoading.set(false);
+      return;
     }
   }
 
@@ -110,10 +119,16 @@ export class TermsConditionsPage {
   }
 
   openPrivacyPolicy() {
-    this.modalInfoTerminos().abrir(TratamientoDatosComponent, 'Política de Tratamiento de Datos Personales');
+    this.modalInfoTerminos().abrir(
+      TratamientoDatosComponent,
+      'Política de Tratamiento de Datos Personales',
+    );
   }
 
   openTermsAndConditions() {
-    this.modalInfoTerminos().abrir(TerminosCondicionesComponent, 'Términos y Condiciones de Uso');
+    this.modalInfoTerminos().abrir(
+      TerminosCondicionesComponent,
+      'Términos y Condiciones de Uso',
+    );
   }
 }

@@ -21,7 +21,6 @@ export class PermissionService {
       return true;
     }
 
-    // Permitir acceso a todas las rutas de reservas para todos los usuarios autenticados
     if (ruta.startsWith('/reservas')) {
       return true;
     }
@@ -83,7 +82,6 @@ export class PermissionService {
       permisosUsuario.map(permiso => permiso.id_pantalla),
     );
 
-    // Incluir todas las pantallas de reservas para todos los usuarios autenticados
     const pantallasReservas = pantallasVisibles.filter(pantalla =>
       pantalla.ruta?.startsWith('/reservas'),
     );
@@ -92,7 +90,6 @@ export class PermissionService {
       pantallasPermitidas.has(pantalla.id_pantalla),
     );
 
-    // Combinar pantallas con permisos y pantallas de reservas, evitando duplicados
     const todasLasPantallas = new Map();
 
     [...pantallasConPermisos, ...pantallasReservas].forEach(pantalla => {

@@ -70,7 +70,7 @@ export class AuthCallbackPage implements OnInit {
       console.debug('Token exchange successful, determining redirect destination');
 
       // Decidir ruta de destino respetando lógica de términos/perfil
-      const dest = await this.authService.postLoginRedirect();
+      const dest = await this.authService.validarTerminosYPerfil();
 
       if (dest && dest !== '/') {
         console.debug('Redirecting to post-login destination:', dest);

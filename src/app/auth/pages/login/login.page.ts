@@ -53,7 +53,9 @@ export class LoginPage {
     // Verificar si hay errores de SSO en los query params
     const ssoError = this.route.snapshot.queryParams['sso_error'];
     if (ssoError) {
-      const errorDescription = this.route.snapshot.queryParams['sso_error_description'] || 'Error en autenticación SSO';
+      const errorDescription =
+        this.route.snapshot.queryParams['sso_error_description'] ||
+        'Error en autenticación SSO';
       let userFriendlyMessage = 'Error en la autenticación con Google. ';
 
       switch (ssoError) {
@@ -83,7 +85,7 @@ export class LoginPage {
       // Limpiar los parámetros de error de la URL
       this.router.navigate([], {
         queryParams: { sso_error: null, sso_error_description: null },
-        queryParamsHandling: 'merge'
+        queryParamsHandling: 'merge',
       });
     }
   }
@@ -142,7 +144,6 @@ export class LoginPage {
       setTimeout(() => {
         window.location.href = samlUrl;
       }, 100);
-
     } catch (error) {
       console.error('Error initiating SAML login:', error);
       this.alertaService.error(
@@ -174,14 +175,12 @@ export class LoginPage {
     this.disableForm();
 
     try {
-      const response = await this.authService.login(email, password);
+      const logueado = await this.authService.login(email, password);
 
-      this.authService.onSuccessLogin(response.data);
-      // Obtener usuario fresco del backend y luego redirigir según reglas
-      await this.authService.userQuery.refetch();
-      await this.delay(200);
-
-      await this.navigateAfterLogin();
+      if (!logueado) {
+        throw new Error('No se pudo iniciar sesión. Inténtalo de nuevo.');
+      }
+      await this.navegarDespesDeLogin();
     } catch (error) {
       this.handleLoginError(error);
     } finally {
@@ -190,24 +189,22 @@ export class LoginPage {
     }
   }
 
-  private async navigateAfterLogin(): Promise<void> {
+  private async navegarDespesDeLogin() {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'];
     try {
-      const dest = await this.authService.postLoginRedirect();
+      const dest = await this.authService.validarTerminosYPerfil();
 
       if (dest && dest !== '/') {
-        await this.router.navigate([dest]);
-        return;
+        return this.router.navigateByUrl(dest, { replaceUrl: true });
       }
 
       if (returnUrl && returnUrl !== '/') {
-        await this.router.navigate([returnUrl]);
-        return;
+        return this.router.navigateByUrl(returnUrl, { replaceUrl: true });
       }
 
-      await this.navigationService.navegarAPrimeraPaginaDisponible();
+      return this.router.navigateByUrl('/', { replaceUrl: true });
     } catch {
-      await this.router.navigate(['/reservas']);
+      return this.router.navigateByUrl('/reservas');
     }
   }
 

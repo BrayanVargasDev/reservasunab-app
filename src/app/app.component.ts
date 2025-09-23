@@ -43,7 +43,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   appService = inject(AppService);
   authService = inject(AuthService);
-  sessionSyncService = inject(SessionSyncService);
   globalLoaderService = inject(GlobalLoaderService);
 
   showMenu = signal(false);
@@ -68,6 +67,8 @@ export class AppComponent implements OnInit, OnDestroy {
           '/404',
         ];
         this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
+
+        this.globalLoaderService.hide();
       });
   }
 

@@ -24,17 +24,12 @@ import {
 
 import { routes } from '@app/app.routes';
 import { AppComponent } from '@app/app.component';
-import { autenticarInterceptor } from '@auth/interceptors/autenticar.interceptor';
+import { authInterceptor } from '@auth/interceptors/auth.interceptor';
 import { errorInterceptor } from '@shared/interceptors/error.interceptor';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideHttpClient(
-      withInterceptors([
-        autenticarInterceptor,
-        errorInterceptor,
-      ]),
-    ),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     provideTanStackQuery(
       new QueryClient(),
       withDevtools(() => ({ loadDevtools: 'auto' })),

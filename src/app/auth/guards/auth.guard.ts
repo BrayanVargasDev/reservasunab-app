@@ -17,21 +17,22 @@ export class AuthGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
   ): boolean {
-    // Si está autenticado y la sesión es válida, permitir acceso
-    if (this.authService.isAuthenticated() && this.authService.isSessionValid()) {
+    console.log('AuthGuard#canActivate called for route:', state.url);
+    if (
+      this.authService.isAuthenticated() &&
+      this.authService.isSessionValid()
+    ) {
       return true;
     }
 
-    // Si no está autenticado o sesión inválida, redirigir
     this.redirectToLogin(state.url);
     return false;
   }
 
-
   private redirectToLogin(returnUrl: string): void {
     this.router.navigate(['/auth/login'], {
       queryParams: { returnUrl },
-      replaceUrl: true // Reemplazar la URL actual en el historial
+      replaceUrl: true,
     });
   }
 }

@@ -10,6 +10,7 @@ export interface UsuarioLogueado {
   access_token: string;
   refresh_token: string;
   permisos: Permiso[];
+  token_expires_at: string;
   tipo_usuario: TipoUsuario[];
   saldo: number;
 }

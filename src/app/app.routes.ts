@@ -3,8 +3,6 @@ import { authRoutes } from '@auth/auth.routes';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { AppInitGuard } from './auth/guards/app-init.guard';
 import { PermissionsGuard } from './shared/guards/permissions-simple.guard';
-import { ProfileCompleteGuard } from './auth/guards/profile-complete.guard';
-import { TermsAcceptedGuard } from './auth/guards/terms-accepted.guard';
 import { NotFoundPage } from './shared/pages/not-found/not-found.page';
 import { AccessDeniedPage } from './shared/pages/access-denied/access-denied.page';
 import { MainLayoutComponent } from '@shared/main-layout/main-layout.component';
@@ -31,7 +29,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [AppInitGuard, AuthGuard, TermsAcceptedGuard],
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',
@@ -40,59 +38,59 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@dashboard/dashboard.routes').then(m => m.dashboardRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'home',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@dashboard/dashboard.routes').then(m => m.dashboardRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'perfil',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@perfil/perfil.routes').then(m => m.perfilRoutes),
-        canActivate: [PermissionsGuard],
       },
       {
         path: 'usuarios',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@usuarios/usuarios.routes').then(m => m.usuariosRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'pagos',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@pagos/pagos.routes').then(m => m.pagosRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'permisos',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@permisos/permisos.routes').then(m => m.permisosRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'espacios',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@espacios/espacios.routes').then(m => m.espaciosRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'reservas',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@reservas/reservas.routes').then(m => m.dreservasRoutes),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
       {
         path: 'config',
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import('@configuracion/configuracion.routes').then(
             m => m.configRoutes,
           ),
-        canActivate: [ProfileCompleteGuard, PermissionsGuard],
       },
     ],
   },

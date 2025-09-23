@@ -23,6 +23,7 @@ import { ChartPromedioHorasComponent } from '@dashboard/components/chart-promedi
 import { ChartReservasCategoriaComponent } from '@dashboard/components/chart-reservas-categoria/chart-reservas-categoria.component';
 import { ChartRecaudoMensualComponent } from '@dashboard/components/chart-recaudo-mensual/chart-recaudo-mensual.component';
 import { DashboardService } from '@dashboard/services/dashboard.service';
+import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import {
   descargarReservasExcel,
   descargarPagosExcel,
@@ -50,6 +51,7 @@ import {
 })
 export class DashboardMainPage implements OnInit {
   private authService = inject(AuthService);
+  private globalLoader = inject(GlobalLoaderService);
   public dashboardService = inject(DashboardService);
   private alertasService = inject(AlertasService);
   private injector = inject(Injector);
@@ -85,6 +87,7 @@ export class DashboardMainPage implements OnInit {
   );
 
   ngOnInit() {
+    this.globalLoader.hide();
     // Inicializar selects con los años actuales
     const anioReservasPorMesActual = this.dashboardService.anioReservasPorMes();
     this.anioReservasPorMesControl.setValue(anioReservasPorMesActual);
