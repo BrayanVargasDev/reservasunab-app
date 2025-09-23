@@ -156,10 +156,10 @@ export class AuthService implements OnDestroy {
     }
   }
 
-  logout(fromLogin: boolean = false) {
-    logoutAction(this.http);
+  async logout(fromLogin: boolean = false) {
+    await logoutAction(this.http);
     this.clearSession(fromLogin);
-    return this.router.navigate(['/auth/login'], { replaceUrl: true });
+    window.location.href = '/auth/login';
   }
 
   clearSession(fromLogout: boolean = false): void {
