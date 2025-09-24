@@ -1,9 +1,9 @@
 {
-  "name": "frontend",
+  "name": "Reservas UNAB",
   "integrations": {
     "capacitor": {
-      "appId": "com.example.app",
-      "appName": "unab-app",
+      "appId": "com.example.reservas",
+      "appName": "unab-reservas",
       "webDir": "www",
       "server": {
         "androidScheme": "https"
