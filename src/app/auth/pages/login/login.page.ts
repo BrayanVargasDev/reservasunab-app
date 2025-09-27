@@ -17,12 +17,14 @@ import {
 } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AppService } from '@app/app.service';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 import { AuthService } from '@auth/services/auth.service';
+import { MobileAuthService } from '@auth/services/mobile-auth.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { NavigationService } from '@shared/services/navigation.service';
 
@@ -48,6 +50,7 @@ export class LoginPage {
   private navigationService = inject(NavigationService);
   public appService = inject(AppService);
   public authService = inject(AuthService);
+  private mobileAuthService = inject(MobileAuthService);
 
   ngOnInit() {
     // Verificar si hay errores de SSO en los query params
@@ -66,7 +69,7 @@ export class LoginPage {
           userFriendlyMessage += 'No se recibió la autorización necesaria.';
           break;
         case 'token_exchange_failed':
-          userFriendlyMessage += 'Error al procesar la autenticación.';
+          userFriendlyMessage += 'Error al intercambiar el token.';
           break;
         case 'unexpected_error':
           userFriendlyMessage += 'Error inesperado. Inténtelo de nuevo.';
@@ -81,6 +84,8 @@ export class LoginPage {
         this.alertaLogin(),
         'w-full block my-2',
       );
+
+      this.authService.setLoading(false);
 
       // Limpiar los parámetros de error de la URL
       this.router.navigate([], {
@@ -123,7 +128,6 @@ export class LoginPage {
       const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
 
       if (!samlUrl || !this.appService.samlUrl || !this.appService.tenantId) {
-        console.error('SSO configuration incomplete');
         this.alertaService.error(
           'Configuración de SSO incompleta. Contacte al administrador.',
           5000,
@@ -140,10 +144,13 @@ export class LoginPage {
       // Limpiar cualquier estado anterior antes de redirigir
       this.authService.clearSession();
 
-      // Pequeño delay para asegurar que el loading se muestre
-      setTimeout(() => {
-        window.location.href = samlUrl;
-      }, 100);
+      if (Capacitor.isNativePlatform()) {
+        this.mobileAuthService.loginWithSaml();
+      } else {
+        setTimeout(() => {
+          window.location.href = samlUrl;
+        }, 100);
+      }
     } catch (error) {
       console.error('Error initiating SAML login:', error);
       this.alertaService.error(
@@ -219,6 +226,8 @@ export class LoginPage {
       this.alertaLogin(),
       'w-full block my-2',
     );
+
+    this.authService.setLoading(false);
   }
 
   private delay(ms: number): Promise<void> {

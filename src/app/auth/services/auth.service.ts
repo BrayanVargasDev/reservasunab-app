@@ -297,13 +297,12 @@ export class AuthService implements OnDestroy {
   public async intercambiarToken(code: string): Promise<boolean> {
     try {
       const response = await intercambiarTokenAction(this.http, code);
-      const { access_token, refresh_token } = response.data;
+      const data = response.data;
+      if (response.status !== 'success' || !data) {
+        throw new Error('Error intercambiando token');
+      }
 
-      this._hasRefreshToken = !!refresh_token;
-      this._accessToken.set(access_token || null);
-
-      await this.userQuery.refetch();
-      this._estadoAutenticacion.set('authenticated');
+      this.onSuccessLogin(data);
       return true;
     } catch (error) {
       return false;

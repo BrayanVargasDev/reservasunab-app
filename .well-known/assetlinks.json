@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.unab.reservas",
+      "sha256_cert_fingerprints": [
+        "C2:9F:6F:6A:2C:EA:84:C5:2C:4B:0B:83:1E:FD:9C:9C:EA:B2:07:24:3F:40:B8:D4:68:43:80:80:39:BD:1B:EF"
+      ]
+    }
+  }
+]

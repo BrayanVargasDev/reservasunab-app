@@ -6,8 +6,13 @@ import {
   inject,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
+import { Platform } from '@ionic/angular';
+// import { Browser } from '@capacitor/browser';
+
 import { AuthService } from '@auth/services/auth.service';
 import { NavigationService } from '@shared/services/navigation.service';
+import { MobileAuthService } from '@auth/services/mobile-auth.service';
 
 @Component({
   selector: 'app-auth-callback',
@@ -28,6 +33,8 @@ export class AuthCallbackPage implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   private navigationService = inject(NavigationService);
+  private movbileAuthService = inject(MobileAuthService);
+  private platform = inject(Platform);
 
   async ngOnInit() {
     const qp = this.route.snapshot.queryParamMap;
@@ -36,73 +43,85 @@ export class AuthCallbackPage implements OnInit {
     const error = qp.get('error');
     const errorDescription = qp.get('error_description');
 
+    // Cerrar el browser solo si tenemos un código válido
+    if (
+      (this.platform.is('android') ||
+      this.platform.is('mobile') ||
+      this.platform.is('ios')) &&
+      code && code.trim() !== ''
+    ) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await this.movbileAuthService.closeBrowser();
+    }
+
     try {
       // Verificar si hay errores en la respuesta de OAuth
       if (error) {
         console.error('OAuth error:', error, errorDescription);
-        await this.handleOAuthError(error, errorDescription || 'Error en autenticación SSO');
-        return;
+        return this.handleOAuthError(
+          error,
+          errorDescription || 'Error en autenticación SSO',
+        );
       }
 
       // Validar que tenemos un código de autorización
       if (!code || code.trim() === '') {
         console.error('No authorization code received');
-        await this.handleOAuthError('no_code', 'No se recibió código de autorización');
-        return;
+        return this.handleOAuthError(
+          'no_code',
+          'No se recibió código de autorización',
+        );
       }
 
-      console.debug('Processing OAuth callback with code:', code.substring(0, 10) + '...');
+      alert('Procesando con código... ' + code);
 
-      // Intercambiar code por tokens con timeout
-      const tokenPromise = this.authService.intercambiarToken(code);
-      const timeoutPromise = new Promise<boolean>((_, reject) => {
-        setTimeout(() => reject(new Error('Token exchange timeout')), 15000); // 15 segundos
-      });
+      // Intercambiar code por tokens
+      const tokenPromise = await this.authService.intercambiarToken(code);
 
-      const response = await Promise.race([tokenPromise, timeoutPromise]);
-
-      if (!response) {
+      if (!tokenPromise) {
         console.error('Token exchange failed');
-        await this.handleOAuthError('token_exchange_failed', 'Error al intercambiar tokens');
-        return;
+        return this.handleOAuthError(
+          'token_exchange_failed',
+          'Error al intercambiar tokens',
+        );
       }
 
-      console.debug('Token exchange successful, determining redirect destination');
+      console.debug('Token intercambiado correctamente, redirigiendo...');
 
       // Decidir ruta de destino respetando lógica de términos/perfil
       const dest = await this.authService.validarTerminosYPerfil();
 
       if (dest && dest !== '/') {
         console.debug('Redirecting to post-login destination:', dest);
-        await this.router.navigate([dest]);
-        return;
+        return this.router.navigate([dest]);
       }
 
       if (returnUrl && returnUrl !== '/') {
         console.debug('Redirecting to return URL:', returnUrl);
-        await this.router.navigate([returnUrl]);
-        return;
+        return this.router.navigate([returnUrl], { replaceUrl: true });
       }
 
       console.debug('Redirecting to first available page');
-      await this.navigationService.navegarAPrimeraPaginaDisponible();
-
+      return this.navigationService.navegarAPrimeraPaginaDisponible();
     } catch (e: any) {
       console.error('Error en callback OAuth:', e);
-      await this.handleOAuthError('unexpected_error', e.message || 'Error inesperado en autenticación SSO');
+      return this.handleOAuthError(
+        'unexpected_error',
+        e.message || 'Error inesperado en autenticación SSO',
+      );
     }
   }
 
   private async handleOAuthError(error: string, description: string) {
     // Limpiar cualquier estado de autenticación parcial
     this.authService.clearSession();
-
+    this.authService.setLoading(false);
     // Redirigir al login con parámetros de error
-    await this.router.navigate(['/auth/login'], {
+    return this.router.navigate(['/auth/login'], {
       queryParams: {
         sso_error: error,
-        sso_error_description: description
-      }
+        sso_error_description: description,
+      },
     });
   }
 }

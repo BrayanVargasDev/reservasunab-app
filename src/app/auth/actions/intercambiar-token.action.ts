@@ -6,16 +6,15 @@ import { CredencialesLogin } from '@auth/interfaces/credenciales-login.interface
 import { environment } from '@environments/environment';
 import { GeneralResponse } from '@shared/interfaces';
 import { UsuarioLogueado } from '../interfaces/usuario-logueado.interface';
-import { IntercambioToken } from '../interfaces/intercambio-token.interface';
 
 const API_URL = environment.apiUrl;
 
 export async function intercambiarTokenAction(
   http: HttpClient,
   code: string,
-): Promise<GeneralResponse<IntercambioToken>> {
+): Promise<GeneralResponse<UsuarioLogueado>> {
   return firstValueFrom(
-    http.post<GeneralResponse<IntercambioToken>>(`${API_URL}/intercambiar`, {
+    http.post<GeneralResponse<UsuarioLogueado>>(`${API_URL}/intercambiar`, {
       codigo: code,
     }),
   );

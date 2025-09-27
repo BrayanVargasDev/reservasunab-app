@@ -1,19 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'unab.reservas',
+  appId: 'com.unab.reservas',
   appName: 'Reservas UNAB',
   webDir: 'www',
   plugins: {
+    App: {
+      scheme: 'com.unab.reservas',
+      paths: ['/auth/callback'],
+    },
     CapacitorHttp: {
       enabled: true,
     },
-  },
-  ios: {
-    scheme: 'unab.reservas',
-  },
-  android: {
-    path: 'unab.reservas',
   },
 };
 

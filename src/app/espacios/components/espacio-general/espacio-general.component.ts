@@ -94,7 +94,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     codigoEdificio: [null, [Validators.required]],
     codigoEspacio: [
       null,
-      [Validators.required, Validators.pattern('[0-9A-Za-z ]+')],
+      [Validators.required, Validators.pattern(/^[a-zA-Z0-9\s\-_]+$/)],
     ],
     minimoJugadores: [''],
     maximoJugadores: [''],

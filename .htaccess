@@ -1,32 +1,32 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
-    
+
     # Handle Angular Router - preserve the original URL
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} !^/(api|assets|static)/
+    RewriteCond %{REQUEST_URI} !^/(api|assets|static|admin)/
     RewriteRule ^(.*)$ /index.html [L,QSA]
-    
+
     # Security headers
     Header always set X-Content-Type-Options nosniff
     Header always set X-Frame-Options DENY
     Header always set X-XSS-Protection "1; mode=block"
-    
+
     # Cache static assets
     <FilesMatch "\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
         ExpiresActive on
         ExpiresDefault "access plus 1 month"
         Header set Cache-Control "public, immutable"
     </FilesMatch>
-    
+
     # Don't cache index.html
     <FilesMatch "index\.html$">
         Header set Cache-Control "no-cache, no-store, must-revalidate"
         Header set Pragma "no-cache"
         Header set Expires 0
     </FilesMatch>
-    
+
     # Gzip compression
     <IfModule mod_deflate.c>
         AddOutputFilterByType DEFLATE text/plain

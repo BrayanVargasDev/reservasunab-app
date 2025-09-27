@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Reservas UNAB</string>
     <string name="title_activity_main">Reservas UNAB</string>
-    <string name="package_name">unab.reservas</string>
-    <string name="custom_url_scheme">unab.reservas</string>
+    <string name="package_name">com.unab.reservas</string>
+    <string name="custom_url_scheme">com.unab.reservas</string>
 </resources>
