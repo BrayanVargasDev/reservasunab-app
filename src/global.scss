@@ -5,6 +5,10 @@
 /* Estos estilos se cargarán solo en plataformas móviles usando clases condicionales */
 :root {
   --ionic-styles-loaded: 0; /* Variable para controlar la carga de estilos */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
 }
 
 // @import '@ionic/angular/css/normalize.css';

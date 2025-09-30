@@ -19,6 +19,8 @@ import { es } from 'date-fns/locale';
 import { Capacitor } from '@capacitor/core';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { InAppBrowser as Browser } from '@capacitor/inappbrowser';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
+import { StatusBar } from '@capacitor/status-bar';
 
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -61,6 +63,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    await this.lockOrientation();
+    await StatusBar.setOverlaysWebView({ overlay: false });
     this.initializeApp();
 
     this.routerSubscription = this.router.events
@@ -97,6 +101,14 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
     });
+  }
+
+  async lockOrientation() {
+    try {
+      await ScreenOrientation.lock({ orientation: 'portrait' });
+    } catch (err) {
+      console.error('No se pudo bloquear la orientación', err);
+    }
   }
 
   /**
