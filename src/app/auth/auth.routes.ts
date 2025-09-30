@@ -25,6 +25,13 @@ export const authRoutes: Routes = [
             m => m.AuthCallbackPage,
           ),
       },
+      {
+        path: 'callback-movil',
+        loadComponent: () =>
+          import('@auth/pages/callback-movil/callback-movil.page').then(
+            m => m.AuthCallbackMovilPage,
+          ),
+      },
       // {
       //   path: 'registro',
       //   canActivate: [NoAuthGuard],

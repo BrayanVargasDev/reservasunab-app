@@ -6,16 +6,12 @@ import {
   inject,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Capacitor } from '@capacitor/core';
-import { Platform } from '@ionic/angular';
-// import { Browser } from '@capacitor/browser';
 
 import { AuthService } from '@auth/services/auth.service';
 import { NavigationService } from '@shared/services/navigation.service';
-import { MobileAuthService } from '@auth/services/mobile-auth.service';
 
 @Component({
-  selector: 'app-auth-callback',
+  selector: 'app-auth-callback-movil',
   standalone: true,
   imports: [CommonModule],
   template: `
@@ -28,13 +24,11 @@ import { MobileAuthService } from '@auth/services/mobile-auth.service';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AuthCallbackPage implements OnInit {
+export class AuthCallbackMovilPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
   private navigationService = inject(NavigationService);
-  private movbileAuthService = inject(MobileAuthService);
-  private platform = inject(Platform);
 
   async ngOnInit() {
     const qp = this.route.snapshot.queryParamMap;
@@ -42,21 +36,6 @@ export class AuthCallbackPage implements OnInit {
     const returnUrl = qp.get('returnUrl') ?? '';
     const error = qp.get('error');
     const errorDescription = qp.get('error_description');
-
-    // Cerrar el browser solo si tenemos un código válido
-    if (
-      this.platform.is('android') ||
-      this.platform.is('mobile') ||
-      this.platform.is('ios')
-    ) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await this.movbileAuthService.closeBrowser();
-      // Navegar a callback-movil para procesar el token
-      return this.router.navigate(['/auth/callback-movil'], {
-        queryParams: { code, returnUrl, error, errorDescription },
-        replaceUrl: true,
-      });
-    }
 
     try {
       // Verificar si hay errores en la respuesta de OAuth

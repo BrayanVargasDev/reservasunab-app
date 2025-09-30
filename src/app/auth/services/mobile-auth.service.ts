@@ -101,8 +101,6 @@ export class MobileAuthService {
    */
   private async handleCallbackNavigation(url: string): Promise<void> {
     try {
-      alert('Interceptando callback URL: ' + url);
-
       // Extraer parámetros de la URL
       const urlObj = new URL(url);
       const code = urlObj.searchParams.get('code');
@@ -110,12 +108,8 @@ export class MobileAuthService {
       const errorDescription = urlObj.searchParams.get('error_description');
       const returnUrl = urlObj.searchParams.get('returnUrl');
 
-      alert('Parámetros extraídos - code: ' + code + ', error: ' + error);
-
       // Cerrar el browser
       await (Browser as any).close();
-
-      alert('Browser cerrado, redirigiendo a /auth/callback');
 
       // Limpiar listeners
       this.cleanup();
@@ -131,7 +125,6 @@ export class MobileAuthService {
       });
     } catch (error) {
       console.error('Error procesando callback:', error);
-      alert('Error en handleCallbackNavigation: ' + error);
       this.cleanup();
       // Redirigir a login con error
       this.router.navigate(['/auth/login'], {

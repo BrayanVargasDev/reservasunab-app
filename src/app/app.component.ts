@@ -105,13 +105,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private async handleDeepLink(url: string) {
     console.debug('Deep link recibido:', url);
 
-    // try {
-    //   await Browser.close();
-    //   alert('Browser cerrado desde deep link');
-    // } catch (error) {
-    //   console.warn('Error cerrando browser:', error);
-    // }
-
     try {
       const urlObj = new URL(url);
       if (

@@ -298,6 +298,7 @@ export class AuthService implements OnDestroy {
     try {
       const response = await intercambiarTokenAction(this.http, code);
       const data = response.data;
+
       if (response.status !== 'success' || !data) {
         throw new Error('Error intercambiando token');
       }
