@@ -54,14 +54,120 @@ export class PaginadorComponent {
   );
 
   paginasVisibles = computed(() => {
-    const enlaces = this.paginacion()?.links || [];
-    return enlaces.map((link, index) => ({
-      ...link,
-      tablePageIndex: index > 0 ? index - 1 : 0,
-      label: link.label
-        .replace('&laquo; Previous', '&lsaquo;')
-        .replace('Next &raquo;', '&rsaquo;'),
-    }));
+    const total = this.totalPaginas();
+    const current = this.paginaActual();
+    const pages: any[] = [];
+
+    // First button if mostrarExtremos
+    if (this.mostrarExtremos()) {
+      pages.push({
+        label: '&laquo;',
+        url: this.puedeRetroceder() ? 'first' : null,
+        active: false,
+        tablePageIndex: -1,
+      });
+    }
+
+    // Previous button
+    pages.push({
+      label: '&lsaquo;',
+      url: this.puedeRetroceder() ? 'previous' : null,
+      active: false,
+      tablePageIndex: -1,
+    });
+
+    if (total <= 4) {
+      // Show all pages
+      for (let i = 1; i <= total; i++) {
+        pages.push({
+          label: i.toString(),
+          url: i !== current ? 'page' : null,
+          active: i === current,
+          tablePageIndex: i - 1,
+        });
+      }
+    } else {
+      // Show max 4 numbers
+      if (current <= 3) {
+        // Show first 4
+        for (let i = 1; i <= 4; i++) {
+          pages.push({
+            label: i.toString(),
+            url: i !== current ? 'page' : null,
+            active: i === current,
+            tablePageIndex: i - 1,
+          });
+        }
+      } else if (current >= total - 2) {
+        // Show last 4
+        for (let i = total - 3; i <= total; i++) {
+          pages.push({
+            label: i.toString(),
+            url: i !== current ? 'page' : null,
+            active: i === current,
+            tablePageIndex: i - 1,
+          });
+        }
+      } else {
+        // Show 1 ... current current+1 ... total
+        pages.push({
+          label: '1',
+          url: 1 !== current ? 'page' : null,
+          active: 1 === current,
+          tablePageIndex: 0,
+        });
+        pages.push({
+          label: '...',
+          url: null,
+          active: false,
+          tablePageIndex: -1,
+        });
+        pages.push({
+          label: current.toString(),
+          url: current !== current ? 'page' : null,
+          active: true,
+          tablePageIndex: current - 1,
+        });
+        pages.push({
+          label: (current + 1).toString(),
+          url: current + 1 !== current ? 'page' : null,
+          active: false,
+          tablePageIndex: current,
+        });
+        pages.push({
+          label: '...',
+          url: null,
+          active: false,
+          tablePageIndex: -1,
+        });
+        pages.push({
+          label: total.toString(),
+          url: total !== current ? 'page' : null,
+          active: total === current,
+          tablePageIndex: total - 1,
+        });
+      }
+    }
+
+    // Next button
+    pages.push({
+      label: '&rsaquo;',
+      url: this.puedeAvanzar() ? 'next' : null,
+      active: false,
+      tablePageIndex: -1,
+    });
+
+    // Last button if mostrarExtremos
+    if (this.mostrarExtremos()) {
+      pages.push({
+        label: '&raquo;',
+        url: this.puedeAvanzar() ? 'last' : null,
+        active: false,
+        tablePageIndex: -1,
+      });
+    }
+
+    return pages;
   });
 
   ngOnInit() {
@@ -95,8 +201,10 @@ export class PaginadorComponent {
       link.active
     )
       return;
+    if (link.label === '&laquo;') return this.irPrimera();
     if (link.label === '&lsaquo;') return this.anterior();
     if (link.label === '&rsaquo;') return this.siguiente();
+    if (link.label === '&raquo;') return this.irUltima();
 
     const numero = parseInt(link.label, 10);
     if (!isNaN(numero)) this.cambiarPagina(numero - 1);

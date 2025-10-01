@@ -62,6 +62,7 @@ import { PaginadorComponent } from '@shared/components/paginador/paginador.compo
 import { Rol } from '@permisos/interfaces/rol.interface';
 import { AuthService } from '@auth/services/auth.service';
 import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
+import { PERMISOS_USUARIOS } from '@shared/constants';
 
 @Component({
   selector: 'app-usuarios-main',
@@ -94,6 +95,8 @@ export class UsuariosMainPage implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
+
+  readonly permisos = PERMISOS_USUARIOS;
 
   public alertaUsuarios = viewChild.required('alertaUsuarios', {
     read: ViewContainerRef,

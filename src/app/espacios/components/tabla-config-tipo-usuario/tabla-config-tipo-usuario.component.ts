@@ -42,6 +42,7 @@ import { TipoUsuario } from '@shared/enums';
 import { createTipoUsuarioConfig } from '@espacios/actions';
 import { AuthService } from '@auth/services/auth.service';
 import { UpperFirstPipe } from '@shared/pipes';
+import { PERMISOS_ESPACIOS } from '@shared/constants';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -71,6 +72,9 @@ export class TablaConfigTipoUsuarioComponent {
   public espaciosConfigService = inject(EspaciosConfigService);
   private alertaService = inject(AlertasService);
   public authService = inject(AuthService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_ESPACIOS;
   private tipoUsrConfigEnEdicion = signal<TipoUsuarioConfig | null>(null);
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public fechaActual = computed(() =>
@@ -157,7 +161,7 @@ export class TablaConfigTipoUsuarioComponent {
 
         const accionesVerificadas = [];
 
-        if (this.authService.tienePermisos('ESP000011')) {
+        if (this.authService.tienePermisos(this.permisos.EDITAR_NOVEDADES_ESPACIO)) {
           accionesVerificadas.push({
             tooltip: 'Editar',
             icono: 'pencil-outline',

@@ -125,6 +125,7 @@
       <button
         class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
         [disabled]="descargandoReservas() || selectsDisabled()"
+        *ngIf="authService.tienePermisos(permisos.DESCARGAR_RESERVAS_MES)"
         (click)="descargarReservas()"
       >
         @if (descargandoReservas()) {
@@ -222,6 +223,7 @@
       <button
         class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
         [disabled]="descargandoPagos() || selectsDisabled()"
+        *ngIf="authService.tienePermisos(permisos.DESCARGAR_RECAUDO_MES)"
         (click)="descargarPagos()"
       >
         @if (descargandoPagos()) {

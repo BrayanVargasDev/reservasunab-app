@@ -28,6 +28,7 @@ import {
   descargarReservasExcel,
   descargarPagosExcel,
 } from '@dashboard/actions';
+import { PERMISOS_DASHBOARD } from '@shared/constants';
 
 @Component({
   selector: 'app-dashboard-main',
@@ -50,12 +51,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardMainPage implements OnInit {
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private globalLoader = inject(GlobalLoaderService);
   public dashboardService = inject(DashboardService);
   private alertasService = inject(AlertasService);
   private injector = inject(Injector);
   private fileDownloadService = inject(FileDownloadService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_DASHBOARD;
 
   // FormControls separados para los años de cada gráfica
   public anioReservasPorMesControl = new FormControl<number>(0);

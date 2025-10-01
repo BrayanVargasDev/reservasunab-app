@@ -35,6 +35,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { ConfigService } from '@configuracion/services/config.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { Grupo, BotonAcciones } from '@shared/interfaces';
+import { PERMISOS_CONFIGURACION } from '@shared/constants';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { ResponsiveTableDirective } from '@shared/directives/responsive-table.directive';
 import { TableExpansorComponent } from '@shared/components/table-expansor/table-expansor.component';
@@ -70,6 +71,9 @@ export class GruposComponent implements OnInit, OnDestroy {
   public configService = inject(ConfigService);
   public appService = inject(AppService);
   public authService = inject(AuthService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_CONFIGURACION;
 
   public fechaActual = computed(() =>
     formatInBogota(new Date(), 'dd/MM/yyyy HH:mm a'),
@@ -180,7 +184,7 @@ export class GruposComponent implements OnInit, OnDestroy {
         const enEdicion = this.configService.filaGrupoEditando()[id];
         const accionesVerificadas = [];
 
-        if (this.authService.tienePermisos('ESP000011')) {
+        if (this.authService.tienePermisos(this.permisos.EDITAR_GRUPOS)) {
           accionesVerificadas.push({
             tooltip: 'Editar',
             icono: 'pencil-outline',

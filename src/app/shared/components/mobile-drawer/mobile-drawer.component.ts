@@ -102,7 +102,7 @@ export class MobileDrawerComponent implements OnDestroy {
   }
 
   onOverlayClick(event: Event) {
-    event.stopPropagation();
     this.closeDrawer();
+    // event.stopPropagation();
   }
 }

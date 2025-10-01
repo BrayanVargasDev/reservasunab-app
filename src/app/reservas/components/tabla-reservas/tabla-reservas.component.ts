@@ -38,6 +38,7 @@ import { AccionesTablaComponent } from '@shared/components/acciones-tabla/accion
 import { PagosService } from '@pagos/services/pagos.service';
 import { UpperFirstPipe } from '@shared/pipes';
 import { ModalVerReservaComponent } from '../modal-ver-reserva/modal-ver-reserva.component';
+import { PERMISOS_RESERVAS } from '@shared/constants';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -67,6 +68,9 @@ export class TablaReservasComponent {
   public alertaService = inject(AlertasService);
   public pagoService = inject(PagosService);
 
+  // Constantes de permisos
+  readonly permisos = PERMISOS_RESERVAS;
+
   public estadoCell = viewChild.required<TemplateRef<Util>>('estadoCell');
   public codigoCell = viewChild.required<TemplateRef<Util>>('codigoCell');
   public horasCell = viewChild.required<TemplateRef<Util>>('horasCell');
@@ -87,7 +91,7 @@ export class TablaReservasComponent {
     {
       id: 'usuario',
       header: 'Usuario',
-      size: 300,
+      size: 250,
       meta: {
         priority: Infinity,
       },
@@ -169,7 +173,7 @@ export class TablaReservasComponent {
         });
         if (
           reserva.estado === 'pendienteap' &&
-          this.authService.tienePermisos?.('RSV000001')
+          this.authService.tienePermisos?.(this.permisos.ADMINISTRAR_RESERVAS)
         ) {
           const esPasada = this.esReservaPasada(reserva);
           acciones.push({
@@ -182,7 +186,7 @@ export class TablaReservasComponent {
             eventoClick: () => this.aprobarReserva(reserva),
           });
         }
-        if (this.authService.tienePermisos?.('RSV000002')) {
+        if (this.authService.tienePermisos?.(this.permisos.CANCELAR_RESERVAS)) {
           const yaCancelada = this.estaCancelada(reserva);
           const esPasada = this.esReservaPasada(reserva);
           acciones.push({

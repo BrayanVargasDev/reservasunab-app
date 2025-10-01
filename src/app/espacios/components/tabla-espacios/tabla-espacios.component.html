@@ -2,12 +2,13 @@
   <div
     [attr.data-tip]="context.getValue() === 'activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-        'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip tooltip-right lg:tooltip-left align-middle': true,
+        'badge font-semibold min-w-20 transition-all tooltip-right lg:tooltip-left align-middle': true,
         'badge-success': context.getValue() === 'activo',
         'badge-error': context.getValue() === 'inactivo',
+        'tooltip hover:cursor-pointer hover:scale-105': authService.tienePermisos(permisos.DESACTIVAR_ESPACIOS),
     }"
     (click)="
-      authService.tienePermisos('ESP000003')
+      authService.tienePermisos(permisos.DESACTIVAR_ESPACIOS)
         ? cambiarEstadoEspacio(context.row.original)
         : null
     "

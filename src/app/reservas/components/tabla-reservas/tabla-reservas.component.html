@@ -3,7 +3,7 @@
     [ngClass]="`badge-${pagoService.obtenerColorEstado(context.row.original.estado)}`"
     (click)="
       context.getValue() === 'pendiente' &&
-      authService.tienePermisos('RSV000001')
+      authService.tienePermisos(permisos.ADMINISTRAR_RESERVAS)
         ? aprobarReserva(context.row.original)
         : null
     "

@@ -10,29 +10,23 @@
 <!-- Controles de paginación -->
 <div class="flex items-center gap-2 order-1 sm:order-2">
   <div class="flex items-center gap-1">
-    @if (mostrarExtremos()) {
-    <button
-      class="btn max-sm:btn-xs btn-sm btn-outline"
-      [disabled]="!puedeRetroceder() || deshabilitado()"
-      (click)="irPrimera()"
-      title="Primera página"
-      type="button"
-    >
-      <span [innerHTML]="'&laquo;'"></span>
-    </button>
-    } @for (page of paginasVisibles(); track $index) {
+    @for (page of paginasVisibles(); track $index) {
 
     <ng-container>
-      <!-- Página numerada o flechas -->
-      @if (page.url) {
+      <!-- Página numerada, flechas o ... -->
+      @if (page.label === '...') {
+      <span class="btn max-sm:btn-xs btn-sm btn-outline pointer-events-none">
+        <span [innerHTML]="page.label"></span>
+      </span>
+      } @else {
       <button
         class="btn max-sm:btn-xs btn-sm"
         [class.btn-primary]="page.active"
         [class.btn-outline]="!page.active"
-        [disabled]="deshabilitado()"
+        [disabled]="deshabilitado() || !page.url"
         (click)="irPaginaDesdeLink(page)"
         (mouseenter)="
-          !page.active
+          !page.active && page.url
             ? onMouseEnter({
                 pageIndex: page.tablePageIndex,
                 pageSize: estado().pageSize
@@ -45,16 +39,6 @@
       </button>
       }
     </ng-container>
-    } @if (mostrarExtremos()) {
-    <button
-      class="btn max-sm:btn-xs btn-sm btn-outline"
-      [disabled]="!puedeAvanzar() || deshabilitado()"
-      (click)="irUltima()"
-      title="Última página"
-      type="button"
-    >
-      <span [innerHTML]="'&raquo;'"></span>
-    </button>
     }
   </div>
 </div>

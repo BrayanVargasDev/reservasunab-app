@@ -35,6 +35,9 @@ import { AppService } from '@app/app.service';
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
+  host: {
+    class: 'ion-safe-area',
+  },
 })
 export class MainLayoutComponent {
   appService = inject(AppService);

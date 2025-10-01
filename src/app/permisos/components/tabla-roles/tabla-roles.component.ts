@@ -48,6 +48,7 @@ import { WebIconComponent } from '@shared/components/web-icon/web-icon.component
 import { ListaPermisosPantallaComponent } from '../lista-permisos-pantalla/lista-permisos-pantalla.component';
 import { AlertasService } from '@shared/services/alertas.service';
 import { AuthService } from '@auth/services/auth.service';
+import { PERMISOS_PERMISOS } from '@shared/constants';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -79,6 +80,9 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
   public permisosService = inject(PermisosService);
   public appService = inject(AppService);
   public authService = inject(AuthService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_PERMISOS;
 
   public fechaActual = computed(() =>
     formatInBogota(new Date(), 'dd/MM/yyyy HH:mm a'),
@@ -197,7 +201,7 @@ export class TablaRolesComponent implements OnInit, OnDestroy {
         const enEdicion = this.permisosService.filaRolEditando()[id];
         const accionesVerificadas = [];
 
-        if (this.authService.tienePermisos('PER000002')) {
+        if (this.authService.tienePermisos(this.permisos.EDITAR_ROLES)) {
           accionesVerificadas.push({
             tooltip: 'Editar',
             icono: 'pencil-outline',

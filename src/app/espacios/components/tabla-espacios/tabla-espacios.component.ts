@@ -37,6 +37,7 @@ import { BotonAcciones } from '@shared/interfaces';
 import { AccionesTablaComponent } from '@shared/components/acciones-tabla/acciones-tabla.component';
 import { AuthService } from '@auth/services/auth.service';
 import { UpperFirstPipe } from '@shared/pipes';
+import { PERMISOS_ESPACIOS } from '@shared/constants';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -64,6 +65,9 @@ export class TablaEspaciosComponent implements OnInit {
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
   public alertaService = inject(AlertasService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_ESPACIOS;
 
   ngOnInit() {}
 
@@ -107,7 +111,7 @@ export class TablaEspaciosComponent implements OnInit {
       header: 'Acciones',
       cell: context => {
         const acciones: BotonAcciones[] = this.authService.tienePermisos(
-          'ESP000002',
+          this.permisos.CONFIGURAR_ESPACIOS,
         )
           ? [
               {

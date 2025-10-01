@@ -2,14 +2,15 @@
   <div
     [attr.data-tip]="context.getValue() === 'Activo' ? 'Desactivar' : 'Activar'"
     [ngClass]="{
-        'badge font-semibold min-w-20 hover:cursor-pointer hover:scale-105 transition-all tooltip align-middle': true,
+        'badge font-semibold min-w-20  transition-all tooltip align-middle': true,
         'tooltip-right': !context.column.getIsVisible(),
         'tooltip-left': context.column.getIsVisible(),
         'badge-success': context.getValue() === 'Activo',
         'badge-error': context.getValue() === 'Inactivo',
+        'tooltip hover:cursor-pointer hover:scale-105': authService.tienePermisos(permisos.DESACTIVAR_USUARIOS),
     }"
     (click)="
-      authService.tienePermisos('USR000003')
+      authService.tienePermisos(permisos.DESACTIVAR_USUARIOS)
         ? cambiarEstadoUsuario(context.row.original)
         : null
     "
@@ -38,7 +39,7 @@
   <div class="flex w-full h-full items-center justify-between">
     <span class="min-w-20">{{ context.getValue() }}</span>
 
-    @if (authService.tienePermisos('USR000002')) {
+    @if (authService.tienePermisos(permisos.EDITAR_USUARIOS)) {
     <button
       class="btn btn-soft btn-accent w-8 h-8 rounded-box btn-sm tooltip p-0"
       [ngClass]="{
@@ -57,7 +58,7 @@
 <ng-template #celdaRol let-context>
   <div class="flex w-full h-full items-center justify-between">
     <span class="capitalize">{{ context.getValue() }}</span>
-    @if (authService.tienePermisos('USR000004')) {
+    @if (authService.tienePermisos(permisos.CAMBIAR_ROL_USUARIOS)) {
     <div class="dropdown lg:dropdown-left">
       <button
         role="button"
@@ -132,7 +133,7 @@
       [value]="usuariosService.filtroTexto()"
       (input)="aplicarFiltro($any($event.target).value)"
     />
-    @if(authService.tienePermisos('USR000001')) {
+    @if(authService.tienePermisos(permisos.CREAR_USUARIOS)) {
     <button
       (click)="crearUsuario()"
       class="btn max-sm:btn-sm btn-primary sm:h-11 rounded-box"

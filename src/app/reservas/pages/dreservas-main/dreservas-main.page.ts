@@ -35,6 +35,7 @@ import { environment } from '@environments/environment';
 import { Imagen } from '@espacios/interfaces/imagen.interface';
 import { ModalDreservasComponent } from '@reservas/components/modal-dreservas/modal-dreservas.component';
 import { AuthService } from '@auth/services/auth.service';
+import { PERMISOS_RESERVAS } from '@shared/constants';
 
 @Component({
   selector: 'app-dreservas-main',
@@ -66,6 +67,7 @@ export default class DreservasMainPage implements OnInit, OnDestroy {
 
   public readonly environment = environment;
   private readonly DEFAULT_IMAGE = '';
+  readonly permisos = PERMISOS_RESERVAS;
 
   public readonly filtrosForm = new FormGroup({
     fecha: new FormControl<string>(''),

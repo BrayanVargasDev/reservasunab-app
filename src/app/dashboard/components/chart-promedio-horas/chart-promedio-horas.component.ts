@@ -26,13 +26,17 @@ export class ChartPromedioHorasComponent {
         show: false,
       },
       zoom: {
-        enabled: true,
+        enabled: false,
       },
     },
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '55%',
+        borderRadius: 4,
+        dataLabels: {
+          position: 'top',
+          colors: ['#314157']
+        },
       },
     },
     yaxis: {
@@ -54,7 +58,7 @@ export class ChartPromedioHorasComponent {
         },
       },
     },
-    colors: ['#ffa200'],
+    colors: ['#ffa200', '#314157'],
     grid: {
       show: true,
     },

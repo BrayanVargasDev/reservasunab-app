@@ -14,7 +14,7 @@
       (input)="aplicarFiltro($any($event.target).value)"
     />
 
-    @if (authService.tienePermisos('ESP000001')) {
+    @if (authService.tienePermisos(permisos.CREAR_ESPACIOS)) {
     <button
       [disabled]="appService.editando()"
       class="btn max-sm:btn-sm btn-primary sm:h-11 rounded-box"

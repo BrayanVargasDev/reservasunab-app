@@ -49,6 +49,7 @@ import { Novedad } from '@espacios/interfaces/novedad.interface';
 import { BotonAcciones } from '@shared/interfaces';
 import { i18nDatePicker } from '@shared/constants/lenguaje.constant';
 import { AppService } from '@app/app.service';
+import { PERMISOS_ESPACIOS } from '@shared/constants';
 
 interface Util {
   $implicit: CellContext<any, any>;
@@ -82,6 +83,9 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
   public appService = inject(AppService);
   public estilosAlerta =
     'fixed flex p-4 transition-all ease-in-out bottom-4 right-4';
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_ESPACIOS;
 
   // Instancias de Pikaday
   private pikadayInicio!: Pikaday;
@@ -232,7 +236,7 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
         const enEdicion = this.novedadesService.filaEditando()[id];
         const accionesVerificadas = [];
 
-        if (this.authService.tienePermisos('ESP000011')) {
+        if (this.authService.tienePermisos(this.permisos.EDITAR_NOVEDADES_ESPACIO)) {
           accionesVerificadas.push({
             tooltip: 'Editar',
             icono: 'pencil-outline',

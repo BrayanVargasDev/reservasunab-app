@@ -3,14 +3,16 @@
   <input id="mobile-drawer-toggle" type="checkbox" class="drawer-toggle" />
 
   <!-- Contenido del drawer -->
-  <div class="drawer-side z-[9999]">
+  <div class="drawer-side z-[998]">
     <label
       for="mobile-drawer-toggle"
-      class="drawer-overlay"
-      (click)="onOverlayClick($event)"
+      class="drawer-overlay z-[999]"
+      (click)="$event.preventDefault(); closeDrawer()"
     ></label>
 
-    <aside class="min-h-full w-80 bg-base-200 flex flex-col shadow-xl">
+    <aside
+      class="min-h-full w-80 bg-base-200 flex flex-col shadow-xl app-wrapper relative z-[9999]"
+    >
       <!-- Header del drawer con información del usuario -->
       <div class="p-4">
         <div class="flex items-center">
@@ -34,20 +36,17 @@
               {{ obtenerLeyenda(usuario) | upperFirst }}
             </p>
             <div class="mt-2">
-              @if (appService.creditosQuery.isLoading()) {
-              <span class="loading loading-spinner loading-xs"></span>
-              } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
-              <div class="badge badge-accent gap-2 px-2 py-3">
+              <button
+                (click)="navigateAndClose('perfil')"
+                class="btn btn-sm text-sm font-semibold btn-primary h-8 rounded-lg"
+                type="button"
+              >
                 <app-web-icon
-                  nombreIcono="wallet-outline"
-                  estilos="w-4 h-4"
+                  nombreIcono="walk-outline"
+                  estilos="h-5 w-5"
                 ></app-web-icon>
-                <span class="text-sm font-bold">
-                  Créditos:
-                  {{ appService.creditosQuery.data() | number }}
-                </span>
-              </div>
-              }
+                Ir al perfil
+              </button>
             </div>
             }
           </div>
@@ -64,12 +63,22 @@
         </div>
       </div>
 
-      <a
-        (click)="navigateAndClose('perfil')"
-        class="max-sm:text-sm font-semibold underline text-primary w-full px-4"
-        type="button"
-        >Ir al perfil</a
-      >
+      <div class="px-4">
+        @if (appService.creditosQuery.isLoading()) {
+        <span class="loading loading-spinner loading-xs"></span>
+        } @else if ((appService.creditosQuery.data() ?? 0) > 0) {
+        <div class="badge badge-accent gap-2 px-2 py-3">
+          <app-web-icon
+            nombreIcono="wallet-outline"
+            estilos="w-4 h-4"
+          ></app-web-icon>
+          <span class="text-sm font-bold">
+            Créditos:
+            {{ appService.creditosQuery.data() | number }}
+          </span>
+        </div>
+        }
+      </div>
 
       <!-- Menú de navegación -->
       <div class="flex-1 overflow-y-auto">

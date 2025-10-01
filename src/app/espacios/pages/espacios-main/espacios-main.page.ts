@@ -19,6 +19,7 @@ import { Espacio } from '@espacios/interfaces';
 import { ModalEspaciosComponent } from '@espacios/components/modal-espacios/modal-espacios.component';
 import { AlertasService } from '@shared/services/alertas.service';
 import { AuthService } from '@auth/services/auth.service';
+import { PERMISOS_ESPACIOS } from '@shared/constants';
 
 @Component({
   selector: 'app-espacios-main',
@@ -42,6 +43,9 @@ export class EspaciosMainPage implements OnInit, OnDestroy {
   public authService = inject(AuthService)
   public appService = inject(AppService);
   public espaciosService = inject(EspaciosService);
+
+  // Constantes de permisos
+  readonly permisos = PERMISOS_ESPACIOS;
 
   public alertaEspacio = viewChild.required('alertaEspacios', {
     read: ViewContainerRef,
