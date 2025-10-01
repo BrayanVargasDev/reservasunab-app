@@ -3,9 +3,8 @@
 <app-mobile-drawer></app-mobile-drawer>
 }
 
-<div
-  class="flex flex-col w-dvw h-dvh bg-base-300"
->
+<div class="flex flex-col w-dvw h-dvh bg-base-300 app-wrapper">
+  <!-- <ion-content class="flex flex-col h-full w-full relative"> -->
   @if (shouldShowMenu()) {
   <app-header></app-header>
   }
@@ -16,10 +15,9 @@
       <app-side-menu></app-side-menu>
     </div>
     }
-    <div
-      class="flex flex-col w-full h-full overflow-hidden relative"
-    >
+    <div class="flex flex-col w-full h-full overflow-hidden relative">
       <router-outlet class="absolute"></router-outlet>
     </div>
   </div>
+  <!-- </ion-content> -->
 </div>

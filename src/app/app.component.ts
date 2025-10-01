@@ -9,7 +9,6 @@ import {
   NgZone,
 } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -20,7 +19,7 @@ import { Capacitor } from '@capacitor/core';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { InAppBrowser as Browser } from '@capacitor/inappbrowser';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
-import { StatusBar } from '@capacitor/status-bar';
+import { StatusBar,Style } from '@capacitor/status-bar';
 
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -36,7 +35,6 @@ import { IndexedDbService } from '@shared/services/indexed-db.service';
   styleUrls: ['app.component.scss'],
   standalone: true,
   imports: [
-    IonicModule,
     CommonModule,
     RouterOutlet,
     AuthLoadingComponent,
@@ -65,6 +63,8 @@ export class AppComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     await this.lockOrientation();
     await StatusBar.setOverlaysWebView({ overlay: false });
+    await StatusBar.setStyle({ style: Style.Light });
+    await StatusBar.setBackgroundColor({ color: '#ebebeb' })
     this.initializeApp();
 
     this.routerSubscription = this.router.events

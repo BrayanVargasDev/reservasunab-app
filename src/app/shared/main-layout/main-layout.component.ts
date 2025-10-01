@@ -8,7 +8,7 @@ import {
   effect,
   Injector,
 } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
+import { IonContent } from '@ionic/angular/standalone';
 import {
   RouterOutlet,
   Router,
@@ -24,7 +24,7 @@ import { AppService } from '@app/app.service';
 @Component({
   selector: 'app-main-layout',
   imports: [
-    IonicModule,
+    IonContent,
     CommonModule,
     SideMenuComponent,
     HeaderComponent,
@@ -35,9 +35,6 @@ import { AppService } from '@app/app.service';
   styleUrl: './main-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  host: {
-    class: 'ion-safe-area',
-  },
 })
 export class MainLayoutComponent {
   appService = inject(AppService);

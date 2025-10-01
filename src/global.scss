@@ -5,7 +5,7 @@
 /* Estos estilos se cargarán solo en plataformas móviles usando clases condicionales */
 :root {
   --ionic-styles-loaded: 0; /* Variable para controlar la carga de estilos */
-  --safe-top: 24px;
+  --safe-top: var(--ion-safe-area-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --safe-left: env(safe-area-inset-left);
   --safe-right: env(safe-area-inset-right);
@@ -41,19 +41,4 @@ body {
 * {
   // border: 1px solid red;
   scrollbar-width: thin !important;
-}
-
-ion-toast.toast-error {
-  --border-radius: 16px !important;
-  font-weight: semibold;
-  font-size: 1rem;
-
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.safe-area-padding {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
