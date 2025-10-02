@@ -24,7 +24,6 @@ import { AppService } from '@app/app.service';
 @Component({
   selector: 'app-main-layout',
   imports: [
-    IonContent,
     CommonModule,
     SideMenuComponent,
     HeaderComponent,
