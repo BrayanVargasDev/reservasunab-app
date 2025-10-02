@@ -39,6 +39,7 @@ export class HeaderComponent implements OnInit {
   isMobile = signal(false);
   screenWidth = signal(window.innerWidth);
   isRefreshing = signal(false);
+  private currentUrl = signal<string>(this.router.url);
 
   constructor() {}
 
@@ -128,4 +129,21 @@ export class HeaderComponent implements OnInit {
       this.isRefreshing.set(false);
     }
   }
+
+  shouldShowMenu = computed(() => {
+    const url = this.currentUrl();
+
+    if (url.includes('completeProfile=true')) {
+      return false;
+    }
+
+    const routesWithoutMenu = ['/auth/', '/terms-conditions'];
+    const shouldHide = routesWithoutMenu.some(route => url.includes(route));
+
+    if (shouldHide) {
+      return false;
+    }
+
+    return true;
+  });
 }

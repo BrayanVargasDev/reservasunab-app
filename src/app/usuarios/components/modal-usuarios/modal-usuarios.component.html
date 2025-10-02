@@ -3,9 +3,12 @@
     class="modal-box p-0 max-w-[95dvw] md:max-w-3xl w-full max-h-[95dvh] md:max-h-[90dvh] overflow-hidden relative"
   >
     <div
-      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 md:px-6 py-4"
+      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 md:px-6 py-4 flex justify-between items-center"
     >
       <h3 class="text-lg font-bold">{{ usuarioService.tituloModal() }}</h3>
+      <button type="button" (click)="usuarioService.cerrarModal()" class="btn btn-xs btn-circle btn-neutral btn-outline" aria-label="Cerrar modal">
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+      </button>
     </div>
     <div class="overflow-x-auto overflow-y-auto max-h-[calc(95vh-10rem)]">
       <div class="px-2 md:px-6 md:py-4 w-full h-full">

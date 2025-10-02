@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component, effect, inject, input, output, sign
 import { PagoInfo } from '@pagos/interfaces';
 import { PagoInfoCardComponent } from '@pagos/components/pago-info-card/pago-info-card.component';
 import { PagosService } from '@pagos/services/pagos.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'modal-pago-info',
   standalone: true,
-  imports: [CommonModule, PagoInfoCardComponent],
+  imports: [CommonModule, PagoInfoCardComponent, WebIconComponent],
   templateUrl: './modal-pago-info.component.html',
   styleUrl: './modal-pago-info.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

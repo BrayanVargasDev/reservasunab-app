@@ -1,6 +1,11 @@
 <dialog #espaciosModal class="modal p-0 z-50">
   <div class="modal-box max-w-1/2">
-    <h3 class="text-lg font-bold mb-4">{{ espaciosService.tituloModal() }}</h3>
+    <div class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-4 py-4 flex justify-between items-center">
+      <h3 class="text-lg font-bold">{{ espaciosService.tituloModal() }}</h3>
+      <button type="button" (click)="espaciosService.cerrarModal()" class="btn btn-xs btn-circle btn-neutral btn-outline" aria-label="Cerrar modal">
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+      </button>
+    </div>
     <form [formGroup]="espacioForm" (ngSubmit)="enviarFormulario()">
       <div class="my-4 flex flex-col md:flex-row w-full gap-2 md:gap-3">
         <div class="flex flex-col w-full md:w-1/2">

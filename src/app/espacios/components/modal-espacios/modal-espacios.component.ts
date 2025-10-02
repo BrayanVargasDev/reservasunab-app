@@ -25,10 +25,11 @@ import { AppService } from '@app/app.service';
 import { EspaciosService } from '@espacios/services/espacios.service';
 import { Espacio, FormEspacio } from '@espacios/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
 
 @Component({
   selector: 'modal-espacios',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, WebIconComponent],
   templateUrl: './modal-espacios.component.html',
   styleUrl: './modal-espacios.component.scss',
   standalone: true,

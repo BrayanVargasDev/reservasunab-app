@@ -1,43 +1,4 @@
-<!-- Menú móvil (aparece como side menu) -->
-
-<!-- Menú desktop (siempre visible como sidebar) -->
-@if (appService.esMovil()) {<ion-menu
-  contentId="main-content"
-  type="overlay"
-  *ngIf="false"
-  class="mobile-menu"
->
-  <ion-content>
-    <div class="user-info" *ngIf="usuarioActual">
-      <ion-avatar>
-        <img
-          src="https://ionicframework.com/docs/img/demos/avatar.svg"
-          alt="Avatar de usuario"
-        />
-      </ion-avatar>
-      <h2>{{ `${usuarioActual()?.nombre} ${usuarioActual()?.apellido}` }}</h2>
-      <p>{{ usuarioActual()?.email }}</p>
-    </div>
-
-    <ion-list>
-      @for (item of menuItems() ; track item.nombre) {
-      <ion-item [routerLink]="[item.ruta]" detail="false" class="menu-item">
-        <ion-icon slot="start" [name]="item.icono"></ion-icon>
-        <ion-label>{{ item.nombre }}</ion-label>
-      </ion-item>
-      }
-
-      <ion-item-divider></ion-item-divider>
-
-      <ion-item detail="false" class="menu-item" (click)="logout()">
-        <ion-icon slot="start" name="log-out-outline" color="danger"></ion-icon>
-        <ion-label color="danger">Cerrar Sesión</ion-label>
-      </ion-item>
-    </ion-list>
-  </ion-content>
-</ion-menu>
-} @else {
-
+@if (!appService.esMovil()) {
 <ul class="menu menu-xs md:menu-md !w-full bg-base-100 rounded-box shadow-md">
   @for (item of menuItems(); track item.nombre) {
   <li>

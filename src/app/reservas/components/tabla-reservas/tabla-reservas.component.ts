@@ -82,7 +82,7 @@ export class TablaReservasComponent {
       id: 'id',
       accessorKey: 'id',
       header: 'ID',
-      size: 30,
+      size: 40,
       meta: {
         priority: Infinity,
       },
@@ -91,7 +91,7 @@ export class TablaReservasComponent {
     {
       id: 'usuario',
       header: 'Usuario',
-      size: 250,
+      size: 300,
       meta: {
         priority: Infinity,
       },
@@ -123,7 +123,6 @@ export class TablaReservasComponent {
     {
       id: 'aprobado_por',
       header: 'Aprobado por',
-      size: 300,
       cell: info => {
         const persona = info.row.original.aprobado_por?.persona;
         if (!persona) return '';
@@ -146,9 +145,8 @@ export class TablaReservasComponent {
       id: 'estado',
       accessorKey: 'estado',
       header: 'Estado',
-      size: 150,
       meta: {
-        priority: Infinity,
+        priority: 3,
       },
       cell: this.estadoCell,
       accessorFn: row => this.pagoService.obtenerMensajeEstadoBadge(row.estado),
@@ -156,7 +154,6 @@ export class TablaReservasComponent {
     {
       id: 'acciones',
       header: 'Acciones',
-      size: 100,
       meta: {
         priority: Infinity,
       },

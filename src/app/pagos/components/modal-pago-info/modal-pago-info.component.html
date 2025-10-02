@@ -1,5 +1,11 @@
 <dialog #dialogPagoInfo class="modal p-0 z-50">
   <div class="modal-box max-w-4xl w-full relative p-0">
+    <div class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-4 py-4 flex justify-between items-center">
+      <h3 class="text-lg font-bold">Información del Pago</h3>
+      <button type="button" (click)="onCerrar()" class="btn btn-xs btn-circle btn-neutral btn-outline" aria-label="Cerrar modal">
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+      </button>
+    </div>
     <div>
       @if (cargando()) {
       <div class="flex flex-col items-center py-12 gap-2">

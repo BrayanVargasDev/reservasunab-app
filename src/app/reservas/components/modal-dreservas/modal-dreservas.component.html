@@ -8,17 +8,20 @@
     class="modal-box p-0 max-w-[95dvw] lg:max-w-[80dvw] xl:max-w-[50rem] w-full max-h-[95dvh] lg:!max-h-[98dvh] overflow-hidden relative flex flex-col"
   >
     <div
-      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 lg:px-6 py-4 flex-shrink-0"
+      class="sticky top-0 bg-base-100 z-10 border-b border-base-300 px-2 lg:px-6 py-4 flex-shrink-0 flex justify-between items-center"
     >
       @if (dreservasService.espacioDetallesQuery.isPending()) {
       <span
-        class="w-full mx-auto skeleton bg-gray-300 h-7 rounded-xl block max-w-[65%]"
+        class="mx-auto skeleton bg-gray-300 h-7 rounded-xl block max-w-[65%]"
       ></span>
       } @else {
-      <span class="w-full text-center text-2xl font-bold block truncate">
+      <span class="text-2xl font-bold block truncate">
         {{ espacioDetallesQuery?.nombre }}
       </span>
       }
+      <button type="button" (click)="manejarCierreModal()" class="btn btn-xs btn-circle btn-neutral btn-outline" aria-label="Cerrar modal">
+        <app-web-icon nombreIcono="close-outline" estilos="h-5 w-5"></app-web-icon>
+      </button>
     </div>
 
     @if (dreservasService.cargando()) {

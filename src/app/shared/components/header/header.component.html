@@ -1,6 +1,7 @@
 <div class="flex w-screen">
   <div class="navbar m-2 mb-0 md:mb-2 shadow-md bg-secondary rounded-box px-4">
     <div class="navbar-start">
+      @if (shouldShowMenu()) {
       <button
         class="btn btn-secondary font-bold w-10 h-10 px-1 text-white md:hidden"
         (click)="toggleMobileDrawer()"
@@ -11,6 +12,8 @@
           estilos="w-full h-full stroke-3"
         ></app-web-icon>
       </button>
+      }
+
       <a
         (click)="navegarAlInicio()"
         class="text-xl text-secondary-content font-bold ml-3 lg:ml-0 cursor-pointer"
