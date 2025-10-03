@@ -63,7 +63,7 @@ export class HeaderComponent implements OnInit {
   }
 
   get tipoUsuario(): string {
-    return this.authServicio.usuario()?.rol.nombre || 'Usuario';
+    return this.authServicio.usuario()?.rol?.nombre || 'Usuario';
   }
 
   get fotoUsuario(): string {

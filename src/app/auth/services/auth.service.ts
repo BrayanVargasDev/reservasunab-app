@@ -237,7 +237,7 @@ export class AuthService implements OnDestroy {
       return false;
     }
 
-    if (usuario.rol.nombre?.toLowerCase() === 'administrador') {
+    if (usuario.rol?.nombre?.toLowerCase() === 'administrador') {
       return true;
     }
 

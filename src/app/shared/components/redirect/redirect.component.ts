@@ -19,10 +19,8 @@ export class RedirectComponent implements OnInit {
   private globalLoader = inject(GlobalLoaderService);
 
   async ngOnInit() {
-    console.log('RedirectComponent ngOnInit - Starting redirect');
     await new Promise(resolve => setTimeout(resolve, 500));
     this.globalLoader.hide();
-    console.log('RedirectComponent - Calling navegarAPrimeraPaginaDisponible');
     this.navigationService.navegarAPrimeraPaginaDisponible();
   }
 }
