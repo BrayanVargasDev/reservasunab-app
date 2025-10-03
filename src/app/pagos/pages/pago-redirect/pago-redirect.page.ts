@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { IonicModule } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { PagoInfo } from '@pagos/interfaces';
 import { getPagoInfo } from '@pagos/actions';
 import { PagosService } from '@pagos/services/pagos.service';
@@ -41,7 +43,14 @@ export class PagoRedirectPage implements OnInit {
   error = computed(() => this._error());
   codigo = computed(() => this._codigo());
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Configurar status bar
+    if (Capacitor.isNativePlatform()) {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setBackgroundColor({ color: '#f8f9fa' });
+      await StatusBar.setStyle({ style: Style.Dark });
+    }
+
     this.route.queryParams.subscribe(params => {
       this._codigo.set(params['codigo']);
       if (this._codigo()) {

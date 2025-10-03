@@ -70,3 +70,6 @@ testem.log
 Thumbs.db
 
 pruebas/
+
+resources/ios/**/*
+resources/android/**/*

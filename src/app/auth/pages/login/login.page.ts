@@ -18,6 +18,7 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
@@ -52,7 +53,14 @@ export class LoginPage {
   public authService = inject(AuthService);
   private mobileAuthService = inject(MobileAuthService);
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Configurar status bar
+    if (Capacitor.isNativePlatform()) {
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setBackgroundColor({ color: '#ffa200' });
+      await StatusBar.setStyle({ style: Style.Light });
+    }
+
     // Verificar si hay errores de SSO en los query params
     const ssoError = this.route.snapshot.queryParams['sso_error'];
     if (ssoError) {
