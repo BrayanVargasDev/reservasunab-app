@@ -1,0 +1,1 @@
+import{la as i}from"./chunk-U6U25BWF.js";var a=(()=>{let t=class t{transform(r){if(!r||r===0)return"0 minutos";if(r<60)return`${r} minuto${r===1?"":"s"}`;let e=Math.floor(r/60),f=r%60;return f===0?`${e} hora${e===1?"":"s"}`:`${e}h ${f}min`}};t.\u0275fac=function(e){return new(e||t)},t.\u0275pipe=i({name:"formatearDuracion",type:t,pure:!0});let o=t;return o})();export{a};

@@ -1,0 +1,1 @@
+import{D as i,la as o}from"./chunk-U6U25BWF.js";var c=(()=>{let t=class t{transform(e){return e&&e.charAt(0).toUpperCase()+e.slice(1).toLowerCase()}};t.\u0275fac=function(n){return new(n||t)},t.\u0275pipe=o({name:"upperFirst",type:t,pure:!0}),t.\u0275prov=i({token:t,factory:t.\u0275fac,providedIn:"root"});let r=t;return r})();export{c as a};

@@ -54,13 +54,6 @@ export class LoginPage {
   private mobileAuthService = inject(MobileAuthService);
 
   async ngOnInit() {
-    // Configurar status bar
-    if (Capacitor.isNativePlatform()) {
-      await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setBackgroundColor({ color: '#ffa200' });
-      await StatusBar.setStyle({ style: Style.Light });
-    }
-
     // Verificar si hay errores de SSO en los query params
     const ssoError = this.route.snapshot.queryParams['sso_error'];
     if (ssoError) {

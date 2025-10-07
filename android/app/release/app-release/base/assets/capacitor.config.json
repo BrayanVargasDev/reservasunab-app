@@ -1,0 +1,16 @@
+{
+	"appId": "com.unab.reservas",
+	"appName": "Reservas UNAB",
+	"webDir": "www",
+	"plugins": {
+		"App": {
+			"scheme": "com.unab.reservas",
+			"paths": [
+				"/auth/callback"
+			]
+		},
+		"CapacitorHttp": {
+			"enabled": true
+		}
+	}
+}

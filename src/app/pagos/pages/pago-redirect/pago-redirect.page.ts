@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -44,12 +44,14 @@ export class PagoRedirectPage implements OnInit {
   codigo = computed(() => this._codigo());
 
   async ngOnInit() {
-    // Configurar status bar
-    if (Capacitor.isNativePlatform()) {
-      await StatusBar.setOverlaysWebView({ overlay: false });
-      await StatusBar.setBackgroundColor({ color: '#f8f9fa' });
-      await StatusBar.setStyle({ style: Style.Dark });
-    }
+    // Effect para cambiar color del status bar basado en loading
+    effect(() => {
+      if (Capacitor.isNativePlatform()) {
+        const isLoading = this._loading();
+        const color = isLoading ? '#667eea' : '#f8f9fa';
+        StatusBar.setBackgroundColor({ color });
+      }
+    });
 
     this.route.queryParams.subscribe(params => {
       this._codigo.set(params['codigo']);

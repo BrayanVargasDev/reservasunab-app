@@ -1,0 +1,38 @@
+[
+	{
+		"pkg": "@capacitor-community/file-opener",
+		"classpath": "com.ryltsov.alex.plugins.file.opener.FileOpenerPlugin"
+	},
+	{
+		"pkg": "@capacitor/app",
+		"classpath": "com.capacitorjs.plugins.app.AppPlugin"
+	},
+	{
+		"pkg": "@capacitor/filesystem",
+		"classpath": "com.capacitorjs.plugins.filesystem.FilesystemPlugin"
+	},
+	{
+		"pkg": "@capacitor/haptics",
+		"classpath": "com.capacitorjs.plugins.haptics.HapticsPlugin"
+	},
+	{
+		"pkg": "@capacitor/inappbrowser",
+		"classpath": "com.capacitorjs.osinappbrowser.InAppBrowserPlugin"
+	},
+	{
+		"pkg": "@capacitor/keyboard",
+		"classpath": "com.capacitorjs.plugins.keyboard.KeyboardPlugin"
+	},
+	{
+		"pkg": "@capacitor/preferences",
+		"classpath": "com.capacitorjs.plugins.preferences.PreferencesPlugin"
+	},
+	{
+		"pkg": "@capacitor/screen-orientation",
+		"classpath": "com.capacitorjs.plugins.screenorientation.ScreenOrientationPlugin"
+	},
+	{
+		"pkg": "@capacitor/status-bar",
+		"classpath": "com.capacitorjs.plugins.statusbar.StatusBarPlugin"
+	}
+]

@@ -64,7 +64,6 @@ export class AppComponent implements OnInit, OnDestroy {
     await this.lockOrientation();
     await StatusBar.setOverlaysWebView({ overlay: false });
     await StatusBar.setStyle({ style: Style.Light });
-    await StatusBar.setBackgroundColor({ color: '#ebebeb' })
     this.initializeApp();
 
     this.routerSubscription = this.router.events
@@ -78,6 +77,8 @@ export class AppComponent implements OnInit, OnDestroy {
           '/404',
         ];
         this.showMenu.set(!rutasSinMenu.some(ruta => url.includes(ruta)));
+
+        this.setStatusBarColor(url);
 
         this.globalLoaderService.hide();
       });
@@ -109,6 +110,20 @@ export class AppComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error('No se pudo bloquear la orientación', err);
     }
+  }
+
+  private async setStatusBarColor(url: string) {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let color = '#ebebeb'; // Gris por defecto
+
+    if (url.includes('/auth/login')) {
+      color = '#ffa200'; // Naranja para auth
+    } else if (url.includes('/pagos/pago-redirect')) {
+      color = '#f8f9fa'; // Gris para pago-redirect (puede ser sobrescrito por effect)
+    }
+
+    await StatusBar.setBackgroundColor({ color });
   }
 
   /**

@@ -1,0 +1,1 @@
+import"./chunk-LVXXLD6S.js";var n=[{path:"",loadComponent:()=>import("./chunk-RPQKYJZM.js").then(o=>o.LayoutPage),children:[{path:"",loadComponent:()=>import("./chunk-6ZZQ2HHQ.js").then(o=>o.EspaciosMainPage)},{path:"configuracion/:id",loadComponent:()=>import("./chunk-ZGTZ5H7P.js").then(o=>o.ConfiguracionPage)}]}];export{n as espaciosRoutes};
