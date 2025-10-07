@@ -31,6 +31,7 @@ export class DashboardService {
   private _anioRecaudoMensual = signal<number>(0);
   private _mesPromedioHoras = signal<number>(0);
   private _mesReservasCategoria = signal<number>(0);
+  private _isActive = signal<boolean>(true);
 
   constructor() {
     const anioActual = getYear(new Date());
@@ -44,7 +45,8 @@ export class DashboardService {
   public reservasPorMesQuery = injectQuery(() => ({
     queryKey: ['dashboard', 'reservas-por-mes', this._anioReservasPorMes()],
     queryFn: () => getReservasPorMes(this.http, this._anioReservasPorMes()),
-    refetchInterval: 60000, // 1 minuto
+    refetchInterval: this._isActive() ? 60000 : false, // 1 minuto si activo
+    enabled: this._isActive(),
     select: (response: GeneralResponse<ReservasPorMes[]>) => response.data,
   }));
 
@@ -52,7 +54,8 @@ export class DashboardService {
   public promedioPorHorasQuery = injectQuery(() => ({
     queryKey: ['dashboard', 'promedio-por-horas', this._mesPromedioHoras()],
     queryFn: () => getPromedioPorHoras(this.http, undefined, this._mesPromedioHoras()),
-    refetchInterval: 60000, // 1 minuto
+    refetchInterval: this._isActive() ? 60000 : false, // 1 minuto si activo
+    enabled: this._isActive(),
     select: (response: GeneralResponse<PromedioPorHoras[]>) => response.data,
   }));
 
@@ -60,7 +63,8 @@ export class DashboardService {
   public reservasPorCategoriaQuery = injectQuery(() => ({
     queryKey: ['dashboard', 'reservas-por-categoria', this._mesReservasCategoria()],
     queryFn: () => getReservasPorCategoria(this.http, undefined, this._mesReservasCategoria()),
-    refetchInterval: 60000, // 1 minuto
+    refetchInterval: this._isActive() ? 60000 : false, // 1 minuto si activo
+    enabled: this._isActive(),
     select: (response: GeneralResponse<ReservasPorCategoria[]>) =>
       response.data,
   }));
@@ -69,14 +73,16 @@ export class DashboardService {
   public recaudoMensualQuery = injectQuery(() => ({
     queryKey: ['dashboard', 'recaudo-mensual', this._anioRecaudoMensual()],
     queryFn: () => getRecaudoMensual(this.http, this._anioRecaudoMensual()),
-    refetchInterval: 60000, // 1 minuto
+    refetchInterval: this._isActive() ? 60000 : false, // 1 minuto si activo
+    enabled: this._isActive(),
     select: (response: GeneralResponse<RecaudoMensual[]>) => response.data,
   }));
 
   public indicadoresQuery = injectQuery(() => ({
     queryKey: ['dashboard', 'indicadores'],
     queryFn: () => getIndicadores(this.http),
-    refetchInterval: 60 * 1000 * 3, // 3 minutos
+    refetchInterval: this._isActive() ? 60 * 1000 * 3 : false, // 3 minutos si activo
+    enabled: this._isActive(),
     select: (response: GeneralResponse<Indicadores>) => response.data,
   }));
 
@@ -84,6 +90,7 @@ export class DashboardService {
     queryKey: ['dashboard', 'anios-con-reservas'],
     queryFn: () => getAniosReservas(this.http),
     staleTime: Infinity,
+    enabled: this._isActive(),
     select: (response: GeneralResponse<number[]>) => response.data,
   }));
 
@@ -106,5 +113,9 @@ export class DashboardService {
 
   public setMesReservasCategoria(mes: number) {
     this._mesReservasCategoria.set(mes);
+  }
+
+  public setIsActive(active: boolean) {
+    this._isActive.set(active);
   }
 }

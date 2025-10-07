@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
   signal,
   OnInit,
+  OnDestroy,
   ViewContainerRef,
   ViewChild,
   effect,
@@ -50,7 +51,7 @@ import { PERMISOS_DASHBOARD } from '@shared/constants';
   },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DashboardMainPage implements OnInit {
+export class DashboardMainPage implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private globalLoader = inject(GlobalLoaderService);
   public dashboardService = inject(DashboardService);
@@ -133,10 +134,10 @@ export class DashboardMainPage implements OnInit {
       }
     });
 
-    // Effect para deshabilitar controles cuando selectsDisabled cambie
+    // Effect para deshabilitar controles cuando selectsDisabled cambie o anios esté vacío
     effect(
       () => {
-        const disabled = this.selectsDisabled();
+        const disabled = this.selectsDisabled() || !this.aniosConReservas() || this.aniosConReservas()!.length === 0;
         if (disabled) {
           this.anioReservasPorMesControl.disable();
           this.anioRecaudoMensualControl.disable();
@@ -153,6 +154,11 @@ export class DashboardMainPage implements OnInit {
         injector: this.injector,
       },
     );
+  }
+
+  ngOnDestroy() {
+    // Detener las consultas automáticas cuando se sale del dashboard
+    this.dashboardService.setIsActive(false);
   }
 
   // Método para manejar click en botón de descargar reservas

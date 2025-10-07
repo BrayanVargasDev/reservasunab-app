@@ -134,6 +134,7 @@ import { WebIconComponent } from '@app/shared/components/web-icon/web-icon.compo
                   <option value="padre">Padre</option>
                   <option value="madre">Madre</option>
                   <option value="hijo">Hijo(a)</option>
+                  <option value="esposo">Esposo(a)</option>
                 </optgroup>
                 <optgroup label="Segundo grado">
                   <option value="hermano">Hermano(a)</option>

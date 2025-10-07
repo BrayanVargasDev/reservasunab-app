@@ -113,6 +113,7 @@
         <select
           id="anioReservasMes"
           [formControl]="anioReservasPorMesControl"
+          [disabled]="!aniosConReservas() || aniosConReservas()!.length === 0"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (anio of aniosConReservas(); track $index) {
@@ -124,7 +125,7 @@
       </div>
       <button
         class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
-        [disabled]="descargandoReservas() || selectsDisabled()"
+        [disabled]="descargandoReservas() || selectsDisabled() || !aniosConReservas() || aniosConReservas()!.length === 0"
         *ngIf="authService.tienePermisos(permisos.DESCARGAR_RESERVAS_MES)"
         (click)="descargarReservas()"
       >
@@ -155,6 +156,7 @@
         <select
           id="mesPromedioHoras"
           [formControl]="mesPromedioHorasControl"
+          [disabled]="!aniosConReservas() || aniosConReservas()!.length === 0"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (mes of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track $index) {
@@ -182,6 +184,7 @@
         <select
           id="mesReservasCategoria"
           [formControl]="mesReservasCategoriaControl"
+          [disabled]="!aniosConReservas() || aniosConReservas()!.length === 0"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (mes of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; track $index) {
@@ -211,6 +214,7 @@
         <select
           id="anioRecaudoMensual"
           [formControl]="anioRecaudoMensualControl"
+          [disabled]="!aniosConReservas() || aniosConReservas()!.length === 0"
           class="select select-bordered select-sm h-8 rounded-md pl-1"
         >
           @for (anio of aniosConReservas(); track $index) {
@@ -222,7 +226,7 @@
       </div>
       <button
         class="btn btn-sm btn-secondary p-1 h-8 rounded-md"
-        [disabled]="descargandoPagos() || selectsDisabled()"
+        [disabled]="descargandoPagos() || selectsDisabled() || !aniosConReservas() || aniosConReservas()!.length === 0"
         *ngIf="authService.tienePermisos(permisos.DESCARGAR_RECAUDO_MES)"
         (click)="descargarPagos()"
       >
