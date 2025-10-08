@@ -90,10 +90,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+      console.log('Ejecutando el appUrlOpen');
       this.ngZone.run(() => {
         try {
           const url = new URL(event.url);
-          const path = url.pathname + url.search; // e.g., '/auth/callback?code=...'
+          const path = url.pathname + url.search;
           if (path) {
             this.router.navigateByUrl(path);
           }

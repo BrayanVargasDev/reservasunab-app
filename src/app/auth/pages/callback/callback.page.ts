@@ -50,6 +50,7 @@ export class AuthCallbackPage implements OnInit {
       this.platform.is('ios')
     ) {
       await new Promise(resolve => setTimeout(resolve, 300));
+      console.log('Estoy a punto de cerrar el navegador');
       await this.movbileAuthService.closeBrowser();
       // Navegar a callback-movil para procesar el token
       return this.router.navigate(['/auth/callback-movil'], {

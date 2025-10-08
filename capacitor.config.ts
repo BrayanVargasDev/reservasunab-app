@@ -7,7 +7,6 @@ const config: CapacitorConfig = {
   plugins: {
     App: {
       scheme: 'com.unab.reservas',
-      paths: ['/auth/callback'],
     },
     CapacitorHttp: {
       enabled: true,

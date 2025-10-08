@@ -80,6 +80,7 @@ export class MobileAuthService {
   async closeBrowser(): Promise<void> {
     if (!this.browserClosed()) {
       await this.getBrowser()?.close();
+      console.log('Navegador cerrado');
       this.browserClosed.set(true);
     }
   }

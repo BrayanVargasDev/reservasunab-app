@@ -2,7 +2,7 @@
   "name": "Reservas UNAB",
   "integrations": {
     "capacitor": {
-      "appId": "com.example.reservas",
+      "appId": "com.unab.reservas",
       "appName": "unab-reservas",
       "webDir": "www",
       "server": {
