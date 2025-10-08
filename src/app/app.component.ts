@@ -19,7 +19,7 @@ import { Capacitor } from '@capacitor/core';
 import { App, URLOpenListenerEvent } from '@capacitor/app';
 import { InAppBrowser as Browser } from '@capacitor/inappbrowser';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
-import { StatusBar,Style } from '@capacitor/status-bar';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 import { AppService } from './app.service';
 import { AuthService } from '@auth/services/auth.service';
@@ -68,8 +68,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.routerSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe(() => {
-        const url = this.router.url;
+      .subscribe(async (event: NavigationEnd) => {
+        const url = event.url;
         const rutasSinMenu = [
           '/auth',
           '/pagos/reservas',
@@ -90,7 +90,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      console.log('Ejecutando el appUrlOpen');
       this.ngZone.run(() => {
         try {
           const url = new URL(event.url);
@@ -131,8 +130,6 @@ export class AppComponent implements OnInit, OnDestroy {
    * Maneja deep links abiertos en la app
    */
   private async handleDeepLink(url: string) {
-    console.debug('Deep link recibido:', url);
-
     try {
       const urlObj = new URL(url);
       if (

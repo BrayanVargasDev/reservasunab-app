@@ -1,1 +1,0 @@
-import"./chunk-LVXXLD6S.js";var o=[{path:"",loadComponent:()=>import("./chunk-6UOWRGYG.js")},{path:"admin",loadComponent:()=>import("./chunk-NYGTXTDS.js")},{path:"mis-reservas",loadComponent:()=>import("./chunk-PTAW3SRD.js")}];export{o as dreservasRoutes};

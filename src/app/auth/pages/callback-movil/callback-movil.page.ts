@@ -67,22 +67,17 @@ export class AuthCallbackMovilPage implements OnInit {
         );
       }
 
-      console.debug('Token intercambiado correctamente, redirigiendo...');
-
       // Decidir ruta de destino respetando lógica de términos/perfil
       const dest = await this.authService.validarTerminosYPerfil();
 
       if (dest && dest !== '/') {
-        console.debug('Redirecting to post-login destination:', dest);
         return this.router.navigate([dest]);
       }
 
       if (returnUrl && returnUrl !== '/') {
-        console.debug('Redirecting to return URL:', returnUrl);
         return this.router.navigate([returnUrl], { replaceUrl: true });
       }
 
-      console.debug('Redirecting to first available page');
       return this.navigationService.navegarAPrimeraPaginaDisponible();
     } catch (e: any) {
       console.error('Error en callback OAuth:', e);

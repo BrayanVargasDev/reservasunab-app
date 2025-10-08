@@ -1,15 +1,23 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
+import { Platform } from '@ionic/angular';
 import {
   InAppBrowser as Browser,
   DefaultSystemBrowserOptions,
   InAppBrowserPlugin,
 } from '@capacitor/inappbrowser';
+import {
+  SocialLogin,
+  GoogleLoginResponse,
+} from '@capgo/capacitor-social-login';
 
 import { AuthService } from './auth.service';
 import { AppService } from '@app/app.service';
 import { NavigationService } from '@shared/services/navigation.service';
+import { environment } from '@environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { loginGoogleAction } from '../actions';
 
 @Injectable({
   providedIn: 'root',
@@ -18,14 +26,43 @@ export class MobileAuthService {
   private router = inject(Router);
   private authService = inject(AuthService);
   private appService = inject(AppService);
+  private http = inject(HttpClient);
+  private environment = environment;
   private _browser = signal<InAppBrowserPlugin | null>(null);
+  private platform = inject(Platform);
 
   constructor() {
     this._browser.set(Browser);
+    this.configureGoogleOauth();
   }
 
   private isAuthenticating = false;
   private browserClosed = signal(false);
+
+  private async configureGoogleOauth() {
+    if (this.platform.is('android')) {
+      return await SocialLogin.initialize({
+        google: {
+          webClientId: this.environment.googleWebId,
+        },
+      });
+    }
+
+    if (this.platform.is('ios')) {
+      return await SocialLogin.initialize({
+        google: {
+          iOSClientId: this.environment.googleIosId, // the iOS client id
+        },
+      });
+    }
+
+    return await SocialLogin.initialize({
+      google: {
+        webClientId: this.environment.googleWebId,
+        redirectUrl: `${this.environment.baseUrl}/auth/callback`,
+      },
+    });
+  }
 
   /**
    * Inicia el flujo de autenticación SAML en móvil usando InAppBrowser
@@ -70,6 +107,42 @@ export class MobileAuthService {
     }
   }
 
+  public async loginWithGoogle() {
+    try {
+      const { result } = await SocialLogin.login({
+        provider: 'google',
+        options: {
+          scopes: ['email'],
+          forcePrompt: true,
+          autoSelectEnabled: false,
+          filterByAuthorizedAccounts: false,
+        },
+      });
+
+      const idToken = (result as any).idToken ?? null;
+      if (!idToken) {
+        console.error(
+          'No se obtuvo un idToken del plugin. Result completo:',
+          result,
+        );
+        throw new Error('No se obtuvo un idToken');
+      }
+
+      const respuestaBackend = await loginGoogleAction(this.http, idToken);
+
+      if (respuestaBackend.status !== 'success') {
+        console.error('Error en respuesta del backend:', respuestaBackend);
+        throw new Error('Ocurrió un error en el servicio');
+      }
+
+      this.authService.onSuccessLogin(respuestaBackend.data);
+      return true;
+    } catch (err) {
+      console.error('Error login Google:', err);
+      return false;
+    }
+  }
+
   public getBrowser() {
     return this._browser();
   }
@@ -80,7 +153,6 @@ export class MobileAuthService {
   async closeBrowser(): Promise<void> {
     if (!this.browserClosed()) {
       await this.getBrowser()?.close();
-      console.log('Navegador cerrado');
       this.browserClosed.set(true);
     }
   }
@@ -172,11 +244,6 @@ export class MobileAuthService {
         return;
       }
 
-      console.debug(
-        'Procesando código de autorización en móvil:',
-        code.substring(0, 10) + '...',
-      );
-
       // Intercambiar token
       const success = await this.authService.intercambiarToken(code);
 
@@ -193,21 +260,14 @@ export class MobileAuthService {
         return;
       }
 
-      console.debug(
-        'Token intercambiado correctamente en móvil, redirigiendo...',
-      );
-
       // Decidir ruta de destino
       const dest = await this.authService.validarTerminosYPerfil();
 
       if (dest && dest !== '/') {
-        console.debug('Redirecting to post-login destination:', dest);
         this.router.navigate([dest]);
       } else if (returnUrl && returnUrl !== '/') {
-        console.debug('Redirecting to return URL:', returnUrl);
         this.router.navigate([returnUrl], { replaceUrl: true });
       } else {
-        console.debug('Redirecting to first available page');
         // Importar dinámicamente para evitar dependencias circulares
         const { NavigationService } = await import(
           '@shared/services/navigation.service'

@@ -2,6 +2,7 @@ export * from './check-status.action';
 export * from './get-user.action';
 export * from './intercambiar-token.action';
 export * from './log-out.action';
+export * from './login-google.action';
 export * from './login.action';
 export * from './refresh-token.action';
 export * from './registro.action';

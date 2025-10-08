@@ -28,6 +28,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { MobileAuthService } from '@auth/services/mobile-auth.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { NavigationService } from '@shared/services/navigation.service';
+import { loginGoogleAction } from '@app/auth/actions';
 
 @Component({
   selector: 'app-login',
@@ -121,16 +122,19 @@ export class LoginPage {
       : 'dark';
   }
 
-  loginSaml() {
+  async loginGoogle() {
     try {
       this.disableForm();
       this.authService.setLoading(true);
 
-      const samlUrl = `${this.appService.samlUrl}/api/saml/${this.appService.tenantId}/login`;
+      this.authService.clearSession();
 
-      if (!samlUrl || !this.appService.samlUrl || !this.appService.tenantId) {
+      const success = await this.mobileAuthService.loginWithGoogle();
+
+      if (!success) {
+        console.error('Login con Google falló');
         this.alertaService.error(
-          'Configuración de SSO incompleta. Contacte al administrador.',
+          'Error al iniciar sesión con Google. Verifica tu conexión e intenta de nuevo.',
           5000,
           this.alertaLogin(),
           'w-full block my-2',
@@ -140,22 +144,11 @@ export class LoginPage {
         return;
       }
 
-      console.debug('Redirecting to SAML SSO:', samlUrl);
-
-      // Limpiar cualquier estado anterior antes de redirigir
-      this.authService.clearSession();
-
-      if (Capacitor.isNativePlatform()) {
-        this.mobileAuthService.loginWithSaml();
-      } else {
-        setTimeout(() => {
-          window.location.href = samlUrl;
-        }, 100);
-      }
+      await this.navegarDespesDeLogin();
     } catch (error) {
-      console.error('Error initiating SAML login:', error);
+      console.error('Error en login con Google:', error);
       this.alertaService.error(
-        'Error al iniciar sesión con SSO. Inténtelo de nuevo.',
+        'Error al iniciar sesión con Google. Inténtelo de nuevo.',
         5000,
         this.alertaLogin(),
         'w-full block my-2',
