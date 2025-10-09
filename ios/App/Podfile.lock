@@ -1,0 +1,159 @@
+PODS:
+  - Alamofire (5.10.2)
+  - AppAuth (2.0.0):
+    - AppAuth/Core (= 2.0.0)
+    - AppAuth/ExternalUserAgent (= 2.0.0)
+  - AppAuth/Core (2.0.0)
+  - AppAuth/ExternalUserAgent (2.0.0):
+    - AppAuth/Core
+  - AppCheckCore (11.2.0):
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - PromisesObjC (~> 2.4)
+  - Capacitor (7.2.0):
+    - CapacitorCordova
+  - CapacitorApp (7.0.1):
+    - Capacitor
+  - CapacitorCommunityFileOpener (7.0.1):
+    - Capacitor
+  - CapacitorCordova (7.2.0)
+  - CapacitorFilesystem (7.1.4):
+    - Capacitor
+    - IONFilesystemLib (~> 1.0.1)
+  - CapacitorHaptics (7.0.1):
+    - Capacitor
+  - CapacitorInappbrowser (2.5.0):
+    - Capacitor
+    - OSInAppBrowserLib (~> 2.2.1)
+  - CapacitorKeyboard (7.0.1):
+    - Capacitor
+  - CapacitorPreferences (7.0.2):
+    - Capacitor
+  - CapacitorScreenOrientation (7.0.2):
+    - Capacitor
+  - CapacitorStatusBar (7.0.1):
+    - Capacitor
+  - CapgoCapacitorSocialLogin (7.11.17):
+    - Alamofire (~> 5.10.2)
+    - Capacitor
+    - FBSDKCoreKit (= 18.0.0)
+    - FBSDKLoginKit (= 18.0.0)
+    - GoogleSignIn (~> 9.0.0)
+  - FBAEMKit (18.0.0):
+    - FBSDKCoreKit_Basics (= 18.0.0)
+  - FBSDKCoreKit (18.0.0):
+    - FBAEMKit (= 18.0.0)
+    - FBSDKCoreKit_Basics (= 18.0.0)
+  - FBSDKCoreKit_Basics (18.0.0)
+  - FBSDKLoginKit (18.0.0):
+    - FBSDKCoreKit (= 18.0.0)
+  - GoogleSignIn (9.0.0):
+    - AppAuth (~> 2.0)
+    - AppCheckCore (~> 11.0)
+    - GTMAppAuth (~> 5.0)
+    - GTMSessionFetcher/Core (~> 3.3)
+  - GoogleUtilities/Environment (8.1.0):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/UserDefaults (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTMAppAuth (5.0.0):
+    - AppAuth/Core (~> 2.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher/Core (3.5.0)
+  - IONFilesystemLib (1.0.1)
+  - OSInAppBrowserLib (2.2.1)
+  - PromisesObjC (2.4.0)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
+  - "CapacitorCommunityFileOpener (from `../../node_modules/@capacitor-community/file-opener`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
+  - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
+  - "CapacitorInappbrowser (from `../../node_modules/@capacitor/inappbrowser`)"
+  - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
+  - "CapacitorScreenOrientation (from `../../node_modules/@capacitor/screen-orientation`)"
+  - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
+  - "CapgoCapacitorSocialLogin (from `../../node_modules/@capgo/capacitor-social-login`)"
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - AppAuth
+    - AppCheckCore
+    - FBAEMKit
+    - FBSDKCoreKit
+    - FBSDKCoreKit_Basics
+    - FBSDKLoginKit
+    - GoogleSignIn
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - IONFilesystemLib
+    - OSInAppBrowserLib
+    - PromisesObjC
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../node_modules/@capacitor/app"
+  CapacitorCommunityFileOpener:
+    :path: "../../node_modules/@capacitor-community/file-opener"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorFilesystem:
+    :path: "../../node_modules/@capacitor/filesystem"
+  CapacitorHaptics:
+    :path: "../../node_modules/@capacitor/haptics"
+  CapacitorInappbrowser:
+    :path: "../../node_modules/@capacitor/inappbrowser"
+  CapacitorKeyboard:
+    :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
+  CapacitorScreenOrientation:
+    :path: "../../node_modules/@capacitor/screen-orientation"
+  CapacitorStatusBar:
+    :path: "../../node_modules/@capacitor/status-bar"
+  CapgoCapacitorSocialLogin:
+    :path: "../../node_modules/@capgo/capacitor-social-login"
+
+SPEC CHECKSUMS:
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
+  AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
+  AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  Capacitor: 03bc7cbdde6a629a8b910a9d7d78c3cc7ed09ea7
+  CapacitorApp: febecbb9582cb353aed037e18ec765141f880fe9
+  CapacitorCommunityFileOpener: 97362898506cf0a4194639f6fc05276af607191c
+  CapacitorCordova: 5967b9ba03915ef1d585469d6e31f31dc49be96f
+  CapacitorFilesystem: f9bd850c41e048180e5dc0cbb90f2033ede9d2cc
+  CapacitorHaptics: 1f1e17041f435d8ead9ff2a34edd592c6aa6a8d6
+  CapacitorInappbrowser: 7aeffa02075b6da460a84e59a8f69f748411ad7f
+  CapacitorKeyboard: 09fd91dcde4f8a37313e7f11bde553ad1ed52036
+  CapacitorPreferences: 65107ed7437d96ee72583df5763985e3c0ff2bc2
+  CapacitorScreenOrientation: e0d5b9ef293b269b8f93373355d5b276f50fabea
+  CapacitorStatusBar: 6e7af040d8fc4dd655999819625cae9c2d74c36f
+  CapgoCapacitorSocialLogin: 0ba3f56be4e84428265174f47ad4d02c80a2bfae
+  FBAEMKit: e34530df538b8eb8aeb53c35867715ba6c63ef0c
+  FBSDKCoreKit: d3f479a69127acebb1c6aad91c1a33907bcf6c2f
+  FBSDKCoreKit_Basics: 017b6dc2a1862024815a8229e75661e627ac1e29
+  FBSDKLoginKit: 5875762d1fe09ddcb05d03365d4f5dc34413843d
+  GoogleSignIn: c7f09cfbc85a1abf69187be091997c317cc33b77
+  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
+  GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
+  IONFilesystemLib: 89258b8e3e85465da93127d25d7ce37f977e8a6f
+  OSInAppBrowserLib: 65563bae1c068972f1848a403dacbea2860ac88e
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+
+PODFILE CHECKSUM: 8c3c8a05aaf5935d9d7c58b6fa12b18f5c2482ab
+
+COCOAPODS: 1.16.2

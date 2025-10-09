@@ -52,6 +52,7 @@ export class MobileAuthService {
       return await SocialLogin.initialize({
         google: {
           iOSClientId: this.environment.googleIosId, // the iOS client id
+          iOSServerClientId: this.environment.googleWebId,
         },
       });
     }
