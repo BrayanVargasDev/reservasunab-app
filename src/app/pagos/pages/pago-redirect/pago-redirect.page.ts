@@ -5,6 +5,7 @@ import {
   signal,
   computed,
   effect,
+  Injector,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -39,6 +40,7 @@ export class PagoRedirectPage implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private pagosService = inject(PagosService);
+  private injector = inject(Injector);
 
   private _pagoInfo = signal<PagoInfo | null>(null);
   private _loading = signal(true);
@@ -52,13 +54,18 @@ export class PagoRedirectPage implements OnInit {
 
   async ngOnInit() {
     // Effect para cambiar color del status bar basado en loading
-    effect(() => {
-      if (Capacitor.isNativePlatform()) {
-        const isLoading = this._loading();
-        const color = isLoading ? '#667eea' : '#f8f9fa';
-        StatusBar.setBackgroundColor({ color });
-      }
-    });
+    effect(
+      () => {
+        if (Capacitor.isNativePlatform()) {
+          const isLoading = this._loading();
+          const color = isLoading ? '#667eea' : '#f8f9fa';
+          StatusBar.setBackgroundColor({ color });
+        }
+      },
+      {
+        injector: this.injector,
+      },
+    );
 
     this.route.queryParams.subscribe(params => {
       this._codigo.set(params['codigo']);
