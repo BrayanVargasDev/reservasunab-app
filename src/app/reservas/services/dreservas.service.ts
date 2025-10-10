@@ -26,6 +26,7 @@ import {
   eliminarReserva as eliminarReservaAction,
   buscarElementos,
 } from '../actions';
+import { Platform } from '@ionic/angular';
 
 // Definir tipos para el estado del modal
 const EstadoModal = {
@@ -46,6 +47,7 @@ type EstadoModalType = (typeof EstadoModal)[keyof typeof EstadoModal];
 })
 export class DreservasService {
   private http = inject(HttpClient);
+  private platform = inject(Platform);
 
   private _fecha = signal<string | null>(null);
   private _idGrupo = signal<number | null>(null);
@@ -387,7 +389,11 @@ export class DreservasService {
   }
 
   public pagarReserva(idReserva: number) {
-    return pagarReserva(this.http, idReserva);
+    return pagarReserva(
+      this.http,
+      idReserva,
+      this.platform.is('iphone') || this.platform.is('ipad'),
+    );
   }
 
   public pagarReservaConSaldo(idReserva: number) {

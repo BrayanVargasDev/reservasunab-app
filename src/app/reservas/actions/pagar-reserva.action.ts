@@ -8,6 +8,7 @@ const BASE_URL = environment.apiUrl;
 export const pagarReserva = async (
   http: HttpClient,
   id_reserva: number,
+  desde_ios: boolean = false,
 ): Promise<GeneralResponse<string>> => {
   const url = `${BASE_URL}/pagos/reservas`;
 
@@ -21,6 +22,9 @@ export const pagarReserva = async (
         headers: {
           'Content-Type': 'application/json',
         },
+        params: {
+          desde_ios,
+        }
       },
     ),
   );
