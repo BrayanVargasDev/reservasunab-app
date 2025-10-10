@@ -19,7 +19,7 @@ export const routes: Routes = [
     component: AccessDeniedPage,
   },
   {
-    path: 'pagos/reservas',
+    path: 'pagos-redirect/reservas',
     loadComponent: () =>
       import('@pagos/pages/pago-redirect/pago-redirect.page').then(
         m => m.PagoRedirectPage,
