@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 import { parseISO } from 'date-fns';
 import { formatInBogota } from '@shared/utils/timezone';
@@ -16,6 +17,7 @@ import { getPagoInfo, getPagos } from '../actions';
 })
 export class PagosService {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private queryClient = inject(QueryClient);
 
   // Estados para la tabla de pagos
@@ -37,6 +39,7 @@ export class PagosService {
         ...this.paginacion(),
         search: this._filtroTexto(),
       }),
+    enabled: () => !this.router.url.includes('pagos-redirect'),
     select: (response: PaginatedResponse<Pago>) => {
       this._datosPaginador.set(response.meta);
       return response.data;
