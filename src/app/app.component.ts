@@ -90,6 +90,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   initializeApp() {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+      console.debug("Se obtuvo un evento de open url", event.url);
       this.ngZone.run(() => {
         try {
           const url = new URL(event.url);
