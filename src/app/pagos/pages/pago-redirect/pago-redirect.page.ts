@@ -1,4 +1,11 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -55,6 +62,10 @@ export class PagoRedirectPage implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       this._codigo.set(params['codigo']);
+      if (params['desde_ios'] && this._codigo()) {
+        window.open(`com.unab.reservas://pagos/reservas?codigo=${this._codigo()}`, '_system');
+        return;
+      }
       if (this._codigo()) {
         this.cargarInfoPago();
       } else {

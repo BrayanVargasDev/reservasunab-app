@@ -389,11 +389,7 @@ export class DreservasService {
   }
 
   public pagarReserva(idReserva: number) {
-    return pagarReserva(
-      this.http,
-      idReserva,
-      this.platform.is('iphone') || this.platform.is('ipad'),
-    );
+    return pagarReserva(this.http, idReserva, this.platform.is('ios'));
   }
 
   public pagarReservaConSaldo(idReserva: number) {

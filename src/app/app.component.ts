@@ -92,14 +92,21 @@ export class AppComponent implements OnInit, OnDestroy {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
       console.debug("Se obtuvo un evento de open url", event.url);
       this.ngZone.run(() => {
-        try {
-          const url = new URL(event.url);
-          const path = url.pathname + url.search;
-          if (path) {
-            this.router.navigateByUrl(path);
+        if (event.url.startsWith('com.unab.reservas://')) {
+          const schemeRemoved = event.url.replace('com.unab.reservas://', '');
+          const [path, query] = schemeRemoved.split('?');
+          const fullPath = '/' + path + (query ? '?' + query : '');
+          this.router.navigateByUrl(fullPath);
+        } else {
+          try {
+            const url = new URL(event.url);
+            const path = url.pathname + url.search;
+            if (path) {
+              this.router.navigateByUrl(path);
+            }
+          } catch (error) {
+            console.error('Error parsing deep link URL:', error);
           }
-        } catch (error) {
-          console.error('Error parsing deep link URL:', error);
         }
       });
     });
