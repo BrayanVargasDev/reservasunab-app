@@ -60,7 +60,8 @@ export class MobileAuthService {
     return await SocialLogin.initialize({
       google: {
         webClientId: this.environment.googleWebId,
-        redirectUrl: `${this.environment.baseUrl}/auth/callback`,
+        redirectUrl: `http://localhost:8100/auth/callback`,
+        // redirectUrl: `${this.environment.baseUrl}/auth/callback`,
       },
     });
   }

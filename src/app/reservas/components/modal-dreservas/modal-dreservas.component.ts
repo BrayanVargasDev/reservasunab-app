@@ -250,7 +250,7 @@ export class ModalDreservasComponent {
     if (this.isEstadoVacio(estado)) return false;
     if (this.esReservaPasada()) return false;
     if (estado.necesita_aprobacion) return false;
-    if (estado.estado === 'completada') return false;
+    if (estado.estado === 'completada' && estado.id) return false;
     if (estado.pago && (estado.pago as Pago).estado === 'OK') return false;
     let valorEspacio = Math.max(0, estado?.valor_descuento ?? 0);
 
@@ -258,8 +258,7 @@ export class ModalDreservasComponent {
       valorEspacio = 0;
     }
 
-    const totalReserva =
-      (estado as ResumenReserva)?.valor_total_reserva ?? valorEspacio;
+    const totalReserva = estado.valor_total_reserva ?? valorEspacio;
     if (totalReserva <= 0) return false;
 
     if (this.dreservasService.mostrandoResumenExistente()) return true;
