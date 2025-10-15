@@ -10,7 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, Platform } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { PagoInfo } from '@pagos/interfaces';
@@ -41,6 +41,7 @@ export class PagoRedirectPage implements OnInit {
   private http = inject(HttpClient);
   private pagosService = inject(PagosService);
   private injector = inject(Injector);
+  private platform = inject(Platform);
 
   private _pagoInfo = signal<PagoInfo | null>(null);
   private _loading = signal(true);
@@ -69,15 +70,20 @@ export class PagoRedirectPage implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       this._codigo.set(params['codigo']);
-      if (
-        (params['desde_ios'] === '1' || params['desde_ios'] === true) &&
-        this._codigo()
-      ) {
-        window.location.href = `com.unab.reservas://pagos-redirect/reservas?codigo=${this._codigo()}`;
-        return;
-      }
-      if (this._codigo()) {
+      const origen = params['origen'];
+      const so = params['so'];
+
+      if (origen === 'web' && this._codigo()) {
         this.cargarInfoPago();
+      } else if (origen === 'app') {
+        if (so === 'android') {
+          window.location.href =
+            'intent://tuapp/#Intent;scheme=https;package=com.tuapp.android;end';
+        } else if (so === 'ios') {
+          window.location.href = `com.unab.reservas://pagos-redirect/reservas?codigo=${this._codigo()}`;
+        } else {
+          this.cargarInfoPago();
+        }
       } else {
         this._error.set('Código de pago no válido');
         this._loading.set(false);

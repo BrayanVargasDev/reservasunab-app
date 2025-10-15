@@ -49,6 +49,9 @@ export class DreservasService {
   private http = inject(HttpClient);
   private platform = inject(Platform);
 
+  private _origen = signal<'app' | 'web'>('web');
+  private _so = signal<'android' | 'ios' | 'other'>('other');
+
   private _fecha = signal<string | null>(null);
   private _idGrupo = signal<number | null>(null);
   private _idSede = signal<number | null>(null);
@@ -128,6 +131,26 @@ export class DreservasService {
   public fecha = this._fecha.asReadonly();
   public modalAbierta = this._modalAbierta.asReadonly();
   public abiertaDesdeMisReservas = this._abiertaDesdeMisReservas.asReadonly();
+
+  constructor() {
+    if (this.platform.is('android')) {
+      this._so.set('android');
+    } else if (this.platform.is('ios')) {
+      this._so.set('ios');
+    } else {
+      this._so.set('other');
+    }
+
+    if (
+      window.location.protocol === 'capacitor:' ||
+      window.location.protocol === 'ionic:' ||
+      window.location.protocol === 'cordova'
+    ) {
+      this._origen.set('app');
+    } else {
+      this._origen.set('web');
+    }
+  }
 
   allEspaciosQuery = injectQuery(() => ({
     queryKey: [
@@ -389,7 +412,7 @@ export class DreservasService {
   }
 
   public pagarReserva(idReserva: number) {
-    return pagarReserva(this.http, idReserva, this.platform.is('ios'));
+    return pagarReserva(this.http, idReserva, this._origen());
   }
 
   public pagarReservaConSaldo(idReserva: number) {
