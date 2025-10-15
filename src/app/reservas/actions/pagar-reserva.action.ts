@@ -9,6 +9,7 @@ export const pagarReserva = async (
   http: HttpClient,
   id_reserva: number,
   origen: 'app' | 'web',
+  so: 'ios' | 'android' | 'other',
 ): Promise<GeneralResponse<string>> => {
   const url = `${BASE_URL}/pagos/reservas`;
 
@@ -24,6 +25,7 @@ export const pagarReserva = async (
         },
         params: {
           origen: origen,
+          so: so,
         },
       },
     ),

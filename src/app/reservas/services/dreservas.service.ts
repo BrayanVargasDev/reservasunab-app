@@ -412,7 +412,7 @@ export class DreservasService {
   }
 
   public pagarReserva(idReserva: number) {
-    return pagarReserva(this.http, idReserva, this._origen());
+    return pagarReserva(this.http, idReserva, this._origen(), this._so());
   }
 
   public pagarReservaConSaldo(idReserva: number) {
