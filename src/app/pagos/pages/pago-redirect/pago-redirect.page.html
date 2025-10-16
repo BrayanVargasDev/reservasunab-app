@@ -21,7 +21,7 @@
 
   <!-- Success State -->
   @if (pagoInfo() && !loading()) {
-  <div class="flex-1 overflow-y-auto">
+  <div class="flex-1 overflow-y-auto h-dvh">
     <app-pago-info-card
       [pagoInfo]="pagoInfo()!"
       [formatearMonto]="formatearMonto.bind(this)"

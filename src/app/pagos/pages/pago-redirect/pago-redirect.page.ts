@@ -73,22 +73,36 @@ export class PagoRedirectPage implements OnInit {
       const origen = params['origen'];
       const so = params['so'];
 
-      if (origen === 'web' && this._codigo()) {
-        this.cargarInfoPago();
-      } else if (origen === 'app') {
-        if (so === 'android') {
-          // window.location.href =
-          //   'intent://tuapp/#Intent;scheme=https;package=com.tuapp.android;end';
-        } else if (so === 'ios') {
-          window.location.href = `com.unab.reservas://pagos-redirect/reservas?codigo=${this._codigo()}`;
-        } else {
-          this.cargarInfoPago();
-        }
-      } else {
+      if (!this._codigo() && !origen && !so) {
         this._error.set('Código de pago no válido');
         this._loading.set(false);
+        return;
+      }
+
+      if (origen === 'app' && so) {
+        this.redirigirAApp(so);
+        return;
+      }
+
+      if (origen === 'web' || !origen) {
+        this.cargarInfoPago();
       }
     });
+  }
+
+  private redirigirAApp(so: string): void {
+    const codigo = this._codigo();
+    const urlScheme = 'com.unab.reservas';
+    const path = `pagos-redirect/reservas?codigo=${codigo}`;
+
+    if (so === 'android') {
+      const fallbackUrl = `https://reservasunab.wgsoluciones.com/${path}`;
+      window.location.href = `intent://${path}#Intent;scheme=${urlScheme};package=${urlScheme};S.browser_fallback_url=${fallbackUrl};end`;
+    } else if (so === 'ios') {
+      window.location.href = `${urlScheme}://${path}`;
+    } else {
+      this.cargarInfoPago();
+    }
   }
 
   async cargarInfoPago() {

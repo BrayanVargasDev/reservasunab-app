@@ -144,7 +144,8 @@ export class DreservasService {
     if (
       window.location.protocol === 'capacitor:' ||
       window.location.protocol === 'ionic:' ||
-      window.location.protocol === 'cordova'
+      window.location.protocol === 'cordova:' ||
+      window.location.protocol === 'com.unab.reservas:'
     ) {
       this._origen.set('app');
     } else {
