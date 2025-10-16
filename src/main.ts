@@ -19,7 +19,6 @@ import {
 import {
   provideTanStackQuery,
   QueryClient,
-  withDevtools,
 } from '@tanstack/angular-query-experimental';
 
 import { routes } from '@app/app.routes';
@@ -30,10 +29,7 @@ import { errorInterceptor } from '@shared/interceptors/error.interceptor';
 bootstrapApplication(AppComponent, {
   providers: [
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
-    provideTanStackQuery(
-      new QueryClient(),
-      withDevtools(() => ({ loadDevtools: 'auto' })),
-    ),
+    provideTanStackQuery(new QueryClient()),
     provideZonelessChangeDetection(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
