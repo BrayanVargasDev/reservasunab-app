@@ -77,8 +77,8 @@ export class PagoRedirectPage implements OnInit {
         this.cargarInfoPago();
       } else if (origen === 'app') {
         if (so === 'android') {
-          window.location.href =
-            'intent://tuapp/#Intent;scheme=https;package=com.tuapp.android;end';
+          // window.location.href =
+          //   'intent://tuapp/#Intent;scheme=https;package=com.tuapp.android;end';
         } else if (so === 'ios') {
           window.location.href = `com.unab.reservas://pagos-redirect/reservas?codigo=${this._codigo()}`;
         } else {
