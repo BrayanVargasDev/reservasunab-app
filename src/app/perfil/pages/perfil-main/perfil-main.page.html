@@ -218,6 +218,9 @@
                     id="fechaNacimiento"
                     placeholder="dd/mm/yyyy"
                     formControlName="fechaNacimiento"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="off"
                     [ngClass]="{
                       'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
                       'input-error': formUtils.esCampoInvalido(
