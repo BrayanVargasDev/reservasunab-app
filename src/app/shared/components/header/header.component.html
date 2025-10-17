@@ -103,7 +103,7 @@
               </div>
               }
             </li>
-            <li class="z-20">
+            <li class="z-50">
               <a routerLink="/perfil" tabindex="-1">
                 <app-web-icon
                   nombreIcono="person-outline"
@@ -113,7 +113,7 @@
               </a>
             </li>
             <li>
-              <a (click)="cerrarSesion()" tabindex="-1">
+              <a (click)="cerrarSesion()" tabindex="-1" [class.pointer-events-none]="appService.editando()" [class.opacity-50]="appService.editando()">
                 <app-web-icon
                   nombreIcono="log-out-outline"
                   estilos="h-4 w-4"

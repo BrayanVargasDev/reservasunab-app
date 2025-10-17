@@ -333,7 +333,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
           const confirmado = await this.alertaService.confirmacion({
             tipo: 'question',
             titulo: 'Cargar datos de facturación',
-            mensaje: `Se encontraron datos de facturación para el documento <strong>${codigoDoc} ${persona.numero_documento} ${persona.primer_nombre} ${persona.primer_apellido}</strong>. ¿Deseas cargarlos y bloquear el formulario?`,
+            mensaje: `Se encontraron datos de facturación para el documento <strong>${codigoDoc} ${persona.numero_documento} ${persona.primer_nombre}${persona.segundo_nombre ? ' ' + persona.segundo_nombre : ''} ${persona.primer_apellido ?? ''}${persona.segundo_apellido ? ' ' + persona.segundo_apellido : ''}</strong>. ¿Deseas cargarlos y bloquear el formulario?`,
             referencia: this.alertaPerfil(),
             botones: [
               { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
@@ -1123,7 +1123,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     const perfilData = { ...this.perfilForm.value };
     // Si es NIT en perfil principal y el apellido está vacío, enviarlo como espacio
     if (this.esNitPerfil() && (!perfilData.apellido || perfilData.apellido.trim() === '')) {
-      perfilData.apellido = ' ';
+      perfilData.apellido = '';
     }
 
     // Preparar datos de facturación
@@ -1132,7 +1132,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       facturacionFinal = { ...facturacion };
       // Si es NIT y el apellido está vacío, enviarlo como espacio
       if (this.esNitFacturacion() && (!facturacionFinal.apellido || facturacionFinal.apellido.trim() === '')) {
-        facturacionFinal.apellido = ' ';
+        facturacionFinal.apellido = '';
       }
     }
 
