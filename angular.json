@@ -79,6 +79,22 @@
               ],
               "outputHashing": "all"
             },
+            "pruebas": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pruebas.ts"
+                }
+              ]
+            },
+            "local": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.ts"
+                }
+              ]
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -96,6 +112,12 @@
           "configurations": {
             "production": {
               "buildTarget": "app:build:production"
+            },
+            "pruebas": {
+              "buildTarget": "app:build:pruebas"
+            },
+            "local": {
+              "buildTarget": "app:build:local"
             },
             "development": {
               "buildTarget": "app:build:development"

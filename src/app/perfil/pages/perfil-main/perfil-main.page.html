@@ -81,11 +81,11 @@
         aria-label="Información personal"
       />
       <div
-        class="tab-content bg-base-100 p-2 md:p-4 h-[100svh] overflow-y-auto max-sm:rounded-b-lg"
+        class="tab-content bg-base-100 p-2 md:p-4 h-full max-sm:rounded-b-lg"
       >
         <form
           id="formulario-perfil"
-          class="overflow-y-auto relative"
+          class="relative"
           [formGroup]="perfilForm"
           (ngSubmit)="guardarCambios()"
         >
@@ -112,7 +112,10 @@
               Información Personal
             </legend>
             <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3">
-              <div class="flex flex-col w-full md:w-1/2">
+              <div
+                class="flex flex-col w-full md:w-1/2"
+                [ngClass]="{ 'md:w-full': esNitPerfil() }"
+              >
                 <label
                   class="label text-sm font-[600] text-base-content mb-1"
                   for="nombre"
@@ -138,6 +141,7 @@
                 </div>
                 }
               </div>
+              @if (!esNitPerfil()) {
               <div class="flex flex-col w-full md:w-1/2">
                 <label
                   class="label text-sm font-[600] text-base-content mb-1"
@@ -164,6 +168,7 @@
                 </div>
                 }
               </div>
+              }
             </div>
           </fieldset>
           <!-- Información de Contacto -->
@@ -845,7 +850,12 @@
             <div
               class="mb-2 px-1 flex flex-col md:flex-row w-full gap-2 md:gap-3"
             >
-              <div class="flex flex-col w-full md:w-1/2">
+              <div
+                class="flex flex-col w-full md:w-1/2"
+                [ngClass]="{
+                  'md:w-full': esNitFacturacion(),
+                }"
+              >
                 <label
                   class="label text-sm font-[600] text-base-content mb-1"
                   for="fnombre"
@@ -873,6 +883,7 @@
                 </div>
                 }
               </div>
+              @if (!esNitFacturacion()) {
               <div class="flex flex-col w-full md:w-1/2">
                 <label
                   class="label text-sm font-[600] text-base-content mb-1"
@@ -901,6 +912,7 @@
                 </div>
                 }
               </div>
+              }
             </div>
 
             <div

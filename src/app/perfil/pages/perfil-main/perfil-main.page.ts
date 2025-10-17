@@ -1119,11 +1119,28 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       );
     }
 
+    // Preparar datos del perfil
+    const perfilData = { ...this.perfilForm.value };
+    // Si es NIT en perfil principal y el apellido está vacío, enviarlo como espacio
+    if (this.esNitPerfil() && (!perfilData.apellido || perfilData.apellido.trim() === '')) {
+      perfilData.apellido = ' ';
+    }
+
+    // Preparar datos de facturación
+    let facturacionFinal = null;
+    if (usaFacturacion && facturacion) {
+      facturacionFinal = { ...facturacion };
+      // Si es NIT y el apellido está vacío, enviarlo como espacio
+      if (this.esNitFacturacion() && (!facturacionFinal.apellido || facturacionFinal.apellido.trim() === '')) {
+        facturacionFinal.apellido = ' ';
+      }
+    }
+
     const datosActualizados = {
       ...this.perfilService.usuario(),
-      ...this.perfilForm.value,
+      ...perfilData,
       fechaNacimiento,
-      facturacion: usaFacturacion ? facturacion : null,
+      facturacion: facturacionFinal,
     };
 
     try {
@@ -1383,6 +1400,17 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       dvCtrl.clearValidators();
       dvCtrl.updateValueAndValidity({ emitEvent: false });
     }
+
+    // Gestionar validación del apellido para NIT en perfil principal
+    const apellidoCtrl = this.perfilForm.get('apellido');
+    if (apellidoCtrl) {
+      if (esNit) {
+        apellidoCtrl.clearValidators();
+      } else {
+        apellidoCtrl.setValidators([Validators.required]);
+      }
+      apellidoCtrl.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private actualizarValidacionesFacturacionDocumento() {
@@ -1396,6 +1424,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       const dv = factGroup.get('digitoVerificacion');
       dv?.clearValidators();
       dv?.updateValueAndValidity({ emitEvent: false });
+      const apellidoCtrl = factGroup.get('apellido');
+      apellidoCtrl?.clearValidators();
+      apellidoCtrl?.updateValueAndValidity({ emitEvent: false });
       return;
     }
     const dvCtrl = factGroup.get('digitoVerificacion');
@@ -1412,6 +1443,17 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         dvCtrl.setValue('', { emitEvent: false });
       }
       dvCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+
+    // Gestionar validación del apellido para NIT
+    const apellidoCtrl = factGroup.get('apellido');
+    if (apellidoCtrl) {
+      if (esNit) {
+        apellidoCtrl.clearValidators();
+      } else {
+        apellidoCtrl.setValidators([Validators.required]);
+      }
+      apellidoCtrl.updateValueAndValidity({ emitEvent: false });
     }
   }
 }
