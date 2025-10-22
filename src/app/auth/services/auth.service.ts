@@ -134,7 +134,7 @@ export class AuthService implements OnDestroy {
     return this._isLoading();
   }
 
-  async login(email: string, password: string): Promise<boolean> {
+  async login(email: string, password: string): Promise<[boolean, string]> {
     try {
       const { data, status, message } = await loginAction(this.http, {
         email,
@@ -150,9 +150,10 @@ export class AuthService implements OnDestroy {
         'Iniciando sesión',
         'Verificando términos y condiciones...',
       );
-      return true;
-    } catch (error) {
-      throw error;
+      return [true, ''];
+    } catch (error: any) {
+      console.error('Error en login:', error.error);
+      return [false, error.error.message || 'Error desconocido'];
     }
   }
 

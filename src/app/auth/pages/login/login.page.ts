@@ -176,10 +176,13 @@ export class LoginPage {
     this.disableForm();
 
     try {
-      const logueado = await this.authService.login(email, password);
+      const [logueado, errorMessage] = await this.authService.login(
+        email,
+        password,
+      );
 
       if (!logueado) {
-        throw new Error('No se pudo iniciar sesión. Inténtalo de nuevo.');
+        throw new Error(errorMessage);
       }
       await this.navegarDespesDeLogin();
     } catch (error) {
@@ -210,13 +213,30 @@ export class LoginPage {
   }
 
   private handleLoginError(error: unknown): void {
-    const errorMessage =
-      (error as HttpErrorResponse)?.error?.message ||
-      'Por favor, inténtalo de nuevo.';
+    let errorMessage = 'Por favor, inténtalo de nuevo.';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (error instanceof HttpErrorResponse) {
+      if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error.status === 401) {
+        errorMessage =
+          'Credenciales incorrectas. Verifica tu email y contraseña.';
+      } else if (error.status === 400) {
+        errorMessage = 'Datos inválidos. Revisa la información ingresada.';
+      } else if (error.status >= 500) {
+        errorMessage = 'Error del servidor. Inténtalo más tarde.';
+      } else if (error.status === 0) {
+        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
 
     this.alertaService.error(
       `Error al iniciar sesión. ${errorMessage}`,
-      500000,
+      10000,
       this.alertaLogin(),
       'w-full block my-2',
     );

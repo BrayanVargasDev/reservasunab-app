@@ -24,10 +24,18 @@ const RUTAS_PUBLICAS = [
   '/pagos/reservas',
 ];
 
+const ENDPOINTS_PUBLICOS = [
+  '/ingresar', // Endpoint de login
+];
+
 const API_URL = environment.apiUrl;
 
 function isPublicRoute(url: string): boolean {
   return RUTAS_PUBLICAS.some(ruta => url.includes(ruta));
+}
+
+function isPublicEndpoint(url: string): boolean {
+  return ENDPOINTS_PUBLICOS.some(endpoint => url.includes(endpoint));
 }
 
 export function errorInterceptor(
@@ -44,7 +52,8 @@ export function errorInterceptor(
       if (
         error instanceof HttpErrorResponse &&
         error.status === 401 &&
-        !isPublicRoute(req.url)
+        !isPublicRoute(req.url) &&
+        !isPublicEndpoint(req.url)
       ) {
         globalLoader.show('Sesión expirada', 'Redirigiendo al login...');
         authService.clearSession(true);
