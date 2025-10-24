@@ -344,6 +344,9 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
           nombre: espacio.imagen.titulo,
           peso: '',
         });
+      } else {
+        this.espacioConfigService.setImagen('');
+        this.tiltuloImagen.set(null);
       }
 
       if (espacio.elementos) {
@@ -619,7 +622,7 @@ export class EspacioGeneralComponent implements AfterViewInit, OnDestroy {
     this.file.set(null);
     this.alertaService.success(
       'Imagen eliminada correctamente.',
-      3000,
+      2000,
       this.espacioConfigService.alertaEspacioConfigRef()!,
       this.estilosAlerta(),
     );
