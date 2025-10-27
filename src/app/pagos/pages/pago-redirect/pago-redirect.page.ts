@@ -20,6 +20,7 @@ import { LoadingSpinnerComponent } from '@pagos/components/loading-spinner/loadi
 import { ErrorDisplayComponent } from '@pagos/components/error-display/error-display.component';
 import { PagoInfoCardComponent } from '@pagos/components/pago-info-card/pago-info-card.component';
 import { WebIconComponent } from '@app/shared/components/web-icon/web-icon.component';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-pago-redirect',
@@ -94,9 +95,10 @@ export class PagoRedirectPage implements OnInit {
     const codigo = this._codigo();
     const urlScheme = 'com.unab.reservas';
     const path = `pagos-redirect/reservas?codigo=${codigo}`;
+    const baseUrl = environment.baseUrl;
 
     if (so === 'android') {
-      const fallbackUrl = `https://reservasunab.wgsoluciones.com/${path}`;
+      const fallbackUrl = `${baseUrl}/${path}`;
       window.location.href = `intent://${path}#Intent;scheme=${urlScheme};package=${urlScheme};S.browser_fallback_url=${fallbackUrl};end`;
     } else if (so === 'ios') {
       window.location.href = `${urlScheme}://${path}`;
