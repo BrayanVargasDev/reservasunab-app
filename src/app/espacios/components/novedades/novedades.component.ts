@@ -105,13 +105,13 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
   public descripcion = new FormControl<string>('', [
     Validators.required,
     Validators.minLength(5),
-    Validators.maxLength(13),
+    Validators.maxLength(255),
   ]);
 
   constructor() {
     this.descripcion.valueChanges.subscribe(value => {
-      if (value && value.length > 13) {
-        this.descripcion.setValue(value.slice(0, 13), { emitEvent: false });
+      if (value && value.length > 255) {
+        this.descripcion.setValue(value.slice(0, 255), { emitEvent: false });
       }
     });
   }
