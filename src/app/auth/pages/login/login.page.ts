@@ -51,6 +51,7 @@ export class LoginPage {
   public appService = inject(AppService);
   public authService = inject(AuthService);
   private mobileAuthService = inject(MobileAuthService);
+  mostrarLoginForm = signal(false);
 
   async ngOnInit() {
     // Verificar si hay errores de SSO en los query params
@@ -244,5 +245,9 @@ export class LoginPage {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  toggleLoginForm(): void {
+    this.mostrarLoginForm.set(true);
   }
 }
