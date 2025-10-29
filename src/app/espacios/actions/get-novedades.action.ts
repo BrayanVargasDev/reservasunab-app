@@ -1,27 +1,32 @@
+import { PaginationState } from '@tanstack/angular-table';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '@environments/environment';
 import { type Novedad } from '../interfaces';
-import { GeneralResponse, Meta } from '@shared/interfaces';
+import {
+  PaginatedResponse,
+  Meta,
+} from '@shared/interfaces/paginatd-response.interface';
 
 const BASE_URL = environment.apiUrl;
 
 export const getNovedades = async (
   http: HttpClient,
   idEspacio: number | null,
-): Promise<GeneralResponse<Novedad[]>> => {
-  let url = `${BASE_URL}/espacios/novedades`;
-  const params: string[] = [];
+  params: PaginationState,
+): Promise<PaginatedResponse<Novedad>> => {
+  const queryParams = new URLSearchParams({
+    page: (params.pageIndex + 1).toString(),
+    per_page: params.pageSize.toString(),
+  });
 
   if (idEspacio) {
-    params.push(`id_espacio=${idEspacio}`);
+    queryParams.append('id_espacio', idEspacio.toString());
   }
 
-  if (params.length > 0) {
-    url += `?${params.join('&')}`;
-  }
+  const url = `${BASE_URL}/espacios/novedades?${queryParams.toString()}`;
 
   return firstValueFrom(
-    http.get<GeneralResponse<Novedad[]>>(url)
+    http.get<PaginatedResponse<Novedad>>(url)
   );
 };

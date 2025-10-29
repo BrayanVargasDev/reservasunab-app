@@ -5,12 +5,17 @@ import {
   injectMutation,
   injectQueryClient,
 } from '@tanstack/angular-query-experimental';
+import { PaginationState } from '@tanstack/angular-table';
 import { Novedad } from '../interfaces/novedad.interface';
 import { getNovedades } from '../actions/get-novedades.action';
 import { crearNovedad } from '../actions/crear-novedad.action';
 import { actualizarNovedad } from '../actions/actualizar-novedad.action';
 import { eliminarNovedad } from '../actions/eliminar-novedad.action';
 import { EspaciosConfigService } from './espacios-config.service';
+import {
+  type Meta,
+  PaginatedResponse,
+} from '@shared/interfaces/paginatd-response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -23,16 +28,27 @@ export class NovedadesService {
   private _modoCreacion = signal<boolean>(false);
   private _filaEditando = signal<Record<number, boolean>>({});
   private _novedadSeleccionada = signal<Novedad | null>(null);
+  private _paginacion = signal<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+  private _datosPaginador = signal<Meta | null>(null);
 
   public modoCreacion = computed(() => this._modoCreacion());
   public filaEditando = computed(() => this._filaEditando());
   public novedadSeleccionada = computed(() => this._novedadSeleccionada());
+  public paginacion = computed(() => this._paginacion());
+  public datosPaginador = computed(() => this._datosPaginador());
 
   public novedadesQuery = injectQuery(() => ({
-    queryKey: ['novedades', this.espacioConfigService.idEspacio()],
+    queryKey: ['novedades', this.espacioConfigService.idEspacio(), this.paginacion()],
     queryFn: () =>
-      getNovedades(this.http, this.espacioConfigService.idEspacio()),
+      getNovedades(this.http, this.espacioConfigService.idEspacio(), this.paginacion()),
     enabled: this.espacioConfigService.idEspacio() !== null,
+    select: (response: PaginatedResponse<Novedad>) => {
+      this._datosPaginador.set(response.meta);
+      return response.data;
+    },
   }));
 
   public crearNovedadMutation = injectMutation(() => ({
@@ -79,6 +95,10 @@ export class NovedadesService {
     this._novedadSeleccionada.set(novedad);
   }
 
+  public setPaginacion(paginacion: PaginationState) {
+    this._paginacion.set(paginacion);
+  }
+
   public iniciarCrearNovedad() {
     this.setModoCreacion(true);
     this.setEditandoFila(0, true);
@@ -117,5 +137,10 @@ export class NovedadesService {
     this._modoCreacion.set(false);
     this._filaEditando.set({});
     this._novedadSeleccionada.set(null);
+    this._paginacion.set({
+      pageIndex: 0,
+      pageSize: 10,
+    });
+    this._datosPaginador.set(null);
   }
 }

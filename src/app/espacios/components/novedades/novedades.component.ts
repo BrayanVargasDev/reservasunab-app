@@ -137,11 +137,6 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     expanded: {} as ExpandedState,
   });
 
-  public paginacion = signal<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
-
   private columnasPorDefecto = signal<ColumnDef<Novedad>[]>([
     {
       id: 'expansor',
@@ -289,7 +284,7 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     autoResetPageIndex: false,
     state: {
       expanded: this.tableState().expanded,
-      pagination: this.paginacion(),
+      pagination: this.novedadesService.paginacion(),
     },
     onExpandedChange: estado => {
       const newExpanded =
@@ -304,9 +299,9 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
     },
     onPaginationChange: estado => {
       const newPagination =
-        typeof estado === 'function' ? estado(this.paginacion()) : estado;
+        typeof estado === 'function' ? estado(this.novedadesService.paginacion()) : estado;
 
-      this.paginacion.set(newPagination);
+      this.novedadesService.setPaginacion(newPagination);
     },
   }));
 
@@ -469,7 +464,7 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   get novedadesQuery() {
-    const novedades = this.novedadesService.novedadesQuery.data()?.data || [];
+    const novedades = this.novedadesService.novedadesQuery.data() || [];
 
     if (this.modoCreacion()) {
       const novedadVacia: Novedad = {
@@ -763,7 +758,7 @@ export class NovedadesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public onPageChange(estado: PaginationState): void {
-    this.paginacion.set(estado);
+    this.novedadesService.setPaginacion(estado);
   }
 
   private marcarTodosTouched() {
