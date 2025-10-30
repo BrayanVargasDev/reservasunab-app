@@ -344,10 +344,14 @@ export class TablaReservasComponent {
   }
 
   private esReservaPasada(reserva: Reserva): boolean {
-    const ahora = new Date();
-    const inicio = this.combinarFechaYHora(reserva.fecha, reserva.hora_inicio);
-    if (!inicio) return false; // Si no podemos determinar, no bloquear
-    return inicio.getTime() < ahora.getTime();
+    const hoy = new Date();
+    const fechaReserva = new Date(reserva.fecha);
+    
+    // Solo comparar fechas, ignorar la hora
+    hoy.setHours(0, 0, 0, 0);
+    fechaReserva.setHours(0, 0, 0, 0);
+    
+    return fechaReserva.getTime() < hoy.getTime();
   }
 
   public cancelarReserva(reserva: Reserva) {
