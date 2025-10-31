@@ -48,6 +48,9 @@
         }
       </button>
 
+      <!-- Mover la alerta aquí para que esté disponible siempre -->
+      <ng-template #alertaLogin></ng-template>
+
       <!-- Enlace alternativo -->
       <div
         *ngIf="!mostrarLoginForm()"
@@ -178,8 +181,6 @@
             ¿Olvidaste tu contraseña?
           </a>
         </div> -->
-
-        <ng-template #alertaLogin></ng-template>
 
         <button
           type="submit"

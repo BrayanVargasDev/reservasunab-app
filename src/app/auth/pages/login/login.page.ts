@@ -129,7 +129,6 @@ export class LoginPage {
       this.authService.clearSession();
 
       const success = await this.mobileAuthService.loginWithGoogle();
-
       if (!success) {
         console.error('Login con Google falló');
         this.alertaService.error(
