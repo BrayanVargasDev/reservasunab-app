@@ -204,47 +204,18 @@
                 </div>
                 }
               </div>
-              <div class="flex flex-col w-full md:w-1/2">
-                <label
-                  class="label text-sm font-[600] text-base-content mb-1"
-                  for="fechaNacimiento"
-                >
-                  Fecha de Nacimiento <span class="text-error">*</span>
-                </label>
-                <label class="input input-bordered w-full h-11 rounded-box">
-                  <input
-                    type="text"
-                    #fechaNacimientoPicker
-                    id="fechaNacimiento"
-                    placeholder="dd/mm/yyyy"
-                    formControlName="fechaNacimiento"
-                    autocomplete="ignore_random"
-                    autocorrect="off"
-                    spellcheck="off"
-                    [ngClass]="{
-                      'pika-single grow w-full h-11 rounded-box placeholder:text-xs md:placeholder:text-sm': true,
-                      'input-error': formUtils.esCampoInvalido(
-                        perfilForm,
-                        'fechaNacimiento'
-                      )
-                    }"
-                  />
-                  <app-web-icon
-                    [nombreIcono]="'calendar-outline'"
-                    [estilos]="'h-5 w-5'"
-                  ></app-web-icon>
-                </label>
+              <!-- Campo fechaNacimiento oculto -->
+              <div class="hidden">
+                <input
+                  type="text"
+                  #fechaNacimientoPicker
+                  id="fechaNacimiento"
+                  formControlName="fechaNacimiento"
+                  autocomplete="ignore_random"
+                  autocorrect="off"
+                  spellcheck="off"
+                />
                 <div #contenedorCalendario class="w-full relative"></div>
-                @if (formUtils.esCampoInvalido(perfilForm, 'fechaNacimiento')) {
-                <div class="text-sm text-error">
-                  {{
-                    formUtils.obtenerErrorDelCampo(
-                      perfilForm,
-                      'fechaNacimiento'
-                    )
-                  }}
-                </div>
-                }
               </div>
             </div>
           </fieldset>
@@ -257,7 +228,7 @@
 
             <!-- Tipo y Número de Documento -->
             <div class="flex flex-col md:flex-row w-full gap-2 md:gap-3 mb-4">
-              <div class="flex flex-col w-full md:w-2/6">
+              <div class="flex flex-col w-full md:w-1/2">
                 <label
                   class="label text-sm font-[600] text-base-content mb-1"
                   for="tipoDocumento"
@@ -439,6 +410,7 @@
                   id="direccion"
                   formControlName="direccion"
                   placeholder="Calle X # 123A-45"
+                  maxlength="75"
                   (keydown)="bloquearPuntoYComa($event)"
                   (input)="sanearDireccionInput('direccion')"
                   [ngClass]="{
@@ -996,6 +968,7 @@
                   id="fdireccion"
                   formControlName="direccion"
                   placeholder="Calle X # 123A-45"
+                  maxlength="75"
                   [ngClass]="{
                     'input input-bordered w-full h-11 rounded-box placeholder:text-gray-400 placeholder:accent-base-300 placeholder:text-sm': true,
                     'input-error': formUtils.esCampoInvalido(

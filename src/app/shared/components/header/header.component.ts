@@ -17,6 +17,7 @@ import { WebIconComponent } from '../web-icon/web-icon.component';
 import { NavigationService } from '@shared/services/navigation.service';
 import { UsuarioLogueado } from '@auth/interfaces/usuario-logueado.interface';
 import { UpperFirstPipe } from '@shared/pipes';
+import { STORAGE_KEYS } from '@auth/constants/storage.constants';
 
 @Component({
   selector: 'app-header',
@@ -145,5 +146,16 @@ export class HeaderComponent implements OnInit {
     }
 
     return true;
+  });
+
+  // Función para verificar si estamos en modo completar perfil
+  isCompleteProfileMode = computed(() => {
+    const vieneDeUrl = this.router.url.includes('completeProfile=true');
+    
+    if (vieneDeUrl) return true;
+
+    const vieneDeStorage = window.localStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED);
+    
+    return vieneDeStorage !== 'true';
   });
 }

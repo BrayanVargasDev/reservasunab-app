@@ -14,16 +14,18 @@
       </button>
       }
 
-      <a
-        (click)="navegarAlInicio()"
-        class="text-xl text-secondary-content font-bold ml-3 lg:ml-0 cursor-pointer"
+      <!-- Logo unificado con lógica condicional -->
+      <div 
+        class="text-xl text-secondary-content font-bold ml-3 lg:ml-0"
+        [class.cursor-pointer]="!isCompleteProfileMode()"
+        (click)="isCompleteProfileMode() ? null : navegarAlInicio()"
       >
         <img
           src="assets/icon/logo-universidad-unab.png"
           class="inline-block w-32 brightness-0 invert"
           alt="Logo"
         />
-      </a>
+      </div>
     </div>
 
     <div class="navbar-end gap-2">

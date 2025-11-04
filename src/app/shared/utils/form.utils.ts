@@ -20,6 +20,7 @@ export class FormUtils {
     const opcionesErrerores: { [key: string]: any } = {
       required: 'Este campo es requerido',
       minlength: `Mínimo de ${errors['minlength']?.requiredLength} caracteres.`,
+      maxlength: `Máximo de ${errors['maxlength']?.requiredLength} caracteres.`,
       min: `Valor mínimo de ${errors['min']?.min}`,
       email: `El valor ingresado no es un correo electrónico`,
       emailTomado: `El correo electrónico ya está siendo usado por otro usuario`,

@@ -148,7 +148,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         Validators.minLength(10),
       ],
     ],
-    direccion: ['', [Validators.required]],
+    direccion: ['', [Validators.required, Validators.maxLength(75)]],
     fechaNacimiento: [''],
     documento: [
       '',
@@ -174,7 +174,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       tipoDocumento: [''],
       digitoVerificacion: [''],
       ciudadExpedicion: [''],
-      direccion: [''],
+      direccion: ['', [Validators.maxLength(75)]],
       ciudadResidencia: [''],
       tipoPersona: [''],
       regimenTributario: [''],
@@ -264,7 +264,7 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
           factGroup
             .get('ciudadExpedicion')
             ?.addValidators([Validators.required]);
-          factGroup.get('direccion')?.addValidators([Validators.required]);
+          factGroup.get('direccion')?.addValidators([Validators.required, Validators.maxLength(75)]);
           factGroup
             .get('ciudadResidencia')
             ?.addValidators([Validators.required]);
