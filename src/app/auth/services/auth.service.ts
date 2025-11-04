@@ -269,6 +269,7 @@ export class AuthService implements OnDestroy {
       const profileCompleted = response.data.perfil_completo;
 
       if (profileCompleted) {
+        this.storage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true');
         this.globalLoader.updateText(
           'Perfil completo',
           'Cargando configuración...',
