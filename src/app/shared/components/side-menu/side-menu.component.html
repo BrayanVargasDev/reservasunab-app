@@ -1,4 +1,4 @@
-@if (!appService.esMovil()) {
+@if (!appService.esMovil() && perfilCompletado()) {
 <ul class="menu menu-xs md:menu-md !w-full bg-base-100 rounded-box shadow-md">
   @for (item of menuItems(); track item.nombre) {
   <li>

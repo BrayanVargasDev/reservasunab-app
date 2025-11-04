@@ -1,14 +1,7 @@
 import { computed, inject, Injectable, signal, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { from, BehaviorSubject, Observable } from 'rxjs';
-import { Router, NavigationEnd } from '@angular/router';
 
-import {
-  injectMutation,
-  QueryClient,
-  injectQuery,
-} from '@tanstack/angular-query-experimental';
+import { QueryClient, injectQuery } from '@tanstack/angular-query-experimental';
 
 import {
   loginAction,
@@ -18,19 +11,13 @@ import {
   checkTermsAccepted,
   checkProfileCompleted,
   intercambiarTokenAction,
-  refreshTokenAction,
   checkStatus,
 } from '../actions';
 import { Registro, UsuarioLogueado } from '../interfaces';
-import { CredencialesLogin } from '@auth/interfaces';
 import { GeneralResponse } from '@shared/interfaces';
-import { Rol } from '@permisos/interfaces';
 import { STORAGE_KEYS, AUTH_CONFIG } from '../constants/storage.constants';
-import { ValidationCacheService } from './validation-cache.service';
 import { StorageService } from '@shared/services/storage.service';
-import { IndexedDbService } from '@shared/services/indexed-db.service';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
-import { rxResource } from '@angular/core/rxjs-interop';
 
 type EstadoAutenticacion = 'authenticated' | 'unauthenticated' | 'loading';
 
@@ -40,7 +27,6 @@ type EstadoAutenticacion = 'authenticated' | 'unauthenticated' | 'loading';
 export class AuthService implements OnDestroy {
   private http = inject(HttpClient);
   private qc = inject(QueryClient);
-  private router = inject(Router);
   private globalLoader = inject(GlobalLoaderService);
   private storage = inject(StorageService);
   private _estadoAutenticacion = signal<EstadoAutenticacion>('loading');
@@ -166,9 +152,9 @@ export class AuthService implements OnDestroy {
   clearSession(fromLogout: boolean = false): void {
     this.storage.removeItem(STORAGE_KEYS.TOKEN);
     this.storage.removeItem(STORAGE_KEYS.USER);
+    this.storage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
 
     if (fromLogout) {
-      this.storage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
       this.storage.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
       this.storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       this.storage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);

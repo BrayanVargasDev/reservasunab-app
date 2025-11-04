@@ -1,13 +1,7 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  computed,
-} from '@angular/core';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
@@ -28,6 +22,8 @@ import { AuthService } from '@auth/services/auth.service';
 import { PermissionService } from '@shared/services/permission.service';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Pantalla } from '../../interfaces/pantalla.interface';
+import { STORAGE_KEYS } from '@app/auth/constants/storage.constants';
+import { StorageService } from '@shared/services/storage.service';
 
 @Component({
   selector: 'app-side-menu',
@@ -45,8 +41,8 @@ import { Pantalla } from '../../interfaces/pantalla.interface';
 })
 export class SideMenuComponent {
   private authServicio = inject(AuthService);
-  private router = inject(Router);
   private permissionService = inject(PermissionService);
+  private storageService = inject(StorageService);
 
   public appService = inject(AppService);
 
@@ -56,7 +52,9 @@ export class SideMenuComponent {
   isMenuOpen = signal(false);
   usuarioActual = computed(() => this.authServicio.usuario());
 
-  private toggleMenuSubscription?: () => void;
+  perfilCompletado = signal(
+    this.storageService.getItem(STORAGE_KEYS.PROFILE_COMPLETED) === 'true',
+  );
 
   constructor() {
     addIcons({
@@ -68,6 +66,12 @@ export class SideMenuComponent {
       cardOutline,
       peopleOutline,
       personOutline,
+    });
+
+    this.storageService.changes.pipe(takeUntilDestroyed()).subscribe(event => {
+      if (event?.key === STORAGE_KEYS.PROFILE_COMPLETED) {
+        this.perfilCompletado.set(event.newValue === 'true');
+      }
     });
   }
 

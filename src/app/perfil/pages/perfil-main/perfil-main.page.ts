@@ -1,4 +1,5 @@
 import {
+  ChangeDetectorRef,
   Component,
   OnInit,
   OnDestroy,
@@ -14,7 +15,6 @@ import {
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
@@ -27,19 +27,16 @@ import {
   takeUntil,
   debounceTime,
   distinctUntilChanged,
-  map,
   startWith,
 } from 'rxjs';
 import Pikaday from 'pikaday';
 import { format, parse } from 'date-fns';
-import { injectQuery } from '@tanstack/angular-query-experimental';
 
 import { PerfilService } from '@app/perfil/services/perfil.service';
 import { AppService } from '@app/app.service';
 import { FormUtils } from '@shared/utils/form.utils';
 import { AlertasService } from '@shared/services/alertas.service';
 import { NavigationService } from '@shared/services/navigation.service';
-import { ValidationCacheService } from '@auth/services/validation-cache.service';
 import { InputSoloNumerosDirective } from '@shared/directives/input-solo-numeros.directive';
 import { Ciudad } from '@shared/interfaces';
 import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
@@ -48,6 +45,8 @@ import { UpperFirstPipe } from '@shared/pipes/upper-first.pipe';
 import { BeneficiariosComponent } from '@app/perfil/components/beneficiarios/beneficiarios.component';
 import { TipoUsuario } from '@shared/enums';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
+import { STORAGE_KEYS } from '@app/auth/constants/storage.constants';
+import { StorageService } from '@shared/services/storage.service';
 
 @Component({
   selector: 'app-perfil-main',
@@ -73,12 +72,12 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
+  private storageService = inject(StorageService);
+  private changeDetector = inject(ChangeDetectorRef);
   private alertaService = inject(AlertasService);
   private navigationService = inject(NavigationService);
-  private validationCache = inject(ValidationCacheService);
   private globalLoader = inject(GlobalLoaderService);
   private pikaday!: Pikaday;
-  private http = inject(HttpClient);
   private inicializandoFormulario = false;
 
   public perfilService = inject(PerfilService);
@@ -87,7 +86,16 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   public avatarUrl = signal<string>('');
 
   public isCompleteProfileMode = computed(() => {
-    return this.route.snapshot.queryParams['completeProfile'] === 'true';
+    const vieneDeUrl =
+      this.route.snapshot.queryParams['completeProfile'] === 'true';
+
+    if (vieneDeUrl) return true;
+
+    const vieneDeStorage = window.localStorage.getItem(
+      STORAGE_KEYS.PROFILE_COMPLETED,
+    );
+
+    return vieneDeStorage === 'true';
   });
 
   public selectedTab = signal<string>('perfil');
@@ -333,7 +341,13 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
           const confirmado = await this.alertaService.confirmacion({
             tipo: 'question',
             titulo: 'Cargar datos de facturación',
-            mensaje: `Se encontraron datos de facturación para el documento <strong>${codigoDoc} ${persona.numero_documento} ${persona.primer_nombre}${persona.segundo_nombre ? ' ' + persona.segundo_nombre : ''} ${persona.primer_apellido ?? ''}${persona.segundo_apellido ? ' ' + persona.segundo_apellido : ''}</strong>. ¿Deseas cargarlos y bloquear el formulario?`,
+            mensaje: `Se encontraron datos de facturación para el documento <strong>${codigoDoc} ${
+              persona.numero_documento
+            } ${persona.primer_nombre}${
+              persona.segundo_nombre ? ' ' + persona.segundo_nombre : ''
+            } ${persona.primer_apellido ?? ''}${
+              persona.segundo_apellido ? ' ' + persona.segundo_apellido : ''
+            }</strong>. ¿Deseas cargarlos y bloquear el formulario?`,
             referencia: this.alertaPerfil(),
             botones: [
               { texto: 'Cancelar', tipo: 'cancelar', estilo: 'btn-ghost' },
@@ -1122,7 +1136,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     // Preparar datos del perfil
     const perfilData = { ...this.perfilForm.value };
     // Si es NIT en perfil principal y el apellido está vacío, enviarlo como espacio
-    if (this.esNitPerfil() && (!perfilData.apellido || perfilData.apellido.trim() === '')) {
+    if (
+      this.esNitPerfil() &&
+      (!perfilData.apellido || perfilData.apellido.trim() === '')
+    ) {
       perfilData.apellido = '';
     }
 
@@ -1131,7 +1148,10 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     if (usaFacturacion && facturacion) {
       facturacionFinal = { ...facturacion };
       // Si es NIT y el apellido está vacío, enviarlo como espacio
-      if (this.esNitFacturacion() && (!facturacionFinal.apellido || facturacionFinal.apellido.trim() === '')) {
+      if (
+        this.esNitFacturacion() &&
+        (!facturacionFinal.apellido || facturacionFinal.apellido.trim() === '')
+      ) {
         facturacionFinal.apellido = '';
       }
     }
@@ -1160,11 +1180,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       // Mover foco al botón de guardar para confirmar la acción
       this.manejarFocoPostAccion('boton-guardar', 500);
 
-      if (!this.isCompleteProfileMode()) {
-        return;
-      }
-
-      this.validationCache.setPerfilCompletado(true);
+      this.storageService.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true');
+      this.changeDetector.markForCheck();
 
       await new Promise(resolve => setTimeout(resolve, 100));
 

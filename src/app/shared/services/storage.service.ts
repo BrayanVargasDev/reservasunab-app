@@ -8,19 +8,19 @@ export interface StorageChangeEvent {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StorageService {
   private changes$ = new BehaviorSubject<StorageChangeEvent | null>(null);
 
   constructor() {
     // Escuchar cambios en localStorage de otras pestañas
-    window.addEventListener('storage', (event) => {
+    window.addEventListener('storage', event => {
       if (event.key && event.storageArea === localStorage) {
         this.changes$.next({
           key: event.key,
           oldValue: event.oldValue,
-          newValue: event.newValue
+          newValue: event.newValue,
         });
       }
     });
@@ -42,7 +42,7 @@ export class StorageService {
       this.changes$.next({
         key,
         oldValue,
-        newValue: value
+        newValue: value,
       });
     } catch (error) {
       console.error('Error writing to localStorage:', error);
@@ -56,7 +56,7 @@ export class StorageService {
       this.changes$.next({
         key,
         oldValue,
-        newValue: null
+        newValue: null,
       });
     } catch (error) {
       console.error('Error removing from localStorage:', error);
