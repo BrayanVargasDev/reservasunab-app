@@ -33,7 +33,7 @@ export class AuthService implements OnDestroy {
   private _usuario = signal<UsuarioLogueado | null>(null);
 
   private _accessToken = signal<string | null>(
-    localStorage.getItem(STORAGE_KEYS.TOKEN),
+    this.storage.getItem(STORAGE_KEYS.TOKEN),
   );
 
   private _isLoading = signal<boolean>(false);
@@ -152,10 +152,8 @@ export class AuthService implements OnDestroy {
   clearSession(fromLogout: boolean = false): void {
     this.storage.removeItem(STORAGE_KEYS.TOKEN);
     this.storage.removeItem(STORAGE_KEYS.USER);
-    this.storage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
 
     if (fromLogout) {
-      this.storage.removeItem(STORAGE_KEYS.TERMS_ACCEPTED);
       this.storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       this.storage.removeItem(STORAGE_KEYS.LAST_ACTIVITY);
     }
@@ -247,8 +245,10 @@ export class AuthService implements OnDestroy {
 
   public async checkTerminosAceptados(): Promise<boolean> {
     try {
+      console.log('[AuthService] Verificando términos aceptados...');
       const response = await checkTermsAccepted(this.http);
       const termsAccepted = response.data.terminos_condiciones;
+      console.log('[AuthService] Términos aceptados:', { termsAccepted });
 
       if (termsAccepted) {
         this.globalLoader.updateText(
@@ -259,14 +259,17 @@ export class AuthService implements OnDestroy {
 
       return termsAccepted;
     } catch (error) {
+      console.error('[AuthService] Error al verificar términos:', error);
       return false;
     }
   }
 
   public async checkPerfilCompletado(): Promise<boolean> {
     try {
+      console.log('[AuthService] Verificando perfil completado...');
       const response = await checkProfileCompleted(this.http);
       const profileCompleted = response.data.perfil_completo;
+      console.log('[AuthService] Perfil completado:', { profileCompleted });
 
       if (profileCompleted) {
         this.storage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true');
@@ -278,6 +281,7 @@ export class AuthService implements OnDestroy {
 
       return profileCompleted;
     } catch (error) {
+      console.error('[AuthService] Error al verificar perfil:', error);
       return false;
     }
   }
@@ -300,18 +304,28 @@ export class AuthService implements OnDestroy {
 
   public async validarTerminosYPerfil(): Promise<string> {
     try {
+      console.log('[AuthService] Iniciando validación de términos y perfil...');
+      
       const termsAccepted = await this.checkTerminosAceptados();
       if (!termsAccepted) {
-        return '/auth/terms-conditions';
+        console.log('[AuthService] Términos no aceptados, redirigiendo a terms-conditions');
+        this.globalLoader.hide();
+        return '/terms-conditions';
       }
 
       const profileCompleted = await this.checkPerfilCompletado();
       if (!profileCompleted) {
+        console.log('[AuthService] Perfil no completado, redirigiendo a perfil');
+        this.globalLoader.hide();
         return '/perfil';
       }
 
+      console.log('[AuthService] Validación completada, redirigiendo al dashboard');
+      this.globalLoader.hide();
       return '/';
     } catch (error) {
+      console.error('[AuthService] Error en validación de términos y perfil:', error);
+      this.globalLoader.hide();
       return '/';
     }
   }

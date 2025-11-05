@@ -24,28 +24,42 @@ export class NavigationService {
 
   async navegarAPrimeraPaginaDisponible(): Promise<void> {
     try {
+      console.log('[NavigationService] Iniciando navegación a primera página disponible...');
+      
       const usuario = this.authService.usuario();
       const pantallasData = this.appService.pantallasQuery.data();
 
+      console.log('[NavigationService] Usuario:', usuario?.tipo_usuario);
+      console.log('[NavigationService] Pantallas data:', pantallasData?.length);
+
       if (!usuario) {
-        this.router.navigate(['/auth/login'], { replaceUrl: true });
+        console.log('[NavigationService] No hay usuario, navegando a login');
+        await this.router.navigate(['/auth/login'], { replaceUrl: true });
+        return;
       }
 
       if (!pantallasData || pantallasData.length === 0) {
-        this.router.navigate(['/reservas'], { replaceUrl: true });
+        console.log('[NavigationService] No hay pantallas data, navegando a reservas como fallback');
+        await this.router.navigate(['/reservas'], { replaceUrl: true });
+        return;
       }
 
       const pantallasDisponibles = this.obtenerPantallasDisponibles();
+      console.log('[NavigationService] Pantallas disponibles:', pantallasDisponibles);
 
       if (pantallasDisponibles.length > 0) {
         const primeraPantalla = pantallasDisponibles[0];
-
-        this.router.navigate([primeraPantalla.ruta]);
+        console.log('[NavigationService] Navegando a primera pantalla:', primeraPantalla.ruta);
+        await this.router.navigate([primeraPantalla.ruta], { replaceUrl: true });
+        return;
       } else {
-        this.router.navigate(['/reservas'], { replaceUrl: true });
+        console.log('[NavigationService] No hay pantallas disponibles, navegando a reservas');
+        await this.router.navigate(['/reservas'], { replaceUrl: true });
+        return;
       }
     } catch (error) {
-      this.router.navigate(['/reservas'], { replaceUrl: true });
+      console.error('[NavigationService] Error durante navegación:', error);
+      await this.router.navigate(['/reservas'], { replaceUrl: true });
     }
   }
 

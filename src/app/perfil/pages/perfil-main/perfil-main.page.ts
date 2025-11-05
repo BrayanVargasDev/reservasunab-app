@@ -47,6 +47,8 @@ import { TipoUsuario } from '@shared/enums';
 import { GlobalLoaderService } from '@shared/services/global-loader.service';
 import { STORAGE_KEYS } from '@app/auth/constants/storage.constants';
 import { StorageService } from '@shared/services/storage.service';
+import { UserStateEventsService } from '@shared/services/user-state-events.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-perfil-main',
@@ -77,6 +79,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   private alertaService = inject(AlertasService);
   private navigationService = inject(NavigationService);
   private globalLoader = inject(GlobalLoaderService);
+  private userStateEvents = inject(UserStateEventsService);
+  private authService = inject(AuthService);
   private pikaday!: Pikaday;
   private inicializandoFormulario = false;
 
@@ -89,13 +93,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     const vieneDeUrl =
       this.route.snapshot.queryParams['completeProfile'] === 'true';
 
-    if (vieneDeUrl) return true;
-
-    const vieneDeStorage = window.localStorage.getItem(
-      STORAGE_KEYS.PROFILE_COMPLETED,
-    );
-
-    return vieneDeStorage === 'true';
+    // Si viene de URL con parámetro completeProfile, está en modo completar
+    return vieneDeUrl;
   });
 
   public selectedTab = signal<string>('perfil');
@@ -1106,6 +1105,15 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    // Verificar si el perfil ya estaba completado antes de actualizar
+    let perfilYaEstabaCompletado = false;
+    try {
+      perfilYaEstabaCompletado = await this.authService.checkPerfilCompletado();
+      console.log('[PerfilMain] Perfil ya estaba completado antes de actualizar:', perfilYaEstabaCompletado);
+    } catch (error) {
+      console.warn('[PerfilMain] Error verificando estado previo del perfil:', error);
+    }
+
     this.anunciarEstadoCarga('Guardando cambios del perfil...', 'loading');
 
     const fechaNacimiento = this.perfilForm.value.fechaNacimiento
@@ -1180,21 +1188,39 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       // Mover foco al botón de guardar para confirmar la acción
       this.manejarFocoPostAccion('boton-guardar', 500);
 
-      this.storageService.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true');
       this.changeDetector.markForCheck();
 
+      // Pequeña pausa para que se complete la actualización del perfil
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      try {
-        await this.navigationService.navegarAPrimeraPaginaDisponible();
-
-        setTimeout(() => {
-          const currentUrl = this.router.url.split('?')[0];
-          this.router.navigateByUrl(currentUrl, { replaceUrl: true });
-        }, 100);
-      } catch (error) {
-        const navegandoFallback = await this.router.navigate(['/reservas']);
+      // Decidir si navegar o quedarse según si era la primera vez completando el perfil
+      if (!perfilYaEstabaCompletado) {
+        console.log('[PerfilMain] Primera vez completando perfil, navegando a página correspondiente...');
+        
+        try {
+          // Navegar a la primera página disponible según el tipo de usuario
+          await this.navigationService.navegarAPrimeraPaginaDisponible();
+          console.log('[PerfilMain] Navegación exitosa');
+          
+          // Asegurar que se limpien los queryParams después de la navegación
+          setTimeout(() => {
+            const currentRoute = this.router.url.split('?')[0];
+            if (this.router.url !== currentRoute) {
+              console.log('[PerfilMain] Limpiando queryParams de la URL');
+              this.router.navigate([currentRoute], { replaceUrl: true });
+            }
+          }, 100);
+        } catch (error) {
+          console.error('[PerfilMain] Error en navegación, usando fallback:', error);
+          // Si falla, navegar al dashboard como fallback
+          await this.router.navigate(['/'], { replaceUrl: true });
+        }
+      } else {
+        console.log('[PerfilMain] Perfil ya estaba completado, manteniéndose en página de perfil');
       }
+
+      // Emitir evento de perfil completado para refrescar estado (siempre)
+      this.userStateEvents.emitProfileCompleted();
     } catch (error) {
       this.anunciarEstadoCarga('Error al guardar los cambios', 'error');
       this.alertaService.error(

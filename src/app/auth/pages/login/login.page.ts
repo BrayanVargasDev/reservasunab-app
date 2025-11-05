@@ -194,18 +194,24 @@ export class LoginPage {
   private async navegarDespesDeLogin() {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'];
     try {
+      console.log('[Login] Iniciando navegación después del login...');
       const dest = await this.authService.validarTerminosYPerfil();
+      console.log('[Login] Destino de navegación:', { dest });
 
       if (dest && dest !== '/') {
+        console.log('[Login] Navegando a:', dest);
         return this.router.navigateByUrl(dest, { replaceUrl: true });
       }
 
       if (returnUrl && returnUrl !== '/') {
+        console.log('[Login] Navegando a returnUrl:', returnUrl);
         return this.router.navigateByUrl(returnUrl, { replaceUrl: true });
       }
 
+      console.log('[Login] Navegando al dashboard');
       return this.router.navigateByUrl('/', { replaceUrl: true });
-    } catch {
+    } catch (error) {
+      console.error('[Login] Error en navegación después del login:', error);
       return this.router.navigateByUrl('/reservas');
     }
   }

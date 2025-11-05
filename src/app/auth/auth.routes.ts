@@ -12,13 +12,6 @@ export const authRoutes: Routes = [
           import('@auth/pages/login/login.page').then(m => m.LoginPage),
       },
       {
-        path: 'terms-conditions',
-        loadComponent: () =>
-          import('@auth/pages/terms-conditions/terms-conditions.page').then(
-            m => m.TermsConditionsPage,
-          ),
-      },
-      {
         path: 'callback',
         loadComponent: () =>
           import('@auth/pages/callback/callback.page').then(
