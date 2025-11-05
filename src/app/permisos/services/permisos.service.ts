@@ -35,7 +35,7 @@ export class PermisosService {
 
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
 
   private _datosPaginador = signal<Meta | null>(null);
@@ -45,7 +45,7 @@ export class PermisosService {
   private _filaRolEditando = signal<{ [id: number]: boolean }>({});
   private _paginacionRoles = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   private _datosPaginadorRoles = signal<Meta | null>(null);
 
@@ -238,7 +238,7 @@ export class PermisosService {
     this._permisosNuevoRol.set([]);
     this._paginacionRoles.set({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
     });
     this._datosPaginadorRoles.set(null);
   }

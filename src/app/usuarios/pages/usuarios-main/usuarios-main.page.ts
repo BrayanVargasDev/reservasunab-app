@@ -84,7 +84,7 @@ import { PERMISOS_USUARIOS } from '@shared/constants';
     UpperFirstPipe,
   ],
   host: {
-    class: 'flex flex-col h-full w-full sm:pl-3',
+    class: 'flex flex-col w-full h-full sm:pl-3 relative overflow-y-auto',
   },
 })
 export class UsuariosMainPage implements OnInit, OnDestroy {

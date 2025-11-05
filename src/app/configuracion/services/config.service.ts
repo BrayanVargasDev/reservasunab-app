@@ -50,7 +50,7 @@ export class ConfigService {
   private _filaCategoriaEditando = signal<{ [id: number]: boolean }>({});
   private _paginacionCategorias = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   private _datosPaginadorCategorias = signal<Meta | null>(null);
 
@@ -59,7 +59,7 @@ export class ConfigService {
   private _filaGrupoEditando = signal<{ [id: number]: boolean }>({});
   private _paginacionGrupos = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   private _datosPaginadorGrupos = signal<Meta | null>(null);
 
@@ -68,7 +68,7 @@ export class ConfigService {
   private _filaElementoEditando = signal<{ [id: number]: boolean }>({});
   private _paginacionElementos = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   private _datosPaginadorElementos = signal<Meta | null>(null);
   private _elementoSeleccionado = signal<Elemento | null>(null);
@@ -118,7 +118,22 @@ export class ConfigService {
       getGrupos(this.http, {
         ...this.paginacionGrupos(),
       }),
-    select: (response: PaginatedResponse<Grupo>) => response.data,
+    select: (response: any) => {
+      // Construir meta desde la respuesta de Laravel
+      const meta: Meta = {
+        current_page: response.current_page || 1,
+        from: response.from || 1,
+        last_page: response.last_page || 1,
+        links: response.links || [],
+        path: response.path || '',
+        per_page: response.per_page || 25,
+        to: response.to || response.data?.length || 0,
+        total: response.total || response.data?.length || 0,
+      };
+      
+      this._datosPaginadorGrupos.set(meta);
+      return response.data || [];
+    },
   }));
 
   public elementosQuery = injectQuery(() => ({
@@ -128,7 +143,27 @@ export class ConfigService {
         ...this.paginacionElementos(),
         fromCrud: true,
       }),
-    select: (response: PaginatedResponse<Elemento>) => response.data,
+    select: (response: any) => {
+      // Para elementos, la respuesta tiene estructura diferente
+      const data = response.data || [];
+      const currentPage = this.paginacionElementos().pageIndex + 1;
+      const perPage = this.paginacionElementos().pageSize;
+      const total = data.length; // Como no viene paginación del servidor, usamos la longitud
+      
+      const meta: Meta = {
+        current_page: currentPage,
+        from: data.length > 0 ? ((currentPage - 1) * perPage) + 1 : 0,
+        last_page: Math.ceil(total / perPage) || 1,
+        links: [],
+        path: '',
+        per_page: perPage,
+        to: Math.min(currentPage * perPage, total),
+        total: total,
+      };
+      
+      this._datosPaginadorElementos.set(meta);
+      return data;
+    },
   }));
 
   // Métodos para Categorías
@@ -290,7 +325,7 @@ export class ConfigService {
     this._categoriaSeleccionada.set(null);
     this._paginacionCategorias.set({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
     });
     this._datosPaginadorCategorias.set(null);
 
@@ -299,7 +334,7 @@ export class ConfigService {
     this._filaGrupoEditando.set({});
     this._paginacionGrupos.set({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
     });
     this._datosPaginadorGrupos.set(null);
 
@@ -308,7 +343,7 @@ export class ConfigService {
     this._filaElementoEditando.set({});
     this._paginacionElementos.set({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
     });
     this._datosPaginadorElementos.set(null);
   }

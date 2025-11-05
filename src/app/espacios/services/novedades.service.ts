@@ -30,7 +30,7 @@ export class NovedadesService {
   private _novedadSeleccionada = signal<Novedad | null>(null);
   private _paginacion = signal<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   private _datosPaginador = signal<Meta | null>(null);
 
@@ -139,7 +139,7 @@ export class NovedadesService {
     this._novedadSeleccionada.set(null);
     this._paginacion.set({
       pageIndex: 0,
-      pageSize: 10,
+      pageSize: 25,
     });
     this._datosPaginador.set(null);
   }

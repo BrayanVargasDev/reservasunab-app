@@ -276,7 +276,6 @@ export class GruposComponent implements OnInit, OnDestroy {
         if (this.configService.pestana() !== 'grupos') {
           this.nombre.reset();
           this.grupoEnEdicion.set(null);
-          this.configService.resetAll();
         }
       },
       {

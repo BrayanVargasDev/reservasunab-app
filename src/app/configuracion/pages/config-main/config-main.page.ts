@@ -53,10 +53,6 @@ export default class ConfigMainPageComponent {
     this.configService.setPestana(pestana);
     this.configService.setModoCreacionCategoria(false);
     this.appService.setEditando(false);
-    this.configService.setPaginacionCategorias({
-      pageIndex: 0,
-      pageSize: 10,
-    });
   }
 
   ngOnInit() {

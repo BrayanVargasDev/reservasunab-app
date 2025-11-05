@@ -59,7 +59,7 @@
   responsiveTable
   #tablaGrupo="responsiveTable"
   [table]="tablaGrupos()"
-  class="table w-full rounded-md table-sm sm:table-md"
+  class="table w-full rounded-md table-sm sm:table-md overflow-x-auto"
 >
   <thead class="sticky top-0 z-20 bg-base-100">
     @for (headerGroup of tablaGrupos().getHeaderGroups(); track headerGroup.id)
@@ -170,7 +170,7 @@
 <!-- Paginador -->
 <app-paginador
   [ngClass]="
-    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 rounded-b-box'
   "
   [estado]="configService.paginacionGrupos()"
   [paginacion]="configService.datosPaginadorGrupos() ?? null"

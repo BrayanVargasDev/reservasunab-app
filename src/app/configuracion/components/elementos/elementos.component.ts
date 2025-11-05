@@ -350,7 +350,6 @@ export class ElementosComponent {
           this.valorExterno.reset(null);
           this.valorEgresado.reset(null);
           this.elementoEnEdicion.set(null);
-          this.configService.resetAll();
         }
       },
       {

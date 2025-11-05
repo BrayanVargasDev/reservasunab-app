@@ -12,7 +12,7 @@ export class ReservasAdminService {
   private http = inject(HttpClient);
   private queryClient = inject(QueryClient);
 
-  private _paginacion = signal<PaginationState>({ pageIndex: 0, pageSize: 10 });
+  private _paginacion = signal<PaginationState>({ pageIndex: 0, pageSize: 25 });
   private _datosPaginador = signal<Meta | null>(null);
   private _filtroTexto = signal<string>('');
 

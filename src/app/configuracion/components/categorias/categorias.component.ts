@@ -306,7 +306,6 @@ export class CategoriasComponent implements OnDestroy {
           this.reservasExterno.reset(null);
           this.reservasEgresado.reset(null);
           this.categoriaEnEdicion.set(null);
-          this.configService.resetAll();
         }
       },
       {

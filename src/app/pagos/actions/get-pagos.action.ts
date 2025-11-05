@@ -12,7 +12,7 @@ export const getPagos = async (
 ): Promise<PaginatedResponse<Pago>> => {
   const queryParams = new URLSearchParams({
     page: (params.pageIndex + 1).toString(),
-    limit: params.pageSize.toString(),
+    per_page: params.pageSize.toString(),
   });
 
   if (params.search) {

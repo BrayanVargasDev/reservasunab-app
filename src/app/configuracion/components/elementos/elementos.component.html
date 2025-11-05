@@ -152,7 +152,7 @@
   responsiveTable
   #tablaElemento="responsiveTable"
   [table]="tablaElementos()"
-  class="table w-full rounded-box table-sm sm:table-md"
+  class="table w-full rounded-box table-sm sm:table-md overflow-x-auto"
 >
   <thead class="sticky top-0 z-20 bg-base-100">
     @for (headerGroup of tablaElementos().getHeaderGroups(); track
@@ -250,16 +250,16 @@
 
 <app-paginador
   [ngClass]="
-    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 sticky bottom-0 z-10 rounded-b-box'
+    'flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-base-100 rounded-b-box'
   "
-  [estado]="configService.paginacionCategorias()"
-  [paginacion]="configService.datosPaginadorCategorias() ?? null"
+  [estado]="configService.paginacionElementos()"
+  [paginacion]="configService.datosPaginadorElementos() ?? null"
   (cambioPaginacion)="onPageChange($event)"
   [mostrarInfo]="true"
   [mostrarSelectorTamano]="true"
   [mostrarExtremos]="true"
-  [deshabilitado]="configService.categoriasQuery.isFetching()"
-  (prefetchFunction)="configService.prefetchCategorias($event)"
+  [deshabilitado]="configService.elementosQuery.isFetching()"
+  (prefetchFunction)="configService.prefetchElementos($event)"
 >
 </app-paginador>
 
