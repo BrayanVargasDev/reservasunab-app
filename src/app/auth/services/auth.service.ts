@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Capacitor } from '@capacitor/core';
 
 import { QueryClient, injectQuery } from '@tanstack/angular-query-experimental';
 
@@ -144,8 +145,53 @@ export class AuthService implements OnDestroy {
   }
 
   async logout(fromLogin: boolean = false) {
+    // Logout del backend
     await logoutAction(this.http);
+    
+    // Limpiar sesión local
     this.clearSession(fromLogin);
+    
+    // Limpiar Google OAuth especialmente para Safari mobile
+    try {
+      const isSafariMobile = /Safari/.test(navigator.userAgent) && 
+                            /Mobile|iPad|iPhone/.test(navigator.userAgent) && 
+                            !fromLogin; // Solo si no viene de login para evitar conflictos
+      
+      if (isSafariMobile) {
+        console.log('Limpiando sesión Google OAuth para Safari mobile');
+        const { SocialLogin } = await import('@capgo/capacitor-social-login');
+        await SocialLogin.logout({ provider: 'google' });
+        
+        // Limpiar también el localStorage de Google OAuth
+        const keysToRemove = Object.keys(localStorage).filter(key => 
+          key.includes('google') || 
+          key.includes('gapi') || 
+          key.includes('oauth') ||
+          key.includes('G_ENABLED_IDPS')
+        );
+        
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key);
+          console.log(`Removed localStorage key: ${key}`);
+        });
+        
+        // Limpiar también sessionStorage de Google
+        const sessionKeysToRemove = Object.keys(sessionStorage).filter(key => 
+          key.includes('google') || 
+          key.includes('gapi') || 
+          key.includes('oauth')
+        );
+        
+        sessionKeysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          console.log(`Removed sessionStorage key: ${key}`);
+        });
+      }
+    } catch (error) {
+      console.warn('No se pudo limpiar la sesión de Google OAuth:', error);
+    }
+    
+    // Redirigir al login
     window.location.href = '/auth/login';
   }
 
@@ -245,10 +291,8 @@ export class AuthService implements OnDestroy {
 
   public async checkTerminosAceptados(): Promise<boolean> {
     try {
-      console.log('[AuthService] Verificando términos aceptados...');
       const response = await checkTermsAccepted(this.http);
       const termsAccepted = response.data.terminos_condiciones;
-      console.log('[AuthService] Términos aceptados:', { termsAccepted });
 
       if (termsAccepted) {
         this.globalLoader.updateText(
@@ -266,10 +310,8 @@ export class AuthService implements OnDestroy {
 
   public async checkPerfilCompletado(): Promise<boolean> {
     try {
-      console.log('[AuthService] Verificando perfil completado...');
       const response = await checkProfileCompleted(this.http);
       const profileCompleted = response.data.perfil_completo;
-      console.log('[AuthService] Perfil completado:', { profileCompleted });
 
       if (profileCompleted) {
         this.storage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, 'true');
@@ -304,23 +346,18 @@ export class AuthService implements OnDestroy {
 
   public async validarTerminosYPerfil(): Promise<string> {
     try {
-      console.log('[AuthService] Iniciando validación de términos y perfil...');
-      
       const termsAccepted = await this.checkTerminosAceptados();
       if (!termsAccepted) {
-        console.log('[AuthService] Términos no aceptados, redirigiendo a terms-conditions');
         this.globalLoader.hide();
         return '/terms-conditions';
       }
 
       const profileCompleted = await this.checkPerfilCompletado();
       if (!profileCompleted) {
-        console.log('[AuthService] Perfil no completado, redirigiendo a perfil');
         this.globalLoader.hide();
         return '/perfil';
       }
 
-      console.log('[AuthService] Validación completada, redirigiendo al dashboard');
       this.globalLoader.hide();
       return '/';
     } catch (error) {

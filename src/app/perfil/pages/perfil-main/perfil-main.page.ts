@@ -98,6 +98,11 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
   });
 
   public selectedTab = signal<string>('perfil');
+  public modoVerificacion = signal<'password' | 'email'>('password');
+  public codigoEnviado = signal<boolean>(false);
+  public tiempoRestante = signal<number>(0);
+  public codigoVerificacion = signal<string>('');
+  private timerInterval: any;
 
   public ciudadTerminoBusqueda = signal<string>('');
   public ciudadesFiltradas = signal<Ciudad[]>([]);
@@ -461,6 +466,29 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         if (usuario) {
           this.cargarDatosEnFormulario(usuario);
         }
+      },
+      {
+        injector: this.injector,
+      },
+    );
+
+    // Efecto para modificar validadores del formulario de contraseña según el modo
+    effect(
+      () => {
+        const modo = this.modoVerificacion();
+        const currentPasswordControl = this.passwordForm.get('currentPassword');
+        
+        if (modo === 'email' && currentPasswordControl) {
+          // Si está en modo email, removemos la validación de contraseña actual
+          currentPasswordControl.clearValidators();
+          currentPasswordControl.setValue('');
+          currentPasswordControl.disable();
+        } else if (currentPasswordControl) {
+          // Si está en modo contraseña, restauramos las validaciones
+          currentPasswordControl.setValidators([Validators.required]);
+          currentPasswordControl.enable();
+        }
+        currentPasswordControl?.updateValueAndValidity();
       },
       {
         injector: this.injector,
@@ -1064,13 +1092,21 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
 
       this.perfilForm.controls['email'].disable();
 
+      if (usuario.nombre) {
+        this.perfilForm.controls['nombre'].disable();
+      }
+
+      if (usuario.apellido) {
+        this.perfilForm.controls['apellido'].disable();
+      }
+
       if (usuario.documento) {
         this.perfilForm.controls['documento'].disable();
       }
 
-      if (usuario.tipoDocumento) {
+      /*if (usuario.tipoDocumento) {
         this.perfilForm.controls['tipoDocumento'].disable();
-      }
+      }*/
 
       if (this.pikaday && fechaFormateada) {
         const date = parse(fechaFormateada, 'dd/MM/yyyy', new Date());
@@ -1247,12 +1283,31 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
+    // Validar según el modo de verificación
+    if (this.modoVerificacion() === 'email') {
+      const codigo = this.codigoVerificacion().trim();
+      if (!codigo || codigo.length !== 6) {
+        this.alertaService.error(
+          'Por favor, ingresa un código válido de 6 dígitos',
+          3000,
+          this.alertaPerfil(),
+          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4'
+        );
+        return;
+      }
+    }
+
     this.anunciarEstadoCarga('Cambiando contraseña...', 'loading');
 
-    const datosPassword = {
-      currentPassword: this.passwordForm.value.currentPassword,
+    const datosPassword: any = {
       newPassword: this.passwordForm.value.newPassword,
     };
+
+    if (this.modoVerificacion() === 'password') {
+      datosPassword.currentPassword = this.passwordForm.value.currentPassword;
+    } else {
+      datosPassword.verificationCode = this.codigoVerificacion();
+    }
 
     try {
       const success = await this.perfilService.cambiarPassword(datosPassword);
@@ -1270,6 +1325,8 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         );
 
         this.passwordForm.reset();
+        this.codigoVerificacion.set('');
+        this.cambiarModoVerificacion('password'); // Resetear al modo por defecto
       }
     } catch (error: any) {
       console.error('Error al cambiar contraseña:', error);
@@ -1413,6 +1470,9 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
     if (this.pikaday) {
       this.pikaday.destroy();
     }
+
+    // Limpiar timer de verificación
+    this.detenerTimer();
   }
 
   public esNitPerfil(): boolean {
@@ -1497,6 +1557,101 @@ export class PerfilMainPage implements OnInit, OnDestroy, AfterViewInit {
         apellidoCtrl.setValidators([Validators.required]);
       }
       apellidoCtrl.updateValueAndValidity({ emitEvent: false });
+    }
+  }
+
+  cambiarModoVerificacion(modo: 'password' | 'email') {
+    this.modoVerificacion.set(modo);
+    this.codigoEnviado.set(false);
+    this.codigoVerificacion.set('');
+    this.detenerTimer();
+    
+    // Reset del formulario de contraseña
+    this.passwordForm.patchValue({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+  }
+
+  async enviarCodigoVerificacion() {
+    try {
+      this.anunciarEstadoCarga('Enviando código de verificación...', 'loading');
+      
+      const usuarioActual = this.perfilService.usuario();
+      if (!usuarioActual?.email) {
+        throw new Error('No se encontró el email del usuario');
+      }
+
+      // Llamar al backend para enviar código de verificación
+      const success = await this.solicitarCodigoVerificacion(usuarioActual.email);
+      
+      if (success) {
+        this.codigoEnviado.set(true);
+        this.iniciarTimer();
+        this.anunciarEstadoCarga('Código enviado exitosamente', 'success');
+        this.alertaService.success(
+          `Se ha enviado un código de verificación a ${usuarioActual.email}`,
+          8000,
+          this.alertaPerfil(),
+          'fixed flex p-4 transition-all ease-in-out bottom-4 right-4'
+        );
+      } else {
+        throw new Error('No se pudo enviar el código de verificación');
+      }
+    } catch (error: any) {
+      console.error('Error al solicitar código:', error);
+      this.anunciarEstadoCarga('Error al enviar código', 'error');
+      this.alertaService.error(
+        error?.message || 'Error al enviar el código de verificación. Por favor, inténtalo de nuevo.',
+        5000,
+        this.alertaPerfil(),
+        'fixed flex p-4 transition-all ease-in-out bottom-4 right-4'
+      );
+    }
+  }
+
+  private async solicitarCodigoVerificacion(email: string): Promise<boolean> {
+    try {
+      // Llamada real al backend para enviar el código de verificación
+      const response = await this.perfilService.solicitarCodigoVerificacion(email);
+      return response.success || false;
+    } catch (error) {
+      console.error('Error enviando código:', error);
+      return false;
+    }
+  }
+
+  private iniciarTimer() {
+    this.tiempoRestante.set(300); // 5 minutos
+    this.timerInterval = setInterval(() => {
+      const tiempo = this.tiempoRestante();
+      if (tiempo > 0) {
+        this.tiempoRestante.set(tiempo - 1);
+      } else {
+        this.detenerTimer();
+        this.codigoEnviado.set(false);
+      }
+    }, 1000);
+  }
+
+  private detenerTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  get tiempoFormateado(): string {
+    const tiempo = this.tiempoRestante();
+    const minutos = Math.floor(tiempo / 60);
+    const segundos = tiempo % 60;
+    return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+  }
+
+  reenviarCodigo() {
+    if (this.modoVerificacion() === 'email') {
+      this.enviarCodigoVerificacion();
     }
   }
 }

@@ -6,7 +6,8 @@ import { GeneralResponse } from '@shared/interfaces';
 const BASE_URL = environment.apiUrl;
 
 export interface CambiarPasswordRequest {
-  currentPassword: string;
+  currentPassword?: string;
+  verificationCode?: string;
   newPassword: string;
 }
 
@@ -18,7 +19,7 @@ export const cambiarPassword = async (
   http: HttpClient,
   datos: CambiarPasswordRequest,
 ): Promise<GeneralResponse<CambiarPasswordResponse>> => {
-  const url = `${BASE_URL}/usuarios/cambiar-password`;
+  const url = `${BASE_URL}/usuarios/cambiar-password-mejorado`;
 
   return firstValueFrom(
     http.put<GeneralResponse<CambiarPasswordResponse>>(url, datos)

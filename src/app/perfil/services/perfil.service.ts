@@ -14,6 +14,7 @@ import {
   cambiarPassword,
   CambiarPasswordRequest,
   buscarPersonaFacturacion,
+  solicitarCodigoVerificacion,
 } from '../actions';
 import { AuthService } from '@auth/services/auth.service';
 import { saveUsuario } from '@usuarios/actions';
@@ -220,6 +221,17 @@ export class PerfilService {
     } catch (error) {
       console.error('Error buscando persona de facturación:', error);
       throw error;
+    }
+  }
+
+  // Método para solicitar código de verificación por email
+  public async solicitarCodigoVerificacion(email: string): Promise<{success: boolean, message?: string}> {
+    try {
+      const response = await solicitarCodigoVerificacion(this.http, { email });
+      return response.data || { success: false };
+    } catch (error) {
+      console.error('Error solicitando código de verificación:', error);
+      return { success: false, message: 'Error enviando código de verificación' };
     }
   }
 }

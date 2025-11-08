@@ -1,0 +1,534 @@
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  viewChild,
+  ViewContainerRef,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+
+import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
+import { FormUtils } from '@shared/utils/form.utils';
+import { AppService } from '@app/app.service';
+import { WebIconComponent } from '@shared/components/web-icon/web-icon.component';
+import { AuthService } from '@auth/services/auth.service';
+import { MobileAuthService } from '@auth/services/mobile-auth.service';
+import { AlertasService } from '@shared/services/alertas.service';
+import { NavigationService } from '@shared/services/navigation.service';
+import { loginGoogleAction } from '@app/auth/actions';
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.page.html',
+  styleUrl: './login.page.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    // RouterLink,
+    ReactiveFormsModule,
+    WebIconComponent,
+  ],
+})
+export class LoginPage {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private formBuilder = inject(FormBuilder);
+  private alertaService = inject(AlertasService);
+  private navigationService = inject(NavigationService);
+  public appService = inject(AppService);
+  public authService = inject(AuthService);
+  private mobileAuthService = inject(MobileAuthService);
+  mostrarLoginForm = signal(false);
+
+  async ngOnInit() {
+    // 🔍 MOSTRAR LOGS ALMACENADOS AL CARGAR LA PÁGINA
+    this.showStoredLogs();
+    
+    // Verificar si hay errores de SSO en los query params
+    const ssoError = this.route.snapshot.queryParams['sso_error'];
+    if (ssoError) {
+      const errorDescription =
+        this.route.snapshot.queryParams['sso_error_description'] ||
+        'Error en autenticación SSO';
+      let userFriendlyMessage = 'Error en la autenticación con Google. ';
+
+      switch (ssoError) {
+        case 'access_denied':
+          userFriendlyMessage += 'Acceso denegado por el usuario.';
+          break;
+        case 'no_code':
+          userFriendlyMessage += 'No se recibió la autorización necesaria.';
+          break;
+        case 'token_exchange_failed':
+          userFriendlyMessage += 'Error al intercambiar el token.';
+          break;
+        case 'unexpected_error':
+          userFriendlyMessage += 'Error inesperado. Inténtelo de nuevo.';
+          break;
+        default:
+          userFriendlyMessage += errorDescription;
+      }
+
+      this.alertaService.error(
+        userFriendlyMessage,
+        8000,
+        this.alertaLogin(),
+        'w-full block my-2',
+      );
+
+      this.authService.setLoading(false);
+
+      // Limpiar los parámetros de error de la URL
+      this.router.navigate([], {
+        queryParams: { sso_error: null, sso_error_description: null },
+        queryParamsHandling: 'merge',
+      });
+    }
+  }
+
+  public formUtils = FormUtils;
+  public loginForm: FormGroup = this.formBuilder.group({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(6),
+    ]),
+  });
+
+  public alertaLogin = viewChild.required('alertaLogin', {
+    read: ViewContainerRef,
+  });
+
+  showPassword = signal(false);
+
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
+
+  obtenerColorIcono(campo: string): string {
+    return this.formUtils.esCampoInvalido(this.loginForm, campo)
+      ? 'danger'
+      : 'dark';
+  }
+
+  // 🔍 FUNCIÓN PARA MOSTRAR LOGS ALMACENADOS
+  private showStoredLogs() {
+    const logKey = 'google_login_debug';
+    const logs: string[] = JSON.parse(localStorage.getItem(logKey) || '[]');
+    
+    if (logs.length > 0) {
+      console.log('📋 LOGS ALMACENADOS DE SESIÓN ANTERIOR:');
+      console.log('================================================');
+      logs.forEach((log, index) => {
+        console.log(`${index + 1}. ${log}`);
+      });
+      console.log('================================================');
+      console.log('📋 FIN DE LOGS ALMACENADOS');
+      
+      // También podemos mostrar solo los últimos logs más relevantes
+      const recentLogs = logs.slice(-10);
+      console.log('🔍 ÚLTIMOS 10 LOGS:');
+      recentLogs.forEach(log => console.log(log));
+      
+      // LIMPIAR LOGS PARA NUEVA PRUEBA
+      console.log('🧹 LIMPIANDO LOGS ANTERIORES PARA NUEVA PRUEBA...');
+      localStorage.removeItem(logKey);
+    } else {
+      console.log('📋 No hay logs almacenados de sesiones anteriores');
+    }
+  }
+
+  async loginGoogle() {
+    try {
+      // 🔄 LOGS PERSISTENTES - Guardar en localStorage
+      const logKey = 'google_login_debug';
+      const logs: string[] = JSON.parse(localStorage.getItem(logKey) || '[]');
+      
+      const addLog = (message: string) => {
+        const timestamp = new Date().toISOString();
+        const logEntry = `[${timestamp}] ${message}`;
+        console.log(logEntry);
+        logs.push(logEntry);
+        localStorage.setItem(logKey, JSON.stringify(logs.slice(-50))); // Mantener solo los últimos 50 logs
+      };
+
+      addLog('🚀 INICIANDO loginGoogle() - MÉTODO PRINCIPAL');
+      addLog(`📱 User Agent: ${navigator.userAgent}`);
+      addLog(`🌍 URL actual: ${window.location.href}`);
+      
+      this.disableForm();
+      this.authService.setLoading(true);
+      addLog('⚙️ Formulario deshabilitado y loading activado');
+
+      this.authService.clearSession();
+      addLog('🧹 Sesión limpiada');
+
+      addLog('🔄 A punto de llamar mobileAuthService.loginWithGoogleDEBUG()...');
+      addLog(`🔄 MobileAuthService instance: ${!!this.mobileAuthService}`);
+      addLog(`🔄 loginWithGoogleDEBUG method exists: ${typeof this.mobileAuthService.loginWithGoogleDEBUG === 'function'}`);
+      
+      console.log('🔄 DEBUG: mobileAuthService instance:', this.mobileAuthService);
+      const fn = (this.mobileAuthService as any).loginWithGoogleDEBUG;
+      console.log('🔄 DEBUG: loginWithGoogleDEBUG method:', fn);
+      try {
+        const fnSource = typeof fn === 'function' ? fn.toString() : String(fn);
+        addLog(`🔎 loginWithGoogleDEBUG source: ${fnSource.substring(0, 200)}...`);
+        console.log('🔎 loginWithGoogleDEBUG source (truncated):', fnSource.substring(0, 200) + '...');
+      } catch (e) {
+        console.warn('🔎 No se pudo serializar loginWithGoogleDEBUG:', e);
+      }
+      
+      let success = false;
+      try {
+        addLog('🔄 ENTRANDO EN TRY BLOCK para llamar loginWithGoogleDEBUG...');
+        
+        // 🔥 INTERCEPCIÓN DIRECTA EN RUNTIME - BYPASEAR PROBLEMA DE BUNDLE
+        addLog('🔥 INTERCEPTANDO FUNCIÓN DIRECTAMENTE...');
+        
+        // Crear función de login Safari iOS directamente aquí
+        const loginSafariDirecto = async () => {
+          addLog('🔥🔥🔥 FUNCIÓN SAFARI iOS EJECUTADA DIRECTAMENTE 🔥🔥🔥');
+          
+          try {
+            // Detectar si es iOS
+            const isIOSWeb = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+            addLog(`📱 Es iOS Web: ${isIOSWeb}`);
+            
+            if (!isIOSWeb) {
+              addLog('⚠️ NO ES iOS - usando método estándar');
+              return await this.mobileAuthService.loginWithGoogleDEBUG();
+            }
+            
+            addLog('🍎 CONSTRUYENDO URL OAUTH PARA iOS...');
+            
+            const baseUrl = window.location.origin; // https://reservasunab.wgsoluciones.com
+            const clientId = '709918056203-b88tpr7alf0v85ab3e57ke0scghirurq.apps.googleusercontent.com'; // Client ID correcto
+            
+            addLog(`🍎 Base URL: ${baseUrl}`);
+            addLog(`🍎 Client ID correcto: ${clientId}`);
+            
+            const redirectUri = encodeURIComponent(`${baseUrl}/auth/callback`);
+            const scope = encodeURIComponent('email profile openid');
+            const state = Math.random().toString(36).substring(2, 15);
+            
+            const authUrl = `https://accounts.google.com/oauth2/auth?` +
+              `client_id=${clientId}&` +
+              `redirect_uri=${redirectUri}&` +
+              `scope=${scope}&` +
+              `response_type=code&` +
+              `state=${state}&` +
+              `prompt=select_account&` +
+              `access_type=offline&` +
+              `include_granted_scopes=false&` +
+              `approval_prompt=force&` +
+              `max_age=0&` +
+              `login_hint=&` +
+              `hd=`;
+            
+            addLog(`🍎 URL OAuth completa: ${authUrl.substring(0, 150)}...`);
+            addLog(`🍎 Redirect URI: ${baseUrl}/auth/callback`);
+            
+            // ⚡ NUEVA ESTRATEGIA: REDIRECCIÓN INMEDIATA Y AGRESIVA
+            addLog('🍎 ⚡ EJECUTANDO REDIRECCIÓN INMEDIATA Y AGRESIVA...');
+            addLog(`🍎 window.location ANTES: ${JSON.stringify({
+              href: window.location.href,
+              origin: window.location.origin,
+              pathname: window.location.pathname
+            })}`);
+            
+            // MÉTODO 1: Redirección inmediata más agresiva
+            addLog('🍎 🔄 MÉTODO 1: location.replace (inmediato)');
+            window.location.replace(authUrl);
+            
+            // Si no funcionó, intentar otros métodos como backup
+            addLog('🍎 🔄 MÉTODO 2: backup después de 50ms');
+            setTimeout(() => {
+              addLog('🍎 🔄 EJECUTANDO BACKUP: window.location.assign');
+              window.location.assign(authUrl);
+            }, 50);
+            
+            // Método final después de 100ms
+            setTimeout(() => {
+              addLog('🍎 🔄 MÉTODO FINAL: window.location.href');
+              window.location.href = authUrl;
+            }, 100);
+            
+            addLog('🍎 ✅ TODOS LOS MÉTODOS DE REDIRECCIÓN EJECUTADOS');
+            addLog('🍎 Función Safari iOS completada, redirección ejecutada...');
+              addLog('❌ No es iOS, usando método normal del plugin...');
+              
+              // Fallback al método original pero loggeado
+              const originalResult = await (this.mobileAuthService as any).loginWithGoogleDEBUG();
+              addLog(`🌐 Resultado método original: ${originalResult}`);
+              return originalResult;
+            }
+            
+            // Para iOS: construir URL OAuth manualmente
+            addLog('🍎 CONSTRUYENDO URL OAUTH PARA iOS...');
+            
+            const baseUrl = window.location.origin; // https://reservasunab.wgsoluciones.com
+            const clientId = '709918056203-b88tpr7alf0v85ab3e57ke0scghirurq.apps.googleusercontent.com'; // Client ID correcto
+            
+            addLog(`🍎 Base URL: ${baseUrl}`);
+            addLog(`🍎 Client ID correcto: ${clientId}`);
+            
+            const redirectUri = encodeURIComponent(`${baseUrl}/auth/callback`);
+            const scope = encodeURIComponent('email profile openid');
+            const state = Math.random().toString(36).substring(2, 15);
+            
+            const authUrl = `https://accounts.google.com/oauth2/auth?` +
+              `client_id=${clientId}&` +
+              `redirect_uri=${redirectUri}&` +
+              `scope=${scope}&` +
+              `response_type=code&` +
+              `state=${state}&` +
+              `prompt=select_account&` +
+              `access_type=offline&` +
+              `include_granted_scopes=false&` +
+              `approval_prompt=force&` +
+              `max_age=0&` +
+              `login_hint=&` +
+              `hd=`;
+            
+            addLog(`🍎 URL OAuth completa: ${authUrl.substring(0, 150)}...`);
+            addLog(`🍎 Redirect URI: ${baseUrl}/auth/callback`);
+            
+            addLog('🍎 REDIRIGIENDO INMEDIATAMENTE...');
+            addLog(`🍎 window.location.href ANTES: ${window.location.href}`);
+            addLog(`🍎 Navigator userAgent: ${navigator.userAgent}`);
+            addLog(`🍎 Window location: ${JSON.stringify(window.location)}`);
+            
+            try {
+              // Intentar múltiples métodos de redirección para Safari iOS
+              addLog('🍎 🔄 MÉTODO 1: window.location.href');
+              window.location.href = authUrl;
+              
+              // Fallback: usar window.location.assign si href no funciona
+              setTimeout(() => {
+                addLog('🍎 🔄 MÉTODO FALLBACK: window.location.assign');
+                window.location.assign(authUrl);
+              }, 100);
+              
+              // Fallback final: usar window.open si todo falla
+              setTimeout(() => {
+                addLog('🍎 🔄 MÉTODO FALLBACK FINAL: window.open');
+                const googleWindow = window.open(authUrl, '_self');
+                if (!googleWindow) {
+                  addLog('🍎❌ POPUP BLOQUEADO - usando location.replace');
+                  window.location.replace(authUrl);
+                }
+              }, 200);
+              
+              addLog('🍎 ✅ MÚLTIPLES MÉTODOS DE REDIRECCIÓN EJECUTADOS');
+            } catch (redirectError) {
+              addLog(`🍎❌ ERROR EN REDIRECCIÓN: ${redirectError}`);
+              console.error('Error en redirección:', redirectError);
+              
+              // Último recurso: intentar con location.replace
+              try {
+                addLog('🍎 🆘 ÚLTIMO RECURSO: window.location.replace');
+                window.location.replace(authUrl);
+              } catch (finalError) {
+                addLog(`🍎❌ ERROR FINAL: ${finalError}`);
+                console.error('Error final de redirección:', finalError);
+              }
+            }
+            
+            addLog('🍎 Función Safari iOS completada, redirección ejecutada...');
+            return true;
+            
+          } catch (safariError) {
+            addLog(`🍎❌ ERROR EN FUNCIÓN SAFARI iOS: ${safariError}`);
+            console.error('Error en función Safari iOS:', safariError);
+            return false;
+          }
+        };
+        
+        // Ejecutar función Safari directa
+        success = await loginSafariDirecto();
+        
+        addLog(`🔄 SUCCESS RETORNADO: ${success}`);
+        console.log('🔄 SUCCESS RETORNADO:', success);
+      } catch (callError) {
+        addLog(`🔄❌ ERROR CAPTURADO al llamar loginWithGoogleDEBUG: ${callError instanceof Error ? callError.message : 'Error desconocido'}`);
+        addLog(`🔄❌ Stack del error: ${callError instanceof Error ? callError.stack?.substring(0, 200) + '...' : 'No stack'}`);
+        console.error('🔄❌ ERROR al llamar mobileAuthService.loginWithGoogleDEBUG():', callError);
+        // No re-lanzar, continuar con success = false
+      }
+      
+      addLog(`✅ Resultado de loginWithGoogleDEBUG(): ${success}`);
+      
+      if (!success) {
+        addLog('❌ Login con Google falló - mostrando error');
+        console.error('Login con Google falló');
+        
+        // Mensaje de error más específico para dispositivos móviles
+        const isIOSMobile = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        const isAndroidMobile = /Android/.test(navigator.userAgent);
+        
+        let errorMessage = 'Error al iniciar sesión con Google. ';
+        
+        if (isIOSMobile) {
+          errorMessage += 'En dispositivos iOS, asegúrate de permitir popups y verifica tu conexión a internet. Si el problema persiste, intenta desde el navegador Chrome o actualiza Safari.';
+        } else if (isAndroidMobile) {
+          errorMessage += 'En dispositivos Android, verifica tu conexión a internet y que tengas una cuenta de Google configurada en tu dispositivo.';
+        } else {
+          errorMessage += 'Verifica tu conexión e intenta de nuevo.';
+        }
+        
+        addLog(`📝 Mensaje de error: ${errorMessage.substring(0, 100)}...`);
+        
+        this.alertaService.error(
+          errorMessage,
+          8000,
+          this.alertaLogin(),
+          'w-full block my-2',
+        );
+        this.authService.setLoading(false);
+        this.loginForm.enable();
+        return;
+      }
+
+      await this.navegarDespesDeLogin();
+    } catch (error) {
+      console.error('Error en login con Google:', error);
+      
+      // Mensaje de error más detallado
+      let errorMessage = 'Error al iniciar sesión con Google. ';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('popup')) {
+          errorMessage += 'Por favor, permite las ventanas emergentes (popups) en tu navegador y vuelve a intentar.';
+        } else if (error.message.includes('network') || error.message.includes('conexión')) {
+          errorMessage += 'Verifica tu conexión a internet e intenta nuevamente.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Inténtelo de nuevo.';
+      }
+      
+      this.alertaService.error(
+        errorMessage,
+        8000,
+        this.alertaLogin(),
+        'w-full block my-2',
+      );
+      this.authService.setLoading(false);
+      this.loginForm.enable();
+    }
+  }
+
+  disableForm() {
+    this.loginForm.disable();
+  }
+
+  async onLogin(): Promise<void> {
+    this.loginForm.markAllAsTouched();
+
+    if (this.loginForm.invalid) {
+      this.loginForm.enable();
+      return;
+    }
+
+    const { email, password } = this.loginForm.value;
+
+    this.authService.setLoading(true);
+    this.disableForm();
+
+    try {
+      const [logueado, errorMessage] = await this.authService.login(
+        email,
+        password,
+      );
+
+      if (!logueado) {
+        throw new Error(errorMessage);
+      }
+      await this.navegarDespesDeLogin();
+    } catch (error) {
+      this.handleLoginError(error);
+    } finally {
+      this.authService.setLoading(false);
+      this.loginForm.enable();
+    }
+  }
+
+  private async navegarDespesDeLogin() {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    try {
+      console.log('[Login] Iniciando navegación después del login...');
+      const dest = await this.authService.validarTerminosYPerfil();
+      console.log('[Login] Destino de navegación:', { dest });
+
+      if (dest && dest !== '/') {
+        console.log('[Login] Navegando a:', dest);
+        return this.router.navigateByUrl(dest, { replaceUrl: true });
+      }
+
+      if (returnUrl && returnUrl !== '/') {
+        console.log('[Login] Navegando a returnUrl:', returnUrl);
+        return this.router.navigateByUrl(returnUrl, { replaceUrl: true });
+      }
+
+      console.log('[Login] Navegando al dashboard');
+      return this.router.navigateByUrl('/', { replaceUrl: true });
+    } catch (error) {
+      console.error('[Login] Error en navegación después del login:', error);
+      return this.router.navigateByUrl('/reservas');
+    }
+  }
+
+  private handleLoginError(error: unknown): void {
+    let errorMessage = 'Por favor, inténtalo de nuevo.';
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (error instanceof HttpErrorResponse) {
+      if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error.status === 401) {
+        errorMessage =
+          'Credenciales incorrectas. Verifica tu email y contraseña.';
+      } else if (error.status === 400) {
+        errorMessage = 'Datos inválidos. Revisa la información ingresada.';
+      } else if (error.status >= 500) {
+        errorMessage = 'Error del servidor. Inténtalo más tarde.';
+      } else if (error.status === 0) {
+        errorMessage = 'Error de conexión. Verifica tu conexión a internet.';
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
+    this.alertaService.error(
+      `Error al iniciar sesión. ${errorMessage}`,
+      10000,
+      this.alertaLogin(),
+      'w-full block my-2',
+    );
+
+    this.authService.setLoading(false);
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  toggleLoginForm(): void {
+    this.mostrarLoginForm.set(true);
+  }
+}

@@ -17,6 +17,7 @@ import {
 } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 
 import { ActionButtonComponent } from '@shared/components/action-button/action-button.component';
 import { FormUtils } from '@shared/utils/form.utils';
@@ -26,6 +27,7 @@ import { AuthService } from '@auth/services/auth.service';
 import { MobileAuthService } from '@auth/services/mobile-auth.service';
 import { AlertasService } from '@shared/services/alertas.service';
 import { NavigationService } from '@shared/services/navigation.service';
+import { environment } from '@environments/environment';
 import { loginGoogleAction } from '@app/auth/actions';
 
 @Component({
@@ -125,32 +127,79 @@ export class LoginPage {
     try {
       this.disableForm();
       this.authService.setLoading(true);
-
       this.authService.clearSession();
 
-      const success = await this.mobileAuthService.loginWithGoogle();
-      if (!success) {
-        console.error('Login con Google falló');
-        this.alertaService.error(
-          'Error al iniciar sesión con Google. Verifica tu conexión e intenta de nuevo.',
-          5000,
-          this.alertaLogin(),
-          'w-full block my-2',
-        );
-        this.authService.setLoading(false);
-        this.loginForm.enable();
+      // Detectar Safari iOS específicamente
+      const isIOSWeb = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isIOSWeb) {
+        this.redirectToGoogleOAuth();
         return;
+      } else {
+        console.log('No es Safari iOS, procediendo con login normal');
+        const success = await this.mobileAuthService.loginWithGoogle();
+        
+        if (success) {
+          await this.navegarDespesDeLogin();
+        } else {
+          throw new Error('Login falló');
+        }
       }
-
-      await this.navegarDespesDeLogin();
+      
     } catch (error) {
-      console.error('Error en login con Google:', error);
+      console.error('Error en loginGoogle:', error);
+      
+      let errorMessage = 'Error al iniciar sesión con Google. ';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('popup')) {
+          errorMessage += 'Por favor, permite las ventanas emergentes en tu navegador.';
+        } else if (error.message.includes('network')) {
+          errorMessage += 'Verifica tu conexión a internet.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Inténtelo de nuevo.';
+      }
+      
       this.alertaService.error(
-        'Error al iniciar sesión con Google. Inténtelo de nuevo.',
-        5000,
+        errorMessage,
+        8000,
         this.alertaLogin(),
         'w-full block my-2',
       );
+      this.authService.setLoading(false);
+      this.loginForm.enable();
+    }
+  }
+
+  private redirectToGoogleOAuth(): void {
+    try {
+      const baseUrl = window.location.origin;
+      const clientId = environment.googleWebId;
+      const redirectUri = encodeURIComponent(`${baseUrl}/auth/callback`);
+      const state = Math.random().toString(36).substring(2, 15);
+      const nonce = Date.now().toString(36) + Math.random().toString(36).substring(2, 15);
+      
+      // URL OAuth optimizada para Safari iOS
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth` +
+        `?client_id=${clientId}` +
+        `&redirect_uri=${redirectUri}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent('email profile openid')}` +
+        `&access_type=offline` +
+        `&prompt=select_account` +
+        `&state=${state}` +
+        `&nonce=${nonce}`;
+      
+      // Redirección después de un breve delay
+      setTimeout(() => {
+        window.location.href = authUrl;
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error en redirección OAuth:', error);
       this.authService.setLoading(false);
       this.loginForm.enable();
     }
@@ -194,24 +243,19 @@ export class LoginPage {
   private async navegarDespesDeLogin() {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'];
     try {
-      console.log('[Login] Iniciando navegación después del login...');
       const dest = await this.authService.validarTerminosYPerfil();
-      console.log('[Login] Destino de navegación:', { dest });
 
       if (dest && dest !== '/') {
-        console.log('[Login] Navegando a:', dest);
         return this.router.navigateByUrl(dest, { replaceUrl: true });
       }
 
       if (returnUrl && returnUrl !== '/') {
-        console.log('[Login] Navegando a returnUrl:', returnUrl);
         return this.router.navigateByUrl(returnUrl, { replaceUrl: true });
       }
 
-      console.log('[Login] Navegando al dashboard');
       return this.router.navigateByUrl('/', { replaceUrl: true });
     } catch (error) {
-      console.error('[Login] Error en navegación después del login:', error);
+      console.error('Error en navegación después del login:', error);
       return this.router.navigateByUrl('/reservas');
     }
   }

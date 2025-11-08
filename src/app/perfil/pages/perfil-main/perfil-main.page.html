@@ -1192,6 +1192,39 @@
           (ngSubmit)="cambiarPassword()"
         >
           <div class="space-y-4">
+            <!-- Selector de modo de verificación -->
+            <div class="flex flex-col w-full">
+              <label class="label text-lg font-semibold text-base-content mb-2">
+                ¿Cómo deseas verificar tu identidad?
+              </label>
+              <div class="flex flex-col gap-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="modoVerificacion"
+                    value="password"
+                    [checked]="modoVerificacion() === 'password'"
+                    (change)="cambiarModoVerificacion('password')"
+                    class="radio radio-primary"
+                  />
+                  <span class="text-sm font-medium">Con mi contraseña actual</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="modoVerificacion"
+                    value="email"
+                    [checked]="modoVerificacion() === 'email'"
+                    (change)="cambiarModoVerificacion('email')"
+                    class="radio radio-primary"
+                  />
+                  <span class="text-sm font-medium">Con código enviado a mi email</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Campo de contraseña actual (solo en modo password) -->
+            @if (modoVerificacion() === 'password') {
             <div class="flex flex-col w-full">
               <label
                 class="label text-sm font-[600] text-base-content mb-1"
@@ -1224,8 +1257,61 @@
               </div>
               }
             </div>
+            }
 
+            <!-- Sección de código de verificación (solo en modo email) -->
+            @if (modoVerificacion() === 'email') {
             <div class="flex flex-col w-full">
+              <label class="label text-sm font-[600] text-base-content mb-1">
+                Código de Verificación <span class="text-error">*</span>
+              </label>
+              
+              @if (!codigoEnviado()) {
+              <div class="flex flex-col gap-2">
+                <p class="text-xs text-base-content/70">
+                  Te enviaremos un código de 6 dígitos a tu email registrado para verificar tu identidad.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  (click)="enviarCodigoVerificacion()"
+                >
+                  Enviar Código de Verificación
+                </button>
+              </div>
+              } @else {
+              <div class="flex flex-col gap-2">
+                <p class="text-xs text-success mb-2">
+                  ✓ Código enviado exitosamente. Revisa tu email.
+                </p>
+                <input
+                  type="text"
+                  placeholder="123456"
+                  maxlength="6"
+                  [value]="codigoVerificacion()"
+                  (input)="codigoVerificacion.set($any($event.target).value)"
+                  class="input input-bordered w-full h-11 rounded-box text-center tracking-widest font-mono placeholder:text-gray-400 placeholder:text-sm"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                />
+                
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-base-content/60">
+                    Tiempo restante: {{ tiempoFormateado }}
+                  </span>
+                  <button
+                    type="button"
+                    class="btn btn-link btn-xs p-0 h-auto min-h-0"
+                    (click)="reenviarCodigo()"
+                    [disabled]="tiempoRestante() > 240"
+                  >
+                    Reenviar código
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+            }            <div class="flex flex-col w-full">
               <label
                 class="label text-sm font-[600] text-base-content mb-1"
                 for="newPassword"
@@ -1293,7 +1379,7 @@
           <div class="card-actions justify-end mt-2 md:mt-6">
             <button
               type="submit"
-              [disabled]="passwordForm.invalid || perfilService.cargando()"
+              [disabled]="passwordForm.invalid || perfilService.cargando() || (modoVerificacion() === 'email' && (!codigoEnviado() || codigoVerificacion().length !== 6))"
               class="btn btn-primary"
             >
               @if (perfilService.cargando()) {
@@ -1304,7 +1390,7 @@
         </form>
       </div>
 
-      @if (esEgresado()){
+      @if (esEgresado() && !esEgresado()){
       <input
         [checked]="selectedTab() === 'beneficiarios'"
         type="radio"
